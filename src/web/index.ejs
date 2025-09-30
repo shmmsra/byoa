@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%
+        let options = htmlWebpackPlugin.options;
+        let env = options.env;
+        %>
+        <meta charset='utf-8'>
+        <meta http-equiv='X-UA-Compatible' content='chrome=1'>
+        <meta name='viewport' content='width=1024, initial-scale=0.3, maximum-scale=1'>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet">
+
+        <title>AI Assistant</title>
+
+        <style>
+            * {
+                box-sizing: border-box;
+                font-family: "Comfortaa", sans-serif;
+                font-optical-sizing: auto;
+                font-weight: 400;
+                font-style: normal;
+            }
+            body {
+                margin: 0;
+                font-family: "Comfortaa", sans-serif;
+                -webkit-font-smoothing: antialiased;
+                overflow: hidden;
+            }
+        </style>
+
+        <% if (htmlWebpackPlugin.files.favicon) { %>
+        <link rel='shortcut icon' href='<%- htmlWebpackPlugin.files.favicon %>'>
+        <% } %>
+    </head>
+    <body>
+        <div id='root' class='aca' style='height: 100vh;'></div>
+    </body>
+</html>

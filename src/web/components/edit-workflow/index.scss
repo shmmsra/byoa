@@ -1,0 +1,135 @@
+.edit-workflow-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+    padding-bottom: 0.5rem;
+}
+
+
+//////////////////////////////////////////////////////////////////
+.gen-text-container {
+    height: 100%;
+    overflow: auto;
+}
+//////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+.fix-grammar-container {
+    display: flex;
+    flex-direction: column-reverse;
+    flex-grow: 1;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+
+    #diff-result {
+        flex-grow: 1;
+        background-color: white;
+        padding: 0.5rem;
+        font-weight: bold;
+        overflow: auto;
+
+        .added {
+            color: green;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+        .removed {
+            color: red;
+            text-decoration: line-through;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+    }
+
+    .confirm-button {
+        margin: 1rem auto 1rem auto;
+    }
+}
+//////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+.text-to-image-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+
+    .confirm-button {
+        margin: auto;
+    }
+}
+//////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+.gen-fill-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+
+    .mask-editor-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column-reverse;
+
+        .mask-editor-footer {
+            display: flex;
+            padding: 0.5rem;
+            justify-content: center;
+
+            .ant-input-override {
+                width: 75%;
+                margin-right: 1rem;
+                background-color: rgba(255, 255, 255, 0.8);
+            }
+        }
+    }
+
+    .confirm-button {
+        margin: auto;
+    }
+}
+//////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+.remove-bg-container {
+    height: 100%;
+}
+//////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+.crop-image-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+
+    .edit-control-actions {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+        padding: 0.5rem;
+
+        .rotate-slider {
+            width: 50%;
+            padding: 0 1rem 0 1rem;
+        }
+
+        .flip-action-button {
+            padding: 0 1rem 0 1rem;
+        }
+    }
+
+    .confirm-button {
+        margin: auto;
+    }
+}
+//////////////////////////////////////////////////////////////////

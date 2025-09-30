@@ -1,0 +1,45 @@
+a {
+    -webkit-user-drag: none;
+}
+
+.assistant-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.assistant-background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: block;
+    opacity: 0.4;
+    z-index: 0;
+    background:
+            radial-gradient(farthest-corner at bottom left,#308FFF,transparent 40%),
+            radial-gradient(farthest-corner at bottom right,#4ADE52,transparent 25%),
+            radial-gradient(at bottom left,#FF52F5,transparent 60%),
+            radial-gradient(farthest-corner at top right,#FF9900,transparent 30%),
+            radial-gradient(at top center,#FA0F00,transparent 60%),
+            radial-gradient(at right center,#FFD11F,transparent 90%),
+            radial-gradient(at top left,#E72DFC,transparent 80%),
+            radial-gradient(at bottom center,#FFD11F,transparent 100%),
+            radial-gradient(at left center,#E72DFC,transparent 90%);
+}
+
+.assistant-content-wrapper {
+    width: 100%;
+    border-top: none;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    height: 100%;
+    padding: 0 0.5rem;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.aca-provider {
+    height: 100%;
+}

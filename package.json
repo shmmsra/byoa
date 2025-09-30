@@ -1,0 +1,98 @@
+{
+  "name": "byoa-assistant",
+  "version": "1.0.0",
+  "description": "A native macOS desktop assistant application with AI-powered features built with React and Saucer",
+  "main": "build/Resources/index.html",
+  "homepage": "https://github.com/shmmsra/byoa",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shmmsra/byoa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shmmsra/byoa/issues"
+  },
+  "keywords": [
+    "desktop",
+    "assistant",
+    "ai",
+    "macos",
+    "native",
+    "react",
+    "saucer",
+    "cpp"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "scripts": {
+    "serve": "webpack serve --mode development",
+    "build": "NODE_ENV=production webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "clean": "rimraf build/Resources",
+    "lint": "eslint src/web --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint src/web --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"src/web/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "cmake:configure": "cmake -B build -S .",
+    "cmake:build": "cmake --build build",
+    "cmake:clean": "cmake --build build --target clean",
+    "cmake:debug": "cmake --build build --config Debug",
+    "cmake:release": "cmake --build build --config Release",
+    "dev": "npm run serve",
+    "dev:build": "npm run build:dev && npm run cmake:debug",
+    "build:all": "npm run build && npm run cmake:release"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.0.2",
+    "antd": "^5.27.4",
+    "classnames": "^2.5.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.0",
+    "@babel/plugin-proposal-class-properties": "^7.18.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.0",
+    "@babel/preset-env": "^7.22.0",
+    "@babel/preset-react": "^7.22.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "babel-loader": "^9.1.0",
+    "clean-webpack-plugin": "^4.0.0",
+    "css-loader": "^6.8.0",
+    "diff": "5.2.0",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.0",
+    "eslint-plugin-react": "^7.32.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.7.0",
+    "prettier": "^2.8.0",
+    "rimraf": "^5.0.0",
+    "sass": "^1.63.0",
+    "sass-loader": "^13.3.0",
+    "style-loader": "^3.3.0",
+    "ts-loader": "^9.4.0",
+    "typescript": "^5.1.0",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.0",
+    "webpack-dev-server": "5"
+},
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
