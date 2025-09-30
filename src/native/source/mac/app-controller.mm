@@ -181,7 +181,11 @@ int AppController::start() {
         // Create and configure the window
         _window = saucer::window::create(app).value();
         _window->set_title("AI Assistant");
+#ifdef DEBUG
+        _window->set_size({1500, 900});
+#else
         _window->set_size({750, 450});
+#endif
         _window->set_decorations(saucer::window::decoration::partial);
         saucer::color bgColor = {255, 255, 255, 100};
         _window->set_background(bgColor);
@@ -199,27 +203,48 @@ int AppController::start() {
          // Enable developer tools for debugging
          webview->set_dev_tools(true);
 #endif  // DEBUG
-         
-         // Get the appropriate URL to load
-         std::string viewURL = _getViewURL();
-         if (!viewURL.empty()) {
-             // Load local HTML content
-             webview->set_url(viewURL);
-             Logger::getInstance().info("AppController::start: Loading local HTML: {}", viewURL);
-         } else {
-             Logger::getInstance().info("AppController::start: Loading fallback error page");
-             app->quit();
-         }
+
+        // Get the appropriate URL to load
+        std::string viewURL = _getViewURL();
+        if (!viewURL.empty()) {
+            // Load local HTML content
+            webview->set_url(viewURL);
+            Logger::getInstance().info("AppController::start: Loading local HTML: {}", viewURL);
+        } else {
+            Logger::getInstance().info("AppController::start: Loading fallback error page");
+            app->quit();
+        }
 
         _window->on<saucer::window::event::focus>([&](bool status) {
             if (status) {
+                if (_isWindowVisible) {
+                    return;
+                }
                 _isWindowVisible = true;
                 Logger::getInstance().info("AppController::start: onFocusChange: true");
             } else {
+                if (!_isWindowVisible) {
+                    return;
+                }
+                hideWindow();
                 _isWindowVisible = false;
                 Logger::getInstance().info("AppController::start: onFocusChange: false");
+                // Note: Don't hide here as this might fire too aggressively
             }
         });
+        
+        // Set up native escape key handling and focus monitoring
+        NSWindow *nsWindow = windowNative.window;
+        
+        // Add global key event monitoring for escape key when window is active
+        [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^NSEvent *(NSEvent *event) {
+            if (event.window == nsWindow && event.keyCode == 53 && _isWindowVisible) { // Escape key code is 53
+                Logger::getInstance().info("AppController::start: Native escape key pressed, hiding window");
+                hideWindow();
+                return nil; // Consume the event
+            }
+            return event;
+        }];
         
         // NOTE: It is critical that the activation policy is set after
         // window creation otherwise it doesn't work
@@ -262,9 +287,9 @@ void AppController::showWindow() {
     Logger::getInstance().info("AppController::showWindow: start");
     moveWindow();
 
-    // Get the native NSWindow to control its display behavior
-    auto windowNative = _window->native();
-    NSWindow *nsWindow = windowNative.window;
+        // Get the native NSWindow to control its display behavior
+        auto windowNative = _window->native();
+        NSWindow *nsWindow = windowNative.window;
     
     // Animate the fade-in effect
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
@@ -280,12 +305,12 @@ void AppController::showWindow() {
         
         // Show window without bringing app to focus
         [nsWindow orderFront:nil];  // Use orderFront instead of makeKeyAndOrderFront
+        [nsWindow makeKeyWindow];  // Make it key to receive events but don't activate app
         
         Logger::getInstance().info("AppController::showWindow: animation complete");
     }];
 
-    // Note: Commented out to prevent app activation
-    // [[NSApp self] activateIgnoringOtherApps:true];
+    [[NSApp self] activateIgnoringOtherApps:true];
 }
 
 void AppController::hideWindow() {
@@ -367,9 +392,6 @@ void AppController::moveWindow() {
         newTopLeftPoint.y - currentFrame.size.height
     );
     _window->set_position({(int)bottomLeftPoint.x, (int)bottomLeftPoint.y});
-    
-    Logger::getInstance().info("AppController::moveWindow: positioned window at top-left ({}, {})", 
-                              (int)newTopLeftPoint.x, (int)newTopLeftPoint.y);
 }
 
 void AppController::resizeWindow(const int& width, const int& height, const bool& animate/* = false*/) {
