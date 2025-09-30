@@ -213,15 +213,6 @@ int AppController::start() {
 
         _window->on<saucer::window::event::focus>([&](bool status) {
             if (status) {
-                NSWindow *nsWindow = windowNative.window;
-//                nsWindow.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone;
-                nsWindow.level = kCGFloatingWindowLevel;
-//                nsWindow.movableByWindowBackground = YES;
-//                nsWindow.hidesOnDeactivate = NO; // Seems optional
-                nsWindow.styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable |
-                NSWindowStyleMaskResizable | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskNonactivatingPanel | NSNonactivatingPanelMask;
-//                nsWindow.backingType = NSBackingStoreBuffered;
-
                 _isWindowVisible = true;
                 Logger::getInstance().info("AppController::start: onFocusChange: true");
             } else {
@@ -230,6 +221,10 @@ int AppController::start() {
             }
         });
         
+        // NOTE: It is critical that the activation policy is set after
+        // window creation otherwise it doesn't work
+        [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
+
         // Keep the app running until it finishes
         co_await app->finish();
 
@@ -271,10 +266,6 @@ void AppController::showWindow() {
     auto windowNative = _window->native();
     NSWindow *nsWindow = windowNative.window;
     
-    // Configure window to appear without activating the app
-    nsWindow.level = NSFloatingWindowLevel;  // Appear above other windows
-    nsWindow.hidesOnDeactivate = NO;         // Don't hide when app loses focus
-    
     // Animate the fade-in effect
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
         // Set the duration of the fade-in animation (in seconds)
@@ -312,64 +303,73 @@ void AppController::hideWindow() {
 void AppController::moveWindow() {
     Logger::getInstance().info("AppController::moveWindow: start");
 
-    // Define the new top-left point
-    NSPoint newTopLeftPoint = [NSEvent mouseLocation]; // Your desired top-left point
-
+    // Get the mouse location in global screen coordinates
+    NSPoint mouseLocation = [NSEvent mouseLocation];
+    
     // Get the current frame of the window
     auto windowNative = _window->native();
     NSWindow *nsWindow = windowNative.window;
     NSRect currentFrame = [nsWindow frame];
 
-    // Calculate the new frame based on the top-left point
-    NSRect newFrame = NSMakeRect(
-        newTopLeftPoint.x,
-        newTopLeftPoint.y - currentFrame.size.height,
-        currentFrame.size.width,
-        currentFrame.size.height
-    );
-
-    // Iterate through all screens to find a valid screen for the new frame
-    NSScreen *validScreen = nil;
+    // Find the screen containing the mouse cursor
+    NSScreen *targetScreen = nil;
     for (NSScreen *screen in [NSScreen screens]) {
-        NSRect screenFrame = [screen visibleFrame];
-
-        // Check if the new frame fits within this screen
-        if (NSContainsRect(screenFrame, newFrame)) {
-            validScreen = screen;
+        NSRect screenFrame = [screen frame]; // Use frame (not visibleFrame) for mouse detection
+        if (NSPointInRect(mouseLocation, screenFrame)) {
+            targetScreen = screen;
             break;
         }
     }
-
-    // If no valid screen is found, default to the main screen
-    if (!validScreen) {
-        validScreen = [NSScreen mainScreen];
+    
+    // If no screen contains the mouse, use the main screen
+    if (!targetScreen) {
+        targetScreen = [NSScreen mainScreen];
     }
-
-    NSRect screenFrame = [validScreen visibleFrame];
-
-    // Adjust the new top-left point to ensure it doesn't overflow the screen
-    if (NSMaxX(newFrame) > NSMaxX(screenFrame)) {
-        newTopLeftPoint.x = NSMaxX(screenFrame) - currentFrame.size.width;
+    
+    NSRect screenVisibleFrame = [targetScreen visibleFrame];
+    
+    // Calculate the desired top-left point for the window
+    // Position the window so the mouse cursor is near the top-left area
+    NSPoint newTopLeftPoint = NSMakePoint(
+        mouseLocation.x,
+        mouseLocation.y  // mouseLocation.y is already in the correct coordinate system
+    );
+    
+    // Adjust coordinates to keep the window fully on screen
+    // Ensure the window doesn't go off the right edge
+    if (newTopLeftPoint.x + currentFrame.size.width > NSMaxX(screenVisibleFrame)) {
+        newTopLeftPoint.x = NSMaxX(screenVisibleFrame) - currentFrame.size.width;
     }
-
-    if (NSMinY(newFrame) < NSMinY(screenFrame)) {
-        newTopLeftPoint.y = NSMinY(screenFrame) + currentFrame.size.height;
+    
+    // Ensure the window doesn't go off the left edge
+    if (newTopLeftPoint.x < NSMinX(screenVisibleFrame)) {
+        newTopLeftPoint.x = NSMinX(screenVisibleFrame);
     }
-
-    // Ensure the left edge doesn't overflow the screen
-    if (newTopLeftPoint.x < NSMinX(screenFrame)) {
-        newTopLeftPoint.x = NSMinX(screenFrame);
+    
+    // Ensure the window doesn't go off the bottom edge
+    if (newTopLeftPoint.y - currentFrame.size.height < NSMinY(screenVisibleFrame)) {
+        newTopLeftPoint.y = NSMinY(screenVisibleFrame) + currentFrame.size.height;
     }
-
-    // Ensure the top edge doesn't overflow the screen
-    if (newTopLeftPoint.y > NSMaxY(screenFrame)) {
-        newTopLeftPoint.y = NSMaxY(screenFrame);
+    
+    // Ensure the window doesn't go off the top edge
+    if (newTopLeftPoint.y > NSMaxY(screenVisibleFrame)) {
+        newTopLeftPoint.y = NSMaxY(screenVisibleFrame);
     }
-
+    
     // Set the new top-left point to the window
     [nsWindow setFrameTopLeftPoint:newTopLeftPoint];
-
-    _window->set_position({(int)newTopLeftPoint.x, (int)newTopLeftPoint.y});
+    
+    // Update the saucer window position as well
+    // Note: setFrameTopLeftPoint uses top-left coordinates, but set_position might expect bottom-left
+    // Calculate the bottom-left point for set_position
+    NSPoint bottomLeftPoint = NSMakePoint(
+        newTopLeftPoint.x,
+        newTopLeftPoint.y - currentFrame.size.height
+    );
+    _window->set_position({(int)bottomLeftPoint.x, (int)bottomLeftPoint.y});
+    
+    Logger::getInstance().info("AppController::moveWindow: positioned window at top-left ({}, {})", 
+                              (int)newTopLeftPoint.x, (int)newTopLeftPoint.y);
 }
 
 void AppController::resizeWindow(const int& width, const int& height, const bool& animate/* = false*/) {
