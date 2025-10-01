@@ -24,9 +24,8 @@
   "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "scripts": {
-    "serve": "webpack serve --mode development",
-    "build": "NODE_ENV=production webpack --mode production",
-    "build:dev": "webpack --mode development",
+    "build:dev": "vite",
+    "build": "vite build",
     "clean": "rimraf build/Resources",
     "lint": "eslint src/web --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint src/web --ext .js,.jsx,.ts,.tsx --fix",
@@ -44,8 +43,10 @@
     "@ant-design/icons": "^6.0.2",
     "antd": "^5.27.4",
     "classnames": "^2.5.1",
+    "lucide-react": "^0.544.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.55.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",
@@ -53,10 +54,12 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.0",
     "@babel/preset-env": "^7.22.0",
     "@babel/preset-react": "^7.22.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@types/node": "^20.10.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
+    "@vitejs/plugin-react-swc": "^3.10.2",
     "babel-loader": "^9.1.0",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^6.8.0",
@@ -74,11 +77,9 @@
     "sass-loader": "^13.3.0",
     "style-loader": "^3.3.0",
     "ts-loader": "^9.4.0",
-    "typescript": "^5.1.0",
-    "webpack": "^5.88.0",
-    "webpack-cli": "^5.1.0",
-    "webpack-dev-server": "5"
-},
+    "typescript": "^5.9.3",
+    "vite": "6.3.5"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
