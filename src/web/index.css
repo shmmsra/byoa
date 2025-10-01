@@ -588,7 +588,7 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 750px) {
   .assistant-popup {
     width: 90vw;
     height: 80vh;
