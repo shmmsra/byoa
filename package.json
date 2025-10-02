@@ -21,11 +21,11 @@
     "saucer",
     "cpp"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Shivam Mishra",
   "license": "MIT",
   "scripts": {
     "build:dev": "vite",
-    "build": "vite build",
+    "build": "vite build --emptyOutDir",
     "clean": "rimraf build/Resources",
     "lint": "eslint src/web --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint src/web --ext .js,.jsx,.ts,.tsx --fix",

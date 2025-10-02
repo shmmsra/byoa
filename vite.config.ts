@@ -4,7 +4,19 @@ import path from 'path';
 
 export default defineConfig({
   root: './src/web',
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'remove-crossorigin-attributes',
+      transformIndexHtml(html) {
+        // Remove crossorigin, type="module", and CSP attributes for desktop app compatibility
+        return html
+          .replace(/\scrossorigin(?:="[^"]*")?/g, '')
+          .replace(/\stype="module"/g, '')
+          .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/g, '');
+      }
+    }
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src/web'),
@@ -12,7 +24,20 @@ export default defineConfig({
   },
   build: {
     outDir: '../../build/Resources',
+    assetsDir: '',
+    target: 'es2015', // Target older JS for better compatibility
+    minify: false, // Disable minification to help with debugging
+    rollupOptions: {
+      output: {
+        assetFileNames: '[name].[hash].[ext]',
+        chunkFileNames: '[name].[hash].js',
+        entryFileNames: '[name].[hash].js',
+        format: 'iife', // Use IIFE format instead of ES modules
+        manualChunks: undefined // Disable code splitting to avoid module loading issues
+      }
+    }
   },
+  base: './',
   server: {
     port: 3000,
     open: true,
