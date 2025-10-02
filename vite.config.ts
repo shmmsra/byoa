@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+import svgr from 'vite-plugin-svgr';
 import path from 'path';
 
 export default defineConfig(({ command }) => {
@@ -9,6 +10,7 @@ export default defineConfig(({ command }) => {
     root: './src/web',
     plugins: [
       react(),
+      svgr(),
       // Only apply HTML transforms in production build
       ...(!isDev ? [{
         name: 'remove-crossorigin-attributes',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Input, Select, Spin, message } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
-import { AppIcon } from './AppIcon';
+import AppIcon from '../assets/AppIcon.svg?react';
 
 interface AssistantPopupProps {
   clipboardContent: string;
