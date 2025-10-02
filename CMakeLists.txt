@@ -32,6 +32,7 @@ add_executable(ai_assistant MACOSX_BUNDLE
     src/native/source/mac/clipboard.mm
     src/native/source/mac/app-controller.mm
     src/native/source/mac/window-controller.mm
+    src/native/source/mac/menubar-controller.mm
 )
 
 set_property(TARGET ai_assistant PROPERTY CXX_STANDARD 17)

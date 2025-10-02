@@ -5,6 +5,9 @@
 #include <saucer/smartview.hpp>
 #include <saucer/window.hpp>
 
+// Forward declaration to avoid including Objective-C headers in C++ files
+class MenubarController;
+
 class AppController {
 public:
 	// Singleton access method

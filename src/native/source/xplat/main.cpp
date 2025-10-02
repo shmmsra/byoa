@@ -10,7 +10,6 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #else
 int main() {
 #endif
-
     Logger::getInstance().info("Main::start: start");
 
     AppController::getInstance().init();

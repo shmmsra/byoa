@@ -11,8 +11,7 @@
 #include "window-controller.hpp"
 #include "shortcut.hpp"
 #include "clipboard.hpp"
-
-#define SUB_MODULE_NAME UniConst("AppController")
+#include "menubar-controller.hpp"
 
 using namespace std;
 
@@ -169,7 +168,6 @@ AppController& AppController::getInstance() {
 
 void AppController::init() {
     Logger::getInstance().info("AppController::init: start");
-    [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
 //    RequestAccessibilityPermissions();
 }
 
@@ -182,10 +180,10 @@ int AppController::start() {
         _window = saucer::window::create(app).value();
         _window->set_title("AI Assistant");
 #ifdef DEBUG
-        _window->set_size({1500, 900});
+        _window->set_size({1000, 600});
 #else
         _window->set_size({750, 450});
-#endif
+#endif  // DEBUG
         _window->set_decorations(saucer::window::decoration::partial);
         saucer::color bgColor = {255, 255, 255, 100};
         _window->set_background(bgColor);
@@ -279,6 +277,8 @@ int AppController::start() {
     });
 
     auto app = saucer::application::create({.id = "com.byoa.assistant"});
+    MenubarController::getInstance().init();
+
     int status = app->run(start);
     return status;
 }
@@ -287,9 +287,9 @@ void AppController::showWindow() {
     Logger::getInstance().info("AppController::showWindow: start");
     moveWindow();
 
-        // Get the native NSWindow to control its display behavior
-        auto windowNative = _window->native();
-        NSWindow *nsWindow = windowNative.window;
+    // Get the native NSWindow to control its display behavior
+    auto windowNative = _window->native();
+    NSWindow *nsWindow = windowNative.window;
     
     // Animate the fade-in effect
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
