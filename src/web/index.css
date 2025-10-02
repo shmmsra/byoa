@@ -584,7 +584,7 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 750px) {
+@media (max-width: 740px) {
   .popup-content {
     flex-direction: column;
   }

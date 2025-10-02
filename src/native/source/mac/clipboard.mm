@@ -3,6 +3,7 @@
 #import <Cocoa/Cocoa.h>
 #import <AppKit/NSPasteboard.h>
 #import <AppKit/NSImage.h>
+#import <AppKit/AppKit.h>
 
 Clipboard& Clipboard::getInstance() {
     static Clipboard instance;
@@ -77,5 +78,32 @@ std::string Clipboard::getString()
             return std::string([text UTF8String]);
     } else {
         return std::string();
+    }
+}
+
+bool Clipboard::writeText(const std::string& text) {
+    @autoreleasepool {
+        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+        [pasteboard clearContents];
+        NSString *string = [NSString stringWithUTF8String:text.c_str()];
+        return [pasteboard setString:string forType:NSPasteboardTypeString];
+    }
+}
+
+std::string Clipboard::readText() {
+    @autoreleasepool {
+        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+        NSString *string = [pasteboard stringForType:NSPasteboardTypeString];
+        if (string) {
+            return std::string([string UTF8String]);
+        }
+        return std::string();
+    }
+}
+
+void Clipboard::clear() {
+    @autoreleasepool {
+        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+        [pasteboard clearContents];
     }
 }

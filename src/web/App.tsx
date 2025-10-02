@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ConfigProvider, theme } from 'antd';
-import { AssistantPopup } from './components/AssistantPopup';
+import { AssistantPopup } from './components/assistant-popup';
+import { GetClipboardData } from './utils/utility';
 
 export interface LLMConfig {
   id: string;
@@ -34,6 +35,18 @@ export default function App() {
       enabled: true,
     },
   ]);
+
+  useEffect(() => {
+    window.__nativeCallback = (eventName: string, data: string) => {
+      if (eventName === 'on-focus-change' && data === 'true') {
+        GetClipboardData().then(data => {
+          if (data && data[0] && data[0].type === 'text') {
+            setClipboardContent(data[0].data);
+          }
+        });
+      }
+    };
+  }, []);
 
   // Apply theme
   useEffect(() => {

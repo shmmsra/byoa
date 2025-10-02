@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Input, Select, Spin, message } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
-import AppIcon from '../assets/AppIcon.svg?react';
+import AppIcon from '../assets/app-icon.svg?react';
 
 interface AssistantPopupProps {
   clipboardContent: string;
@@ -98,13 +98,25 @@ export function AssistantPopup({
     processWithLLM(customPrompt);
   };
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    message.success('Copied to clipboard');
-    setTimeout(() => {
-      onClose();
-    }, 500);
+  const handleCopy = async (text: string) => {
+    try {
+      // Use our native clipboard API if available, fallback to browser API
+      if (window.saucer?.exposed?.clipboard_writeText) {
+        await window.saucer.exposed.clipboard_writeText(text);
+      } else if (window.byoa?.clipboard?.writeText) {
+        await window.byoa.clipboard.writeText(text);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+      setCopied(true);
+      message.success('Copied to clipboard');
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    } catch (error) {
+      message.error('Failed to copy to clipboard');
+      console.error('Copy failed:', error);
+    }
   };
 
   const handleRegenerate = () => {

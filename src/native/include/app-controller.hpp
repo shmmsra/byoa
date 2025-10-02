@@ -24,6 +24,9 @@ public:
 	void hideWindow();
 	void moveWindow();
 	void resizeWindow(const int& width, const int& height, const bool& animate = false);
+    
+    // Method to call registered JavaScript callback from C++
+    void callNativeCallback(const std::string& eventName, const std::string& data);
 
 private:
 	AppController() = default;
@@ -32,6 +35,7 @@ private:
 	pid_t _focusedAppPId = 0;
     bool _isWindowVisible = false;
 	std::shared_ptr<saucer::window> _window;
+    std::shared_ptr<saucer::smartview<>> _webview;
 
     std::string _getViewURL();
 	void _copyContent();
