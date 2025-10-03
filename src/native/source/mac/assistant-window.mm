@@ -5,7 +5,7 @@
 #include <saucer/modules/stable/webkit.hpp>
 
 #include "assistant-window.hpp"
-#include "settings-window.hpp"
+#include "main-window.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
 
@@ -19,6 +19,7 @@ AssistantWindow& AssistantWindow::getInstance() {
 void AssistantWindow::create(saucer::application* app) {
     // Create and configure the window
     _window = saucer::window::create(app).value();
+
 #ifdef DEBUG
     _window->set_size({1500, 900});
 #else
@@ -30,7 +31,7 @@ void AssistantWindow::create(saucer::application* app) {
     auto windowNative = _window->native();
 
     _webview = std::make_shared<WebviewWrapper>(_window);
-    _webview->init(AppController::getInstance().getViewURL());
+    _webview->init(AppController::getInstance().getViewURL("assistant"));
 
     _window->on<saucer::window::event::focus>([&](bool status) {
         if (status) {
@@ -64,8 +65,6 @@ void AssistantWindow::create(saucer::application* app) {
         }
         return event;
     }];
-    
-    hide();
 }
 
 void AssistantWindow::destroy() {
@@ -116,7 +115,7 @@ void AssistantWindow::hide() {
     
     _window->hide();
 
-    if (!SettingsWindow::getInstance().isVisible()) {
+    if (!MainWindow::getInstance().isVisible()) {
         [[NSApplication sharedApplication] hide:nil];
     }
 }

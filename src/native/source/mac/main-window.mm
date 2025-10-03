@@ -4,21 +4,22 @@
 
 #include <saucer/modules/stable/webkit.hpp>
 
-#include "settings-window.hpp"
+#include "main-window.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
 
 using namespace std;
 
-SettingsWindow& SettingsWindow::getInstance() {
-    static SettingsWindow instance;
+MainWindow& MainWindow::getInstance() {
+    static MainWindow instance;
     return instance;
 }
 
-void SettingsWindow::create(saucer::application* app) {
+void MainWindow::create(saucer::application* app) {
     // Create and configure the window
     _window = saucer::window::create(app).value();
-    _window->set_title("AI Assistant Settings");
+    
+    _window->set_title("Build Your Own Assistant");
 #ifdef DEBUG
     _window->set_size({1500, 900});
 #else
@@ -27,26 +28,24 @@ void SettingsWindow::create(saucer::application* app) {
     auto windowNative = _window->native();
 
     _webview = std::make_shared<WebviewWrapper>(_window);
-    _webview->init(AppController::getInstance().getViewURL("settings"));
+    _webview->init(AppController::getInstance().getViewURL());
 
     // Handle window close event - hide window instead of closing app
     _window->on<saucer::window::event::close>([&](){
         hide();
         return saucer::policy::block; 
     });
-    
-    hide();
 }
 
-void SettingsWindow::destroy() {
+void MainWindow::destroy() {
     _window = nullptr;
 }
 
-bool SettingsWindow::isVisible() {
+bool MainWindow::isVisible() {
     return _isWindowVisible;
 }
 
-void SettingsWindow::show() {
+void MainWindow::show() {
     [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyRegular];
 
     // Get the native NSWindow to control its display behavior
@@ -54,16 +53,13 @@ void SettingsWindow::show() {
     NSWindow *nsWindow = windowNative.window;
     
     _window->show();
-
-    // Show window without bringing app to focus
-    [nsWindow orderFront:nil];  // Use orderFront instead of makeKeyAndOrderFront
-    [nsWindow makeKeyWindow];  // Make it key to receive events but don't activate app
     _isWindowVisible = true;
 
     [[NSApp self] activateIgnoringOtherApps:true];
 }
 
-void SettingsWindow::hide() {
+void MainWindow::hide() {
     _window->hide();
+    _isWindowVisible = false;
     [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
 }

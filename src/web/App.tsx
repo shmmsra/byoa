@@ -75,7 +75,15 @@ function AppContent() {
   return (
     <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
       <div className={`app-container ${isDark ? 'dark' : ''}`}>
-        {workflow === 'settings' ? (
+        {workflow === 'assistant' ? (
+          <AssistantPopup
+            clipboardContent={clipboardContent}
+            onClose={() => {}}
+            selectedLLM={selectedLLM}
+            onLLMChange={setSelectedLLM}
+            availableLLMs={enabledLLMs}
+          />
+        ) : (
           <SettingsDialog
             open={true}
             onOpenChange={() => {}}
@@ -84,15 +92,7 @@ function AppContent() {
             theme={themeMode}
             onThemeChange={setThemeMode}
           />
-        ) : (
-          <AssistantPopup
-            clipboardContent={clipboardContent}
-            onClose={() => {}}
-            selectedLLM={selectedLLM}
-            onLLMChange={setSelectedLLM}
-            availableLLMs={enabledLLMs}
-          />
-        )}
+      )}
       </div>
     </ConfigProvider>
   );

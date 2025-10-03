@@ -4,14 +4,14 @@
 #include <saucer/window.hpp>
 #include "webview-wrapper.hpp"
 
-class SettingsWindow {
+class MainWindow {
 public:
 	// Singleton access method
-	static SettingsWindow& getInstance();
+	static MainWindow& getInstance();
 
     // Delete copy constructor and assignment operator
-    SettingsWindow(const SettingsWindow&) = delete;
-    SettingsWindow& operator=(const SettingsWindow&) = delete;
+    MainWindow(const MainWindow&) = delete;
+    MainWindow& operator=(const MainWindow&) = delete;
 
     void create(saucer::application* app);
     void destroy();
@@ -20,8 +20,8 @@ public:
     void hide();
 
 private:
-	SettingsWindow() = default;
-	~SettingsWindow() = default;
+	MainWindow() = default;
+	~MainWindow() = default;
 
     bool _isWindowVisible = false;
     std::shared_ptr<saucer::window> _window;
