@@ -138,8 +138,6 @@ void MenubarController::createMenu() {
 
 void MenubarController::showSettings() {
     Logger::getInstance().info("MenubarController::showSettings: start");
-
-    AppController::getInstance().hideWindow();
     
     @autoreleasepool {
         // Create settings window if it doesn't exist

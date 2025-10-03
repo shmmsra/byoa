@@ -40,8 +40,9 @@ add_executable(ai_assistant MACOSX_BUNDLE
     src/native/source/mac/shortcut.mm
     src/native/source/mac/clipboard.mm
     src/native/source/mac/app-controller.mm
-    src/native/source/mac/window-controller.mm
     src/native/source/mac/menubar-controller.mm
+    src/native/source/mac/assistant-window.mm
+    src/native/source/mac/settings-window.mm
     src/native/source/xplat/webview-wrapper.cpp
 )
 
