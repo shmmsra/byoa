@@ -4,19 +4,14 @@
 
 #include <saucer/modules/stable/webkit.hpp>
 
-#include "assistant-window.hpp"
-#include "main-window.hpp"
+#include "window-wrapper.hpp"
+#include "webview-wrapper.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
 
 using namespace std;
 
-AssistantWindow& AssistantWindow::getInstance() {
-    static AssistantWindow instance;
-    return instance;
-}
-
-void AssistantWindow::create(saucer::application* app) {
+WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(isPopup) {
     // Create and configure the window
     _window = saucer::window::create(app).value();
 
@@ -25,103 +20,97 @@ void AssistantWindow::create(saucer::application* app) {
 #else
     _window->set_size({750, 450});
 #endif  // DEBUG
-    _window->set_decorations(saucer::window::decoration::partial);
-    saucer::color bgColor = {255, 255, 255, 100};
-    _window->set_background(bgColor);
-    auto windowNative = _window->native();
+    
+    // Handle window close event - hide window instead of closing app
+    _window->on<saucer::window::event::close>([&](){
+        hide();
+        return saucer::policy::block;
+    });
 
     _webview = std::make_shared<WebviewWrapper>(_window);
-    _webview->init(AppController::getInstance().getViewURL("assistant"));
+    _webview->init(_getViewURL(isPopup ? "assistant" : ""));
 
-    _window->on<saucer::window::event::focus>([&](bool status) {
-        if (status) {
-            _isWindowVisible = true;
-            Logger::getInstance().info("AssistantWindow::create: onFocusChange: true");
-            
-            // Call native callback if registered
-            _webview->triggerEvent("on-focus-change", "true");
-        } else {
-            if (!_isWindowVisible) {
-                return;
+    if (_isPopup) {
+        _window->set_decorations(saucer::window::decoration::partial);
+        saucer::color bgColor = {255, 255, 255, 100};
+        _window->set_background(bgColor);
+
+        _window->on<saucer::window::event::focus>([&](bool status) {
+            if (status) {
+                _isWindowVisible = true;            
+                // Call native callback if registered
+                _webview->triggerEvent("on-focus-change", "true");
+            } else {
+                if (!_isWindowVisible) {
+                    return;
+                }
+                hide();
+                _isWindowVisible = false;
+                // Call native callback if registered
+                _webview->triggerEvent("on-focus-change", "false");
+                // Note: Don't hide here as this might fire too aggressively
             }
-            hide();
-            _isWindowVisible = false;
-            Logger::getInstance().info("AssistantWindow::create: onFocusChange: false");
-            
-            // Call native callback if registered
-            _webview->triggerEvent("on-focus-change", "false");
-            // Note: Don't hide here as this might fire too aggressively
-        }
-    });
-    
-    // Set up native escape key handling and focus monitoring
-    NSWindow *nsWindow = windowNative.window;
-    // Add global key event monitoring for escape key when window is active
-    [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^NSEvent *(NSEvent *event) {
-        if (event.window == nsWindow && event.keyCode == 53 && _isWindowVisible) { // Escape key code is 53
-            Logger::getInstance().info("AppController::start: Native escape key pressed, hiding window");
-            hide();
-            return nil; // Consume the event
-        }
-        return event;
-    }];
+        });
+
+        // Set up native escape key handling and focus monitoring
+        auto windowNative = _window->native();
+        NSWindow *nsWindow = windowNative.window;
+        // Add global key event monitoring for escape key when window is active
+        [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^NSEvent *(NSEvent *event) {
+            if (event.window == nsWindow && event.keyCode == 53 && _isWindowVisible) { // Escape key code is 53
+                Logger::getInstance().info("WindowWrapper::WindowWrapper: Native escape key pressed, hiding window");
+                hide();
+                return nil; // Consume the event
+            }
+            return event;
+        }];
+    }
 }
 
-void AssistantWindow::destroy() {
+WindowWrapper::~WindowWrapper() {
     _window = nullptr;
 }
 
-bool AssistantWindow::isVisible() {
+bool WindowWrapper::isVisible() {
     return _isWindowVisible;
 }
 
-void AssistantWindow::show() {
-    Logger::getInstance().info("AssistantWindow::show: start");
-    move();
+void WindowWrapper::show() {
+    Logger::getInstance().info("WindowWrapper::show: start");
+    if (_isPopup) {
+        move();
+    } else {
+        // If not the AssistantPopup then activate the application
+        [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyRegular];
+    }
 
-    // Get the native NSWindow to control its display behavior
-    auto windowNative = _window->native();
-    NSWindow *nsWindow = windowNative.window;
-    
-    // Animate the fade-in effect
-    [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
-        // Set the duration of the fade-in animation (in seconds)
-        context.duration = 0.5; // Adjust this value for slower or faster fade-in
-
-        // Set the timing function for a smooth transition
-        context.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-
-        Logger::getInstance().info("AssistantWindow::show: animation start");
-    } completionHandler:^{
-        
-        // Show window without bringing app to focus
-        [nsWindow orderFront:nil];  // Use orderFront instead of makeKeyAndOrderFront
-        [nsWindow makeKeyWindow];  // Make it key to receive events but don't activate app
-        
-        Logger::getInstance().info("AssistantWindow::show: animation complete");
-    }];
-
+    _window->show();
     [[NSApp self] activateIgnoringOtherApps:true];
     _isWindowVisible = true;
 }
 
-void AssistantWindow::hide() {
+void WindowWrapper::hide() {
     if (!_isWindowVisible) {
         return;
     }
     
-    Logger::getInstance().info("AssistantWindow::hide: start");
+    Logger::getInstance().info("WindowWrapper::hide: start");
     _isWindowVisible = false;
-    
     _window->hide();
 
-    if (!MainWindow::getInstance().isVisible()) {
+    // If the main window is not visible, hide the application to bring the next App into focus
+    if (!AppController::getInstance().getMainWindow()->isVisible()) {
         [[NSApplication sharedApplication] hide:nil];
+    }
+
+    if (!_isPopup) {
+        // If not the Assistant Popup then deactivate the application
+        [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
     }
 }
 
-void AssistantWindow::move() {
-    Logger::getInstance().info("AssistantWindow::move: start");
+void WindowWrapper::move() {
+    Logger::getInstance().info("WindowWrapper::move: start");
 
     // Get the mouse location in global screen coordinates
     NSPoint mouseLocation = [NSEvent mouseLocation];
@@ -189,7 +178,7 @@ void AssistantWindow::move() {
     _window->set_position({(int)bottomLeftPoint.x, (int)bottomLeftPoint.y});
 }
 
-void AssistantWindow::resize(const int& width, const int& height, const bool& animate/* = false*/) {
+void WindowWrapper::resize(const int& width, const int& height, const bool& animate/* = false*/) {
     // Get the current frame of the window
     auto windowNative = _window->native();
     NSWindow *nsWindow = windowNative.window;
@@ -228,4 +217,34 @@ void AssistantWindow::resize(const int& width, const int& height, const bool& an
 
     [nsWindow setFrame:newFrame display:YES];
     _window->set_position({(int)newFrame.origin.x, (int)newFrame.origin.y});
+}
+
+std::string WindowWrapper::_getViewURL(const string& workflow/* = ""*/) {
+    @autoreleasepool {
+#ifdef DEBUG
+        // Debug mode: Try webpack dev server first for hot reloading
+        std::string hostUrl = "http://localhost:3000";
+        if (!workflow.empty()) {
+            hostUrl.append("?workflow=").append(workflow);
+        }
+        Logger::getInstance().info("WindowWrapper::_getViewURL: Debug mode - trying dev server: {}", hostUrl);
+
+        return hostUrl;
+#else
+        // Release mode: Load from bundled Resources folder
+        NSBundle *bundle = [NSBundle mainBundle];
+        NSString *resourcesPath = [bundle resourcePath];
+        NSString *indexPath = [resourcesPath stringByAppendingPathComponent:@"index.html"];
+        
+        if ([[NSFileManager defaultManager] fileExistsAtPath:indexPath]) {
+            std::string hostUrl = "file://" + std::string([indexPath UTF8String]);
+            if (!workflow.empty()) {
+                hostUrl.append("?workflow=").append(workflow);
+            }
+            Logger::getInstance().info("WindowWrapper::_getViewURL: Found HTML in Resources: {}", hostUrl);
+            return hostUrl;
+        }
+#endif
+        return "";
+    }
 }

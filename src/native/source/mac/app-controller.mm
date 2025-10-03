@@ -8,8 +8,7 @@
 
 #include "logger.hpp"
 #include "app-controller.hpp"
-#include "assistant-window.hpp"
-#include "main-window.hpp"
+#include "window-wrapper.hpp"
 #include "shortcut.hpp"
 #include "clipboard.hpp"
 #include "menubar-controller.hpp"
@@ -176,21 +175,18 @@ int AppController::start() {
     Logger::getInstance().info("AppController::start: start");
     auto start = [&](saucer::application* app) -> coco::stray {
         Logger::getInstance().info("AppController::init: create window");
+        [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
         
-        MainWindow::getInstance().create(app);
-        AssistantWindow::getInstance().create(app);
-
-        MainWindow::getInstance().show();
+        _mainWindow = make_shared<WindowWrapper>(app, false);
+        _assistantWindow = make_shared<WindowWrapper>(app, true);
+        _mainWindow->show();
 
         // Keep the app running until it finishes
         co_await app->finish();
-
-        AssistantWindow::getInstance().destroy();
-        MainWindow::getInstance().destroy();
     };
 
     Shortcut::getInstance().registerHandler([&]() {
-        if (!AssistantWindow::getInstance().isVisible()) {
+        if (!_assistantWindow->isVisible()) {
             // Get the frontmost application PID
             NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
             NSRunningApplication *focusedApp = [workspace frontmostApplication];
@@ -205,9 +201,9 @@ int AppController::start() {
                 return;
             }
 
-            AssistantWindow::getInstance().show();
+            _assistantWindow->show();
         } else {
-            AssistantWindow::getInstance().move();
+            _assistantWindow->move();
         }
     });
 
@@ -218,34 +214,12 @@ int AppController::start() {
     return status;
 }
 
-std::string AppController::getViewURL(const string& workflow/* = ""*/) {
-    @autoreleasepool {
-#ifdef DEBUG
-        // Debug mode: Try webpack dev server first for hot reloading
-        std::string hostUrl = "http://localhost:3000";
-        if (!workflow.empty()) {
-            hostUrl.append("?workflow=").append(workflow);
-        }
-        Logger::getInstance().info("AppController::getViewURL: Debug mode - trying dev server: {}", hostUrl);
+std::shared_ptr<WindowWrapper> AppController::getMainWindow() {
+    return _mainWindow;
+}
 
-        return hostUrl;
-#else
-        // Release mode: Load from bundled Resources folder
-        NSBundle *bundle = [NSBundle mainBundle];
-        NSString *resourcesPath = [bundle resourcePath];
-        NSString *indexPath = [resourcesPath stringByAppendingPathComponent:@"index.html"];
-        
-        if ([[NSFileManager defaultManager] fileExistsAtPath:indexPath]) {
-            std::string hostUrl = "file://" + std::string([indexPath UTF8String]);
-            if (!workflow.empty()) {
-                hostUrl.append("?workflow=").append(workflow);
-            }
-            Logger::getInstance().info("AppController::getViewURL: Found HTML in Resources: {}", hostUrl);
-            return hostUrl;
-        }
-#endif
-        return "";
-    }
+std::shared_ptr<WindowWrapper> AppController::getAssistantWindow() {
+    return _assistantWindow;
 }
 
 void AppController::_copyContent() {

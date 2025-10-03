@@ -4,17 +4,10 @@
 #include <saucer/window.hpp>
 #include "webview-wrapper.hpp"
 
-class AssistantWindow {
+class WindowWrapper {
 public:
-	// Singleton access method
-	static AssistantWindow& getInstance();
-
-    // Delete copy constructor and assignment operator
-    AssistantWindow(const AssistantWindow&) = delete;
-    AssistantWindow& operator=(const AssistantWindow&) = delete;
-
-    void create(saucer::application* app);
-    void destroy();
+    WindowWrapper(saucer::application* app, bool isPopup);
+    ~WindowWrapper();
     bool isVisible();
     void show();
     void hide();
@@ -22,10 +15,10 @@ public:
     void resize(const int& width, const int& height, const bool& animate = false);
 
 private:
-	AssistantWindow() = default;
-	~AssistantWindow() = default;
 
+    bool _isPopup = false;
     bool _isWindowVisible = false;
     std::shared_ptr<saucer::window> _window;
     std::shared_ptr<WebviewWrapper> _webview;
+    std::string _getViewURL(const std::string& workflow = "");
 };

@@ -3,7 +3,6 @@
 
 #include "app-controller.hpp"
 #include "menubar-controller.hpp"
-#include "main-window.hpp"
 #include "logger.hpp"
 
 #define SUB_MODULE_NAME "MenubarController"
@@ -139,12 +138,7 @@ void MenubarController::createMenu() {
 
 void MenubarController::showSettings() {
     Logger::getInstance().info("MenubarController::showSettings: start");
-    MainWindow::getInstance().show();
-}
-
-void MenubarController::hideSettings() {
-    Logger::getInstance().info("MenubarController::hideSettings: start");
-    MainWindow::getInstance().hide();
+    AppController::getInstance().getMainWindow()->show();
 }
 
 // Objective-C method implementations

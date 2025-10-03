@@ -31,6 +31,5 @@ private:
     
     void createMenubarIcon();
     void createMenu();
-    void hideSettings();
 #endif
 };

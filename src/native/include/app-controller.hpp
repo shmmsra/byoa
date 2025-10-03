@@ -2,9 +2,7 @@
 
 #include <string>
 #include <memory>
-#include <saucer/smartview.hpp>
-#include <saucer/window.hpp>
-#include "webview-wrapper.hpp"
+#include "window-wrapper.hpp"
 
 // Forward declaration to avoid including Objective-C headers in C++ files
 class MenubarController;
@@ -20,13 +18,16 @@ public:
 
 	void init();
 	int start();
-    std::string getViewURL(const std::string& workflow = "");
+	std::shared_ptr<WindowWrapper> getMainWindow();
+	std::shared_ptr<WindowWrapper> getAssistantWindow();
 
 private:
 	AppController() = default;
 	~AppController() = default;
     
 	pid_t _focusedAppPId = 0;
+	std::shared_ptr<WindowWrapper> _mainWindow;
+	std::shared_ptr<WindowWrapper> _assistantWindow;
 	void _copyContent();
 	void _pasteContent(const std::string& type, const std::string& data);
 };
