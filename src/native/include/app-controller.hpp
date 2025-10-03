@@ -38,7 +38,7 @@ private:
 	std::shared_ptr<saucer::window> _window;
     std::shared_ptr<WebviewWrapper> _webview;
 
-    std::string _getViewURL();
+    std::string _getViewURL(const std::string& workflow = "");
 	void _copyContent();
 	void _pasteContent(const std::string& type, const std::string& data);
 };

@@ -26,7 +26,7 @@ WebviewWrapper::WebviewWrapper(shared_ptr<saucer::window> window) {
     }
 }
 
-bool WebviewWrapper::init(string viewURL) {
+bool WebviewWrapper::init(const string& viewURL) {
     if (!_webview.has_value()) {
         Logger::getInstance().error("WebviewWrapper::init: Webview not initialized");
         return false;

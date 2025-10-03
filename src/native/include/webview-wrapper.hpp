@@ -9,7 +9,7 @@
 class WebviewWrapper {
 public:
     WebviewWrapper(std::shared_ptr<saucer::window> window);
-    bool init(std::string viewURL);
+    bool init(const std::string& viewURL);
     void triggerEvent(const std::string& eventName, const std::string& data);
 
 private:

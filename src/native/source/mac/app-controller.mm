@@ -190,7 +190,7 @@ int AppController::start() {
         auto windowNative = _window->native();
 
         _webview = std::make_shared<WebviewWrapper>(_window);
-        _webview->init(_getViewURL());
+        _webview->init(_getViewURL("settings"));
 
         _window->on<saucer::window::event::focus>([&](bool status) {
             if (status) {
@@ -417,14 +417,17 @@ void AppController::resizeWindow(const int& width, const int& height, const bool
     _window->set_position({(int)newFrame.origin.x, (int)newFrame.origin.y});
 }
 
-std::string AppController::_getViewURL() {
+std::string AppController::_getViewURL(const string& workflow/* = ""*/) {
     @autoreleasepool {
 #ifdef DEBUG
         // Debug mode: Try webpack dev server first for hot reloading
-        std::string devServerUrl = "http://localhost:3000";
-        Logger::getInstance().info("AppController::_getViewURL: Debug mode - trying dev server: {}", devServerUrl);
+        std::string hostUrl = "http://localhost:3000";
+        if (!workflow.empty()) {
+            hostUrl.append("?workflow=").append(workflow);
+        }
+        Logger::getInstance().info("AppController::_getViewURL: Debug mode - trying dev server: {}", hostUrl);
 
-        return devServerUrl;
+        return hostUrl;
 #else
         // Release mode: Load from bundled Resources folder
         NSBundle *bundle = [NSBundle mainBundle];
@@ -432,9 +435,12 @@ std::string AppController::_getViewURL() {
         NSString *indexPath = [resourcesPath stringByAppendingPathComponent:@"index.html"];
         
         if ([[NSFileManager defaultManager] fileExistsAtPath:indexPath]) {
-            std::string indexUrl = "file://" + std::string([indexPath UTF8String]);
-            Logger::getInstance().info("AppController::_getViewURL: Found HTML in Resources: {}", indexUrl);
-            return indexUrl;
+            std::string hostUrl = "file://" + std::string([indexPath UTF8String]);
+            if (!workflow.empty()) {
+                hostUrl.append("?workflow=").append(workflow);
+            }
+            Logger::getInstance().info("AppController::_getViewURL: Found HTML in Resources: {}", hostUrl);
+            return hostUrl;
         }
 #endif
         return "";

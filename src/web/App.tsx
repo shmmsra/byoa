@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, useSearchParams } from 'react-router-dom';
 import { ConfigProvider, theme } from 'antd';
 import { AssistantPopup } from './components/assistant-popup';
+import { SettingsDialog } from './components/settings-dialog';
 import { GetClipboardData } from './utils/utility';
 
 export interface LLMConfig {
@@ -12,8 +14,8 @@ export interface LLMConfig {
   enabled: boolean;
 }
 
-export default function App() {
-  const [showAssistant, setShowAssistant] = useState(true);
+function AppContent() {
+  const [searchParams] = useSearchParams();
   const [clipboardContent, setClipboardContent] = useState('');
   const [themeMode, setThemeMode] = useState<'auto' | 'light' | 'dark'>('auto');
   const [selectedLLM, setSelectedLLM] = useState<'auto' | 'all' | string>('auto');
@@ -36,12 +38,14 @@ export default function App() {
     },
   ]);
 
+  const workflow = searchParams.get('workflow');
+
   useEffect(() => {
     window.__nativeCallback = (eventName: string, data: string) => {
       if (eventName === 'on-focus-change' && data === 'true') {
         GetClipboardData().then(data => {
           if (data && data[0] && data[0].type === 'text') {
-            setClipboardContent(data[0].data);
+            setClipboardContent(data[0].data as string);
           }
         });
       }
@@ -71,17 +75,33 @@ export default function App() {
   return (
     <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
       <div className={`app-container ${isDark ? 'dark' : ''}`}>
-        {/* Assistant Popup Overlay */}
-        {showAssistant && (
-            <AssistantPopup
-              clipboardContent={clipboardContent}
-              onClose={() => setShowAssistant(false)}
-              selectedLLM={selectedLLM}
-              onLLMChange={setSelectedLLM}
-              availableLLMs={enabledLLMs}
-            />
+        {workflow === 'settings' ? (
+          <SettingsDialog
+            open={true}
+            onOpenChange={() => {}}
+            llmConfigs={llmConfigs}
+            onLLMConfigsChange={setLLMConfigs}
+            theme={themeMode}
+            onThemeChange={setThemeMode}
+          />
+        ) : (
+          <AssistantPopup
+            clipboardContent={clipboardContent}
+            onClose={() => {}}
+            selectedLLM={selectedLLM}
+            onLLMChange={setSelectedLLM}
+            availableLLMs={enabledLLMs}
+          />
         )}
       </div>
     </ConfigProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
