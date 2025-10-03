@@ -9,6 +9,7 @@
 #include "logger.hpp"
 #include "app-controller.hpp"
 #include "assistant-window.hpp"
+#include "settings-window.hpp"
 #include "shortcut.hpp"
 #include "clipboard.hpp"
 #include "menubar-controller.hpp"
@@ -177,6 +178,7 @@ int AppController::start() {
         Logger::getInstance().info("AppController::init: create window");
         
         AssistantWindow::getInstance().create(app);
+        SettingsWindow::getInstance().create(app);
         
         // NOTE: It is critical that the activation policy is set after
         // window creation otherwise it doesn't work
@@ -186,6 +188,7 @@ int AppController::start() {
         co_await app->finish();
 
         AssistantWindow::getInstance().destroy();
+        SettingsWindow::getInstance().destroy();
     };
 
     Shortcut::getInstance().registerHandler([&]() {

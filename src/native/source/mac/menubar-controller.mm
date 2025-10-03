@@ -3,6 +3,7 @@
 
 #include "app-controller.hpp"
 #include "menubar-controller.hpp"
+#include "settings-window.hpp"
 #include "logger.hpp"
 
 #define SUB_MODULE_NAME "MenubarController"
@@ -138,48 +139,12 @@ void MenubarController::createMenu() {
 
 void MenubarController::showSettings() {
     Logger::getInstance().info("MenubarController::showSettings: start");
-    
-    @autoreleasepool {
-        // Create settings window if it doesn't exist
-        if (!_settingsWindow) {
-            NSRect windowRect = NSMakeRect(0, 0, 400, 300);
-            _settingsWindow = [[NSWindow alloc] initWithContentRect:windowRect
-                                                           styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable
-                                                             backing:NSBackingStoreBuffered
-                                                               defer:NO];
-            
-            _settingsWindow.title = @"AI Assistant Settings";
-            _settingsWindow.level = NSFloatingWindowLevel;
-            _settingsWindow.collectionBehavior = NSWindowCollectionBehaviorCanJoinAllSpaces;
-            
-            // Center the window on screen
-            [_settingsWindow center];
-            
-            // Add a simple label to the settings window
-            NSTextField* label = [[NSTextField alloc] initWithFrame:NSMakeRect(50, 150, 300, 30)];
-            label.stringValue = @"Settings will be implemented here";
-            label.alignment = NSTextAlignmentCenter;
-            label.bezeled = NO;
-            label.drawsBackground = NO;
-            label.editable = NO;
-            label.selectable = NO;
-            label.font = [NSFont systemFontOfSize:16];
-            
-            [_settingsWindow.contentView addSubview:label];
-        }
-        
-        // Show the settings window
-        [_settingsWindow makeKeyAndOrderFront:nil];
-        [NSApp activateIgnoringOtherApps:YES];
-    }
+    SettingsWindow::getInstance().show();
 }
 
 void MenubarController::hideSettings() {
     Logger::getInstance().info("MenubarController::hideSettings: start");
-    
-    if (_settingsWindow) {
-        [_settingsWindow orderOut:nil];
-    }
+    SettingsWindow::getInstance().hide();
 }
 
 // Objective-C method implementations

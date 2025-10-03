@@ -5,6 +5,7 @@
 #include <saucer/modules/stable/webkit.hpp>
 
 #include "assistant-window.hpp"
+#include "settings-window.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
 
@@ -18,7 +19,6 @@ AssistantWindow& AssistantWindow::getInstance() {
 void AssistantWindow::create(saucer::application* app) {
     // Create and configure the window
     _window = saucer::window::create(app).value();
-    _window->set_title("AI Assistant");
 #ifdef DEBUG
     _window->set_size({1500, 900});
 #else
@@ -64,6 +64,8 @@ void AssistantWindow::create(saucer::application* app) {
         }
         return event;
     }];
+    
+    hide();
 }
 
 void AssistantWindow::destroy() {
@@ -108,12 +110,15 @@ void AssistantWindow::hide() {
     if (!_isWindowVisible) {
         return;
     }
-
+    
     Logger::getInstance().info("AssistantWindow::hide: start");
-    [[NSApplication sharedApplication] hide:nil];
     _isWindowVisible = false;
     
     _window->hide();
+
+    if (!SettingsWindow::getInstance().isVisible()) {
+        [[NSApplication sharedApplication] hide:nil];
+    }
 }
 
 void AssistantWindow::move() {
