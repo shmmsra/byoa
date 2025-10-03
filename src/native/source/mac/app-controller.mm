@@ -180,7 +180,7 @@ int AppController::start() {
         _window = saucer::window::create(app).value();
         _window->set_title("AI Assistant");
 #ifdef DEBUG
-        _window->set_size({1000, 600});
+        _window->set_size({1500, 900});
 #else
         _window->set_size({750, 450});
 #endif  // DEBUG
@@ -188,45 +188,9 @@ int AppController::start() {
         saucer::color bgColor = {255, 255, 255, 100};
         _window->set_background(bgColor);
         auto windowNative = _window->native();
-        
-         // Create smartview
-         _webview = std::make_shared<saucer::smartview<>>(saucer::smartview<>::create({
-             .window = _window
-         }).value());
-         
-         // Set the webview background (this is what you'll actually see)
-         _webview->set_background({0, 0, 0, 100});
 
-#ifdef DEBUG
-         // Enable developer tools for debugging
-         _webview->set_dev_tools(true);
-#endif  // DEBUG
-
-        // Get the appropriate URL to load
-        std::string viewURL = _getViewURL();
-        if (!viewURL.empty()) {
-            // Load local HTML content
-            _webview->set_url(viewURL);
-            Logger::getInstance().info("AppController::start: Loading local HTML: {}", viewURL);
-        } else {
-            Logger::getInstance().info("AppController::start: Loading fallback error page");
-            app->quit();
-        }
-
-        // Expose clipboard functions
-        _webview->expose("clipboard_readText", []() -> coco::task<std::string> {
-            co_return Clipboard::readText();
-        });
-
-        _webview->expose("clipboard_writeText", [](const std::string& text) -> coco::task<bool> {
-            bool success = Clipboard::writeText(text);
-            co_return success;
-        });
-
-        _webview->expose("clipboard_clear", []() -> coco::task<void> {
-            Clipboard::clear();
-            co_return;
-        });
+        _webview = std::make_shared<WebviewWrapper>(_window);
+        _webview->init(_getViewURL());
 
         _window->on<saucer::window::event::focus>([&](bool status) {
             if (status) {
@@ -234,7 +198,7 @@ int AppController::start() {
                 Logger::getInstance().info("AppController::start: onFocusChange: true");
                 
                 // Call native callback if registered
-                callNativeCallback("on-focus-change", "true");
+                _webview->triggerEvent("on-focus-change", "true");
             } else {
                 if (!_isWindowVisible) {
                     return;
@@ -244,7 +208,7 @@ int AppController::start() {
                 Logger::getInstance().info("AppController::start: onFocusChange: false");
                 
                 // Call native callback if registered
-                callNativeCallback("on-focus-change", "false");
+                _webview->triggerEvent("on-focus-change", "false");
                 // Note: Don't hide here as this might fire too aggressively
             }
         });
@@ -506,49 +470,4 @@ void AppController::_pasteContent(const std::string& type, const std::string& da
     PerformCmdShortcut(_focusedAppPId, 9);
 
     _focusedAppPId = 0;
-}
-
-void AppController::callNativeCallback(const std::string& eventName, const std::string& data) {
-    if (!_webview) {
-        Logger::getInstance().warn("AppController::callNativeCallback: Webview not available");
-        return;
-    }
-    
-    Logger::getInstance().info("AppController::callNativeCallback: Calling native callback with event: {}", eventName);
-    
-    // Escape the strings for JavaScript execution
-    auto escapeString = [](const std::string& str) {
-        std::string result;
-        for (char c : str) {
-            if (c == '"' || c == '\'') {
-                result += "\\";
-                result += c;
-            } else if (c == '\\') {
-                result += "\\\\";
-            } else if (c == '\n') {
-                result += "\\n";
-            } else if (c == '\r') {
-                result += "\\r";
-            } else if (c == '\t') {
-                result += "\\t";
-            } else {
-                result += c;
-            }
-        }
-        return result;
-    };
-    
-    std::string escapedEventName = escapeString(eventName);
-    std::string escapedData = escapeString(data);
-    
-    try {
-        // Use saucer's format string with placeholders - don't add quotes since saucer adds them
-        auto result = _webview->evaluate<std::string>(
-            "(function() {{ if (window.__nativeCallback) {{ window.__nativeCallback({}, {}); }} return ''; }})()",
-            escapedEventName, escapedData
-        );
-        // We don't need to wait for the result since it's fire-and-forget
-    } catch (const std::exception& e) {
-        Logger::getInstance().error("AppController::callNativeCallback: Failed to call JavaScript callback: {}", e.what());
-    }
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, Input, Select, Spin, message } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
+import { InvokeGemini } from '../utils/utility';
 
 interface AssistantPopupProps {
   clipboardContent: string;
@@ -52,37 +53,14 @@ export function AssistantPopup({
     setResults([]);
     setCopied(false);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Mock results based on selected LLM mode
-    const mockResults: LLMResult[] = [];
-    
-    if (selectedLLM === 'all') {
-      // Return results from all enabled LLMs
-      enabledLLMs.forEach(llm => {
-        mockResults.push({
-          llmId: llm.id,
-          llmName: llm.name,
-          result: `[${llm.name} Response]\n\n${clipboardContent}\n\n(This is a mock response. In production, this would be the actual LLM response.)`
-        });
-      });
-    } else {
-      // Return result from selected LLM or auto-selected one
-      const llm = selectedLLM === 'auto' 
-        ? enabledLLMs[0] 
-        : enabledLLMs.find(l => l.id === selectedLLM) || enabledLLMs[0];
-      
-      if (llm) {
-        mockResults.push({
-          llmId: llm.id,
-          llmName: llm.name,
-          result: `${clipboardContent}\n\n(This is a mock response. In production, this would be the actual LLM response based on: "${prompt}")`
-        });
-      }
-    }
-
-    setResults(mockResults);
+    let input = `${prompt}\n\n${clipboardContent}`;
+    const result = await InvokeGemini('gemini-2.5-flash-lite', '<api-key>', input);
+    console.log(result);
+    setResults([{
+      llmId: selectedLLM,
+      llmName: selectedLLM,
+      result: result
+    }]);
     setState('completed');
   };
 
@@ -103,8 +81,6 @@ export function AssistantPopup({
       // Use our native clipboard API if available, fallback to browser API
       if (window.saucer?.exposed?.clipboard_writeText) {
         await window.saucer.exposed.clipboard_writeText(text);
-      } else if (window.byoa?.clipboard?.writeText) {
-        await window.byoa.clipboard.writeText(text);
       } else {
         await navigator.clipboard.writeText(text);
       }

@@ -25,14 +25,24 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(saucer)
 
+# Fetch keychain for OS credential storage
+FetchContent_Declare(
+  keychain
+  GIT_REPOSITORY "https://github.com/hrantzsch/keychain"
+  GIT_TAG v1.3.1
+)
+FetchContent_MakeAvailable(keychain)
+
 add_executable(ai_assistant MACOSX_BUNDLE 
     src/native/source/xplat/main.cpp
     src/native/source/xplat/logger.cpp
+    src/native/source/xplat/vault.cpp
     src/native/source/mac/shortcut.mm
     src/native/source/mac/clipboard.mm
     src/native/source/mac/app-controller.mm
     src/native/source/mac/window-controller.mm
     src/native/source/mac/menubar-controller.mm
+    src/native/source/xplat/webview-wrapper.cpp
 )
 
 set_property(TARGET ai_assistant PROPERTY CXX_STANDARD 17)
@@ -44,7 +54,10 @@ target_compile_definitions(ai_assistant PRIVATE
 )
 
 # Add include directories
-target_include_directories(ai_assistant PRIVATE src/native/include)
+target_include_directories(ai_assistant PRIVATE 
+    src/native/include
+    ${keychain_SOURCE_DIR}/include
+)
 
 # Add macOS frameworks for native functionality
 if(APPLE)
@@ -53,7 +66,8 @@ if(APPLE)
     find_library(APPKIT_FRAMEWORK AppKit)
     find_library(QUARTZCORE_FRAMEWORK QuartzCore)
     find_library(WEBKIT_FRAMEWORK WebKit)
-    target_link_libraries(ai_assistant PRIVATE ${COCOA_FRAMEWORK} ${CARBON_FRAMEWORK} ${APPKIT_FRAMEWORK} ${QUARTZCORE_FRAMEWORK} ${WEBKIT_FRAMEWORK})
+    find_library(SECURITY_FRAMEWORK Security)
+    target_link_libraries(ai_assistant PRIVATE ${COCOA_FRAMEWORK} ${CARBON_FRAMEWORK} ${APPKIT_FRAMEWORK} ${QUARTZCORE_FRAMEWORK} ${WEBKIT_FRAMEWORK} ${SECURITY_FRAMEWORK})
     
     # Configure Info.plist variables
     set(EXECUTABLE_NAME "ai_assistant")
@@ -106,4 +120,4 @@ if(APPLE)
 endif()
 
 # Link libraries
-target_link_libraries(ai_assistant PRIVATE saucer::saucer spdlog::spdlog)
+target_link_libraries(ai_assistant PRIVATE saucer::saucer spdlog::spdlog keychain)

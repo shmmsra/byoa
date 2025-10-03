@@ -37,4 +37,51 @@ async function GetClipboardData() {
     return null;
 }
 
-export { GetClipboardData };
+async function InvokeGemini(modelName: string, apiKey: string, prompt: string) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || data;
+}
+  
+async function InvokeOpenAI(modelName: string, apiKey: string, prompt: string) {
+    const endpoint = "https://api.openai.com/v1/chat/completions";
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + apiKey
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || data;
+}
+  
+async function InvokePerplexity(modelName: string, apiKey: string, prompt: string) {
+    const endpoint = "https://api.perplexity.ai/chat/completions";
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + apiKey
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || data;
+}
+
+export { GetClipboardData, InvokeGemini, InvokeOpenAI, InvokePerplexity };
