@@ -1,4 +1,19 @@
 // Type definitions for the BYOA native API and Saucer
+
+interface NetworkFetchOptions {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+}
+
+interface NetworkFetchResponse {
+  status: number;
+  statusText: string;
+  ok: boolean;
+  headers: Record<string, string>;
+  body: string;
+}
+
 declare global {
   interface Window {
     // Saucer API
@@ -11,6 +26,7 @@ declare global {
         vault_setData(key: string, value: string): Promise<boolean>;
         vault_deleteData(key: string): Promise<boolean>;
         vault_hasData(key: string): Promise<boolean>;
+        network_fetch(url: string, options: string): Promise<string>;
       };
     };
     
@@ -19,4 +35,4 @@ declare global {
   }
 }
 
-export {};
+export type { NetworkFetchOptions, NetworkFetchResponse };

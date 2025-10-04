@@ -5,6 +5,7 @@
 #include "logger.hpp"
 #include "clipboard.hpp"
 #include "vault.hpp"
+#include "network.hpp"
 
 using namespace std;
 using namespace byoa;
@@ -19,7 +20,7 @@ WebviewWrapper::WebviewWrapper(shared_ptr<saucer::window> window) {
         // Set the webview background (this is what you'll actually see)
         _webview->set_background({0, 0, 0, 100});
 
-#ifndef DEBUG
+#ifdef DEBUG
         // Enable developer tools for debugging
         // NOTE: There seems to be a bug on enabling the dev tools,
         // it shows up the window automatically with some delay
@@ -68,6 +69,11 @@ bool WebviewWrapper::init(const string& viewURL) {
     _webview->expose("vault_hasData", [](const string& key) -> coco::task<bool> {
         bool success = Vault::hasData(key);
         co_return success;
+    });
+
+    _webview->expose("network_fetch", [](const string& url, const string& options) -> coco::task<string> {
+        string response = Network::fetch(url, options);
+        co_return response;
     });
 
     if (!viewURL.empty()) {

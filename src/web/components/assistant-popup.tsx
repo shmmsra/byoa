@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Button, Input, Select, Spin, message } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
-import { InvokeGemini, InvokeOpenAI, InvokePerplexity } from '../utils/utility';
 import { LLMConfig } from '../app';
+import { InvokeLLM } from '../utils/llm';
 
 interface AssistantPopupProps {
   clipboardContent: string;
@@ -48,28 +48,13 @@ export function AssistantPopup({
   const showAllResults = selectedLLM === 'all';
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
 
-  // Helper function to invoke the appropriate LLM based on provider
+  // Helper function to invoke LLM using the configured baseURL
   const invokeLLM = async (config: LLMConfig, prompt: string): Promise<string> => {
     try {
-      switch (config.provider) {
-        case 'gemini':
-          return await InvokeGemini(config.model, config.apiKey, prompt);
-        case 'openai':
-          return await InvokeOpenAI(config.model, config.apiKey, prompt);
-        case 'anthropic':
-          // TODO: Add InvokeAnthropic function for proper Anthropic API support
-          // For now, using OpenAI format as placeholder
-          return await InvokeOpenAI(config.model, config.apiKey, prompt);
-        case 'perplexity':
-          return await InvokePerplexity(config.model, config.apiKey, prompt);
-        case 'custom':
-          // Default to Gemini for custom provider
-          return await InvokeGemini(config.model, config.apiKey, prompt);
-        default:
-          return await InvokeGemini(config.model, config.apiKey, prompt);
-      }
+      const result = await InvokeLLM(config.baseURL, config.modelName, config.apiKey, prompt);
+      return result || '';
     } catch (error) {
-      console.error(`Error invoking ${config.provider}:`, error);
+      console.error(`Error invoking ${config.name}:`, error);
       throw new Error(`Failed to get response from ${config.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };

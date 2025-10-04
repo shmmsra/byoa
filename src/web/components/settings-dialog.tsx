@@ -5,9 +5,9 @@ import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
 export interface LLMConfig {
   id: string;
   name: string;
-  provider: 'openai' | 'anthropic' | 'custom';
+  modelName: string;
+  baseURL: string;
   apiKey: string;
-  model: string;
   enabled: boolean;
 }
 
@@ -20,37 +20,6 @@ interface SettingsDialogProps {
   onThemeChange: (theme: 'auto' | 'light' | 'dark') => void;
 }
 
-const PROVIDER_OPTIONS = [
-  { value: 'gemini', label: 'Google Gemini (Gemini)' },
-  { value: 'openai', label: 'OpenAI (ChatGPT)' },
-  { value: 'anthropic', label: 'Anthropic (Claude)' },
-  { value: 'perplexity', label: 'Perplexity (Sonar)' },
-  { value: 'custom', label: 'Custom API' },
-];
-
-const MODEL_OPTIONS = {
-  gemini: [
-    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-    { value: 'gemini-2.5', label: 'Gemini 2.5' },
-  ],
-  openai: [
-    { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-    { value: 'gpt-4', label: 'GPT-4' },
-    { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
-  ],
-  anthropic: [
-    { value: 'claude-3-opus', label: 'Claude 3 Opus' },
-    { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
-    { value: 'claude-3-haiku', label: 'Claude 3 Haiku' },
-  ],
-  perplexity: [
-    { value: 'sonar', label: 'Sonar' },
-  ],
-  custom: [
-    { value: 'custom', label: 'Custom Model' },
-  ],
-};
 
 export function SettingsDialog({
   open,
@@ -67,9 +36,9 @@ export function SettingsDialog({
     const newConfig: LLMConfig = {
       id: `llm-${Date.now()}`,
       name: 'New LLM',
-      provider: 'openai',
+      modelName: '',
+      baseURL: '',
       apiKey: '',
-      model: 'gpt-4-turbo',
       enabled: true,
     };
     setEditingConfig(newConfig);
@@ -80,6 +49,16 @@ export function SettingsDialog({
 
     if (!editingConfig.name.trim()) {
       message.error('Please enter a name');
+      return;
+    }
+
+    if (!editingConfig.modelName.trim()) {
+      message.error('Please enter a model name');
+      return;
+    }
+
+    if (!editingConfig.baseURL.trim()) {
+      message.error('Please enter a base URL');
       return;
     }
 
@@ -144,7 +123,7 @@ export function SettingsDialog({
                             <div>
                               <div style={{ fontSize: '0.875rem' }}>{config.name}</div>
                               <div className="llm-config-details">
-                                {PROVIDER_OPTIONS.find(p => p.value === config.provider)?.label} • {config.model}
+                                {config.modelName} • {config.baseURL}
                               </div>
                             </div>
                           </div>
@@ -183,56 +162,44 @@ export function SettingsDialog({
                         {llmConfigs.find(c => c.id === editingConfig.id) ? 'Edit' : 'Add'} LLM Configuration
                       </h3>
 
+                      {/* Row 1: Name and Model Name */}
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <div className="form-field" style={{ flex: 1 }}>
+                          <label>Name</label>
+                          <Input
+                            value={editingConfig.name}
+                            onChange={(e) =>
+                              setEditingConfig({ ...editingConfig, name: e.target.value })
+                            }
+                            placeholder="e.g., My GPT-4"
+                          />
+                        </div>
+
+                        <div className="form-field" style={{ flex: 1 }}>
+                          <label>Model Name</label>
+                          <Input
+                            value={editingConfig.modelName}
+                            onChange={(e) =>
+                              setEditingConfig({ ...editingConfig, modelName: e.target.value })
+                            }
+                            placeholder="e.g., gpt-4-turbo"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Row 2: Base URL */}
                       <div className="form-field">
-                        <label>Name</label>
+                        <label>Base URL</label>
                         <Input
-                          value={editingConfig.name}
+                          value={editingConfig.baseURL}
                           onChange={(e) =>
-                            setEditingConfig({ ...editingConfig, name: e.target.value })
+                            setEditingConfig({ ...editingConfig, baseURL: e.target.value })
                           }
-                          placeholder="e.g., My ChatGPT"
+                          placeholder="e.g., https://api.openai.com/v1/chat/completions"
                         />
                       </div>
 
-                      <div className="form-field">
-                        <label>Provider</label>
-                        <Select
-                          value={editingConfig.provider}
-                          onChange={(value: LLMConfig['provider']) => {
-                            const newModel = MODEL_OPTIONS[value][0].value;
-                            setEditingConfig({ 
-                              ...editingConfig, 
-                              provider: value,
-                              model: newModel
-                            });
-                          }}
-                          style={{ width: '100%' }}
-                        >
-                          {PROVIDER_OPTIONS.map((option) => (
-                            <Select.Option key={option.value} value={option.value}>
-                              {option.label}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </div>
-
-                      <div className="form-field">
-                        <label>Model</label>
-                        <Select
-                          value={editingConfig.model}
-                          onChange={(value) =>
-                            setEditingConfig({ ...editingConfig, model: value })
-                          }
-                          style={{ width: '100%' }}
-                        >
-                          {MODEL_OPTIONS[editingConfig.provider].map((option) => (
-                            <Select.Option key={option.value} value={option.value}>
-                              {option.label}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </div>
-
+                      {/* Row 3: API Key */}
                       <div className="form-field">
                         <label>API Key</label>
                         <div className="api-key-input">

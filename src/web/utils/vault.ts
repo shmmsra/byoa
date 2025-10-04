@@ -101,24 +101,7 @@ export class VaultUtils {
    * Get default LLM configurations (fallback when vault is empty)
    */
   private static getDefaultConfigs(): LLMConfig[] {
-    return [
-      {
-        id: 'llm-1',
-        name: 'ChatGPT',
-        provider: 'openai',
-        apiKey: '', // Empty by default, user needs to configure
-        model: 'gpt-4-turbo',
-        enabled: false, // Disabled by default until API key is set
-      },
-      {
-        id: 'llm-2',
-        name: 'Claude',
-        provider: 'anthropic',
-        apiKey: '', // Empty by default, user needs to configure
-        model: 'claude-3-opus',
-        enabled: false, // Disabled by default until API key is set
-      },
-    ];
+    return [];
   }
 
   /**
