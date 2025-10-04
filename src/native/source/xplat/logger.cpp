@@ -8,13 +8,6 @@ Logger& Logger::getInstance() {
     return instance;
 }
 
-Logger::Logger() {
-    init();
-}
-
-Logger::~Logger() {
-}
-
 void Logger::init() {
     try {
         // This creates a new logger that writes to "ai_assistant.log" in the working directory

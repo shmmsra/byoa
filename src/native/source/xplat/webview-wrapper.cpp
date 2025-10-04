@@ -19,7 +19,7 @@ WebviewWrapper::WebviewWrapper(shared_ptr<saucer::window> window) {
         // Set the webview background (this is what you'll actually see)
         _webview->set_background({0, 0, 0, 100});
 
-#ifdef DEBUG
+#ifndef DEBUG
         // Enable developer tools for debugging
         // NOTE: There seems to be a bug on enabling the dev tools,
         // it shows up the window automatically with some delay

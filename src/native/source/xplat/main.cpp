@@ -1,7 +1,3 @@
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
-
-#include <saucer/smartview.hpp>
 #include "logger.hpp"
 #include "app-controller.hpp"
 
@@ -10,6 +6,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #else
 int main() {
 #endif
+    Logger::getInstance().init();
     Logger::getInstance().info("Main::start: start");
 
     AppController::getInstance().init();

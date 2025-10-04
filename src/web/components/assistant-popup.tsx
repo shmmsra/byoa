@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { Button, Input, Select, Spin, message } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
-import { InvokeGemini } from '../utils/utility';
+import { InvokeGemini, InvokeOpenAI, InvokePerplexity } from '../utils/utility';
+import { LLMConfig } from '../app';
 
 interface AssistantPopupProps {
   clipboardContent: string;
   onClose: () => void;
   selectedLLM: 'auto' | 'all' | string;
   onLLMChange: (llm: 'auto' | 'all' | string) => void;
-  availableLLMs: Array<{ id: string; name: string; enabled: boolean }>;
+  llmConfigs: LLMConfig[];
 }
 
 type ProcessingState = 'idle' | 'processing' | 'completed';
@@ -37,7 +38,7 @@ export function AssistantPopup({
   onClose, 
   selectedLLM,
   onLLMChange,
-  availableLLMs 
+  llmConfigs 
 }: AssistantPopupProps) {
   const [customPrompt, setCustomPrompt] = useState('');
   const [state, setState] = useState<ProcessingState>('idle');
@@ -45,23 +46,96 @@ export function AssistantPopup({
   const [copied, setCopied] = useState(false);
 
   const showAllResults = selectedLLM === 'all';
-  const enabledLLMs = availableLLMs.filter(llm => llm.enabled);
+  const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
 
-  // Simulate LLM API call
+  // Helper function to invoke the appropriate LLM based on provider
+  const invokeLLM = async (config: LLMConfig, prompt: string): Promise<string> => {
+    try {
+      switch (config.provider) {
+        case 'gemini':
+          return await InvokeGemini(config.model, config.apiKey, prompt);
+        case 'openai':
+          return await InvokeOpenAI(config.model, config.apiKey, prompt);
+        case 'anthropic':
+          // TODO: Add InvokeAnthropic function for proper Anthropic API support
+          // For now, using OpenAI format as placeholder
+          return await InvokeOpenAI(config.model, config.apiKey, prompt);
+        case 'perplexity':
+          return await InvokePerplexity(config.model, config.apiKey, prompt);
+        case 'custom':
+          // Default to Gemini for custom provider
+          return await InvokeGemini(config.model, config.apiKey, prompt);
+        default:
+          return await InvokeGemini(config.model, config.apiKey, prompt);
+      }
+    } catch (error) {
+      console.error(`Error invoking ${config.provider}:`, error);
+      throw new Error(`Failed to get response from ${config.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  // Process with selected LLM(s)
   const processWithLLM = async (prompt: string) => {
     setState('processing');
     setResults([]);
     setCopied(false);
 
-    let input = `${prompt}\n\n${clipboardContent}`;
-    const result = await InvokeGemini('gemini-2.5-flash-lite', '<api-key>', input);
-    console.log(result);
-    setResults([{
-      llmId: selectedLLM,
-      llmName: selectedLLM,
-      result: result
-    }]);
-    setState('completed');
+    const input = `${prompt}\n\n${clipboardContent}`;
+    
+    try {
+      if (selectedLLM === 'all') {
+        // Process with all enabled LLMs
+        const promises = enabledLLMs.map(async (config) => {
+          try {
+            const result = await invokeLLM(config, input);
+            return {
+              llmId: config.id,
+              llmName: config.name,
+              result: result
+            };
+          } catch (error) {
+            return {
+              llmId: config.id,
+              llmName: config.name,
+              result: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+          }
+        });
+        
+        const results = await Promise.all(promises);
+        setResults(results);
+      } else {
+        // Process with selected LLM or auto-select first enabled
+        let targetConfig: LLMConfig | undefined;
+        
+        if (selectedLLM === 'auto') {
+          targetConfig = enabledLLMs[0];
+        } else {
+          targetConfig = enabledLLMs.find(config => config.id === selectedLLM);
+        }
+        
+        if (!targetConfig) {
+          throw new Error('No LLM configuration found or enabled');
+        }
+        
+        if (!targetConfig.apiKey || targetConfig.apiKey.trim() === '') {
+          throw new Error(`API key not configured for ${targetConfig.name}`);
+        }
+        
+        const result = await invokeLLM(targetConfig, input);
+        setResults([{
+          llmId: targetConfig.id,
+          llmName: targetConfig.name,
+          result: result
+        }]);
+      }
+      
+      setState('completed');
+    } catch (error) {
+      console.error('Error processing with LLM:', error);
+      message.error(error instanceof Error ? error.message : 'Failed to process request');
+      setState('idle');
+    }
   };
 
   const handleQuickAction = (action: typeof QUICK_ACTIONS[0]) => {

@@ -8,6 +8,7 @@
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
+  opacity: 0.9;
 }
 
 .app-container.dark {
@@ -415,6 +416,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: 16px;
 }
 
 .settings-tabs .ant-tabs-content-holder {

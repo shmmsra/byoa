@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Button, Input, Select, Switch, Tabs, message } from 'antd';
+import { Button, Input, Select, Switch, Tabs, message } from 'antd';
 import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
 
 export interface LLMConfig {
@@ -21,12 +21,19 @@ interface SettingsDialogProps {
 }
 
 const PROVIDER_OPTIONS = [
+  { value: 'gemini', label: 'Google Gemini (Gemini)' },
   { value: 'openai', label: 'OpenAI (ChatGPT)' },
   { value: 'anthropic', label: 'Anthropic (Claude)' },
+  { value: 'perplexity', label: 'Perplexity (Sonar)' },
   { value: 'custom', label: 'Custom API' },
 ];
 
 const MODEL_OPTIONS = {
+  gemini: [
+    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+    { value: 'gemini-2.5', label: 'Gemini 2.5' },
+  ],
   openai: [
     { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
     { value: 'gpt-4', label: 'GPT-4' },
@@ -36,6 +43,9 @@ const MODEL_OPTIONS = {
     { value: 'claude-3-opus', label: 'Claude 3 Opus' },
     { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
     { value: 'claude-3-haiku', label: 'Claude 3 Haiku' },
+  ],
+  perplexity: [
+    { value: 'sonar', label: 'Sonar' },
   ],
   custom: [
     { value: 'custom', label: 'Custom Model' },
@@ -111,17 +121,6 @@ export function SettingsDialog({
   };
 
   return (
-    <Modal
-      title="Settings"
-      open={open}
-      onCancel={() => onOpenChange(false)}
-      footer={null}
-      width={800}
-      className="settings-dialog"
-      styles={{
-        body: { maxHeight: '600px', padding: 0 }
-      }}
-    >
       <Tabs 
         defaultActiveKey="llms" 
         className="settings-tabs"
@@ -302,6 +301,5 @@ export function SettingsDialog({
           }
         ]}
       />
-    </Modal>
   );
 }

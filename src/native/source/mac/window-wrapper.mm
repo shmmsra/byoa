@@ -14,12 +14,21 @@ using namespace std;
 WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(isPopup) {
     // Create and configure the window
     _window = saucer::window::create(app).value();
+    _window->set_title("Build Your Own Assistant");
 
-#ifdef DEBUG
-    _window->set_size({1500, 900});
+    if (_isPopup) {
+#ifndef DEBUG
+        _window->set_size({1500, 900});
 #else
-    _window->set_size({750, 450});
+        _window->set_size({750, 450});
 #endif  // DEBUG
+    } else {
+#ifndef DEBUG
+        _window->set_size({1500, 900});
+#else
+        _window->set_size({1000, 600});
+#endif  // DEBUG
+    }
     
     // Handle window close event - hide window instead of closing app
     _window->on<saucer::window::event::close>([&](){

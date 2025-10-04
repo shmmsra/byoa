@@ -4,11 +4,12 @@ import { ConfigProvider, theme } from 'antd';
 import { AssistantPopup } from './components/assistant-popup';
 import { SettingsDialog } from './components/settings-dialog';
 import { GetClipboardData } from './utils/utility';
+import { VaultUtils } from './utils/vault';
 
 export interface LLMConfig {
   id: string;
   name: string;
-  provider: 'openai' | 'anthropic' | 'custom';
+  provider: 'gemini' | 'openai' | 'anthropic' | 'perplexity' | 'custom';
   apiKey: string;
   model: string;
   enabled: boolean;
@@ -19,26 +20,31 @@ function AppContent() {
   const [clipboardContent, setClipboardContent] = useState('');
   const [themeMode, setThemeMode] = useState<'auto' | 'light' | 'dark'>('auto');
   const [selectedLLM, setSelectedLLM] = useState<'auto' | 'all' | string>('auto');
-  const [llmConfigs, setLLMConfigs] = useState<LLMConfig[]>([
-    {
-      id: 'llm-1',
-      name: 'ChatGPT',
-      provider: 'openai',
-      apiKey: 'sk-mock-key-***',
-      model: 'gpt-4-turbo',
-      enabled: true,
-    },
-    {
-      id: 'llm-2',
-      name: 'Claude',
-      provider: 'anthropic',
-      apiKey: 'sk-ant-mock-key-***',
-      model: 'claude-3-opus',
-      enabled: true,
-    },
-  ]);
+  const [llmConfigs, setLLMConfigs] = useState<LLMConfig[]>([]);
 
   const workflow = searchParams.get('workflow');
+
+  // Load LLM configurations from vault on initialization
+  useEffect(() => {
+    const loadConfigs = async () => {
+      try {
+        const configs = await VaultUtils.loadLLMConfigs();
+        setLLMConfigs(configs);
+        
+        // Log the source of configurations for debugging
+        const hasVaultConfigs = await VaultUtils.hasLLMConfigs();
+        if (hasVaultConfigs) {
+          console.log('Loaded LLM configurations from vault');
+        } else {
+          console.log('Using default LLM configurations (vault is empty)');
+        }
+      } catch (error) {
+        console.error('Failed to load LLM configs:', error);
+      }
+    };
+
+    loadConfigs();
+  }, []);
 
   useEffect(() => {
     window.__nativeCallback = (eventName: string, data: string) => {
@@ -64,11 +70,17 @@ function AppContent() {
     }
   }, [themeMode]);
 
-  const enabledLLMs = llmConfigs.filter(llm => llm.enabled).map(llm => ({
-    id: llm.id,
-    name: llm.name,
-    enabled: llm.enabled,
-  }));
+  // Handle LLM config changes and save to vault
+  const handleLLMConfigsChange = async (newConfigs: LLMConfig[]) => {
+    setLLMConfigs(newConfigs);
+    try {
+      await VaultUtils.saveLLMConfigs(newConfigs);
+    } catch (error) {
+      console.error('Failed to save LLM configs to vault:', error);
+    }
+  };
+
+  const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
 
   const isDark = themeMode === 'dark' || (themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -81,14 +93,14 @@ function AppContent() {
             onClose={() => {}}
             selectedLLM={selectedLLM}
             onLLMChange={setSelectedLLM}
-            availableLLMs={enabledLLMs}
+            llmConfigs={enabledLLMs}
           />
         ) : (
           <SettingsDialog
             open={true}
             onOpenChange={() => {}}
             llmConfigs={llmConfigs}
-            onLLMConfigsChange={setLLMConfigs}
+            onLLMConfigsChange={handleLLMConfigsChange}
             theme={themeMode}
             onThemeChange={setThemeMode}
           />

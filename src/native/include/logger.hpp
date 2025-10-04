@@ -43,8 +43,8 @@ class Logger {
         void info(const std::string& message);
 
     private:
-        Logger();
-        ~Logger();
+        Logger() = default;
+        ~Logger() = default;
         
         std::shared_ptr<spdlog::logger> m_logger;
 };
