@@ -1,5 +1,6 @@
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
+#include <thread>
 
 #include "network.hpp"
 #include "logger.hpp"
@@ -115,12 +116,12 @@ std::string Network::getSystemProxy() {
 #endif
 }
 
-std::string Network::fetch(const std::string& url, const std::string& optionsJson) {
+std::string Network::fetchImpl(const std::string& url, const std::string& optionsJson) {
     try {
-        Logger::getInstance().info("Network::fetch: Fetching URL: {}", url);
+        Logger::getInstance().info("Network::fetchImpl: Fetching URL: {}", url);
         
         FetchOptions options = parseOptions(optionsJson);
-        Logger::getInstance().info("Network::fetch: Method: {}", options.method);
+        Logger::getInstance().info("Network::fetchImpl: Method: {}", options.method);
         
         // Build CPR session
         cpr::Session session;
@@ -129,7 +130,7 @@ std::string Network::fetch(const std::string& url, const std::string& optionsJso
         // Set system proxy if available
         std::string proxyUrl = getSystemProxy();
         if (!proxyUrl.empty()) {
-            Logger::getInstance().info("Network::fetch: Using system proxy: {}", proxyUrl);
+            Logger::getInstance().info("Network::fetchImpl: Using system proxy: {}", proxyUrl);
             session.SetProxies(cpr::Proxies{{"http", proxyUrl}, {"https", proxyUrl}});
         }
         
@@ -137,7 +138,7 @@ std::string Network::fetch(const std::string& url, const std::string& optionsJso
         cpr::Header headers;
         for (const auto& [key, value] : options.headers) {
             headers[key] = value;
-            Logger::getInstance().info("Network::fetch: Header: {} = {}", key, value);
+            Logger::getInstance().info("Network::fetchImpl: Header: {} = {}", key, value);
         }
         if (!headers.empty()) {
             session.SetHeader(headers);
@@ -149,7 +150,7 @@ std::string Network::fetch(const std::string& url, const std::string& optionsJso
         // Set body if present
         if (!options.body.empty()) {
             session.SetBody(cpr::Body{options.body});
-            Logger::getInstance().info("Network::fetch: Body length: {}", options.body.length());
+            Logger::getInstance().info("Network::fetchImpl: Body length: {}", options.body.length());
         }
         
         // Make request based on method
@@ -169,7 +170,7 @@ std::string Network::fetch(const std::string& url, const std::string& optionsJso
         } else if (options.method == "OPTIONS") {
             r = session.Options();
         } else {
-            Logger::getInstance().error("Network::fetch: Unsupported HTTP method: {}", options.method);
+            Logger::getInstance().error("Network::fetchImpl: Unsupported HTTP method: {}", options.method);
             FetchResponse errorResponse;
             errorResponse.status = 400;
             errorResponse.statusText = "Bad Request";
@@ -190,13 +191,13 @@ std::string Network::fetch(const std::string& url, const std::string& optionsJso
             response.headers[key] = value;
         }
         
-        Logger::getInstance().info("Network::fetch: Response status: {}", response.status);
-        Logger::getInstance().info("Network::fetch: Response body length: {}", response.body.length());
+        Logger::getInstance().info("Network::fetchImpl: Response status: {}", response.status);
+        Logger::getInstance().info("Network::fetchImpl: Response body length: {}", response.body.length());
         
         return responseToJson(response);
         
     } catch (const std::exception& e) {
-        Logger::getInstance().error("Network::fetch: Exception: {}", e.what());
+        Logger::getInstance().error("Network::fetchImpl: Exception: {}", e.what());
         
         FetchResponse errorResponse;
         errorResponse.status = 0;
@@ -206,6 +207,32 @@ std::string Network::fetch(const std::string& url, const std::string& optionsJso
         
         return responseToJson(errorResponse);
     }
+}
+
+coco::future<std::string> Network::fetchAsync(const std::string& url, const std::string& options) {
+    // Create a coco::promise that we'll fulfill from a background thread
+    auto promise = coco::promise<std::string>{};
+    auto future = promise.get_future();
+    
+    // Launch the fetch operation on a separate thread
+    std::thread thread{[promise = std::move(promise), url, options]() mutable {
+        // Perform the blocking network request on this background thread
+        std::string result = fetchImpl(url, options);
+        
+        // Set the result - this will resume any coroutine awaiting the future
+        promise.set_value(std::move(result));
+    }};
+    
+    // Detach the thread so it runs independently
+    thread.detach();
+    
+    // Return the future that can be co_awaited without blocking
+    return future;
+}
+
+std::string Network::fetch(const std::string& url, const std::string& options) {
+    // Synchronous wrapper for backward compatibility
+    return fetchImpl(url, options);
 }
 
 } // namespace byoa

@@ -51,6 +51,10 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
 set(CPR_BUILD_TESTS OFF CACHE BOOL "Build CPR tests")
 set(CPR_BUILD_TESTS_SSL OFF CACHE BOOL "Build CPR SSL tests")
 
+# Disable CPR examples and documentation
+set(CPR_BUILD_EXAMPLES OFF CACHE BOOL "Don't build CPR examples")
+set(CPR_BUILD_DOCS OFF CACHE BOOL "Don't build CPR documentation")
+
 # Critical: Disable libpsl which requires meson
 set(CPR_USE_SYSTEM_LIB_PSL OFF CACHE BOOL "Use system libpsl")
 set(CPR_CURL_USE_LIBPSL OFF CACHE BOOL "Use libpsl in curl")

@@ -72,7 +72,10 @@ bool WebviewWrapper::init(const string& viewURL) {
     });
 
     _webview->expose("network_fetch", [](const string& url, const string& options) -> coco::task<string> {
-        string response = Network::fetch(url, options);
+        // co_await the future directly - the function returns a temporary (rvalue) that can be awaited
+        // This suspends the coroutine without blocking the thread
+        // The coroutine will automatically resume when the background thread completes
+        string response = co_await Network::fetchAsync(url, options);
         co_return response;
     });
 

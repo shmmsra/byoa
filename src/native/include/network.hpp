@@ -2,6 +2,8 @@
 
 #include <string>
 #include <map>
+#include <future>
+#include <coco/promise/promise.hpp>
 
 namespace byoa {
 
@@ -34,7 +36,16 @@ public:
     };
 
     /**
-     * @brief Make an HTTP request (fetch-like API)
+     * @brief Make an HTTP request asynchronously (fetch-like API) - returns coco::future
+     * 
+     * @param url The URL to fetch
+     * @param options JSON string containing method, headers, and body
+     * @return coco::future that can be co_awaited without blocking
+     */
+    static coco::future<std::string> fetchAsync(const std::string& url, const std::string& options);
+
+    /**
+     * @brief Make an HTTP request synchronously (fetch-like API)
      * 
      * @param url The URL to fetch
      * @param options JSON string containing method, headers, and body
@@ -43,6 +54,11 @@ public:
     static std::string fetch(const std::string& url, const std::string& options);
 
 private:
+    /**
+     * @brief Internal fetch implementation (synchronous)
+     */
+    static std::string fetchImpl(const std::string& url, const std::string& options);
+
     /**
      * @brief Parse JSON options string to FetchOptions struct
      */
