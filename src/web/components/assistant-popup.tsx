@@ -55,7 +55,7 @@ export function AssistantPopup({
       return result || '';
     } catch (error) {
       console.error(`Error invoking ${config.name}:`, error);
-      throw new Error(`Failed to get response from ${config.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Error in ${config.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -118,7 +118,7 @@ export function AssistantPopup({
       setState('completed');
     } catch (error) {
       console.error('Error processing with LLM:', error);
-      message.error(error instanceof Error ? error.message : 'Failed to process request');
+      message.error(error instanceof Error ? error.message : 'Failed to process request', 8);
       setState('idle');
     }
   };

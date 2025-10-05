@@ -21,8 +21,8 @@ export async function InvokeLLM(baseURL: string, modelName: string, apiKey: stri
         },
         body: JSON.stringify(requestBody)
     };
-    // Remove the trailing slashes from the baseURL
-    const baseURLWithoutTrailingSlashes = baseURL.replace(/\/$/, '');
+    // Remove the trailing slashes and '/chat/completions' from the baseURL
+    const baseURLWithoutTrailingSlashes = baseURL.replace(/\/$/, '').replace(/\/chat\/completions$/, '');
     const llmURL = `${baseURLWithoutTrailingSlashes}/chat/completions`;
 
     try {

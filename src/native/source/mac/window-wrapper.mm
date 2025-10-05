@@ -23,7 +23,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(i
         _window->set_size({750, 450});
 #endif  // DEBUG
     } else {
-#ifndef DEBUG
+#ifdef DEBUG
         _window->set_size({1500, 900});
 #else
         _window->set_size({1000, 600});

@@ -585,6 +585,10 @@
   color: #1890ff;
 }
 
+.ant-message {
+  max-width: 90%;
+}
+
 /* Responsive adjustments */
 @media (max-width: 740px) {
   .popup-content {
