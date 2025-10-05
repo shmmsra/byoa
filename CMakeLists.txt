@@ -82,18 +82,46 @@ if(NOT cpr_POPULATED)
   add_subdirectory(${cpr_SOURCE_DIR} ${cpr_BINARY_DIR})
 endif()
 
-add_executable(ai_assistant MACOSX_BUNDLE 
-    src/native/source/xplat/main.cpp
-    src/native/source/xplat/logger.cpp
-    src/native/source/xplat/vault.cpp
-    src/native/source/xplat/network.cpp
-    src/native/source/mac/shortcut.mm
-    src/native/source/mac/clipboard.mm
-    src/native/source/mac/app-controller.mm
-    src/native/source/mac/menubar-controller.mm
-    src/native/source/mac/window-wrapper.mm
-    src/native/source/xplat/webview-wrapper.cpp
-)
+# Platform-specific source files
+set(PLATFORM_SOURCES "")
+if(APPLE)
+    list(APPEND PLATFORM_SOURCES
+        src/native/source/mac/shortcut.mm
+        src/native/source/mac/clipboard.mm
+        src/native/source/mac/app-controller.mm
+        src/native/source/mac/menubar-controller.mm
+        src/native/source/mac/window-wrapper.mm
+    )
+elseif(WIN32)
+    list(APPEND PLATFORM_SOURCES
+        src/native/source/win/shortcut.cpp
+        src/native/source/win/clipboard.cpp
+        src/native/source/win/app-controller.cpp
+        src/native/source/win/menubar-controller.cpp
+        src/native/source/win/window-wrapper.cpp
+    )
+endif()
+
+# Create executable with appropriate bundle type
+if(APPLE)
+    add_executable(ai_assistant MACOSX_BUNDLE 
+        src/native/source/xplat/main.cpp
+        src/native/source/xplat/logger.cpp
+        src/native/source/xplat/vault.cpp
+        src/native/source/xplat/network.cpp
+        src/native/source/xplat/webview-wrapper.cpp
+        ${PLATFORM_SOURCES}
+    )
+else()
+    add_executable(ai_assistant WIN32
+        src/native/source/xplat/main.cpp
+        src/native/source/xplat/logger.cpp
+        src/native/source/xplat/vault.cpp
+        src/native/source/xplat/network.cpp
+        src/native/source/xplat/webview-wrapper.cpp
+        ${PLATFORM_SOURCES}
+    )
+endif()
 
 set_property(TARGET ai_assistant PROPERTY CXX_STANDARD 17)
 

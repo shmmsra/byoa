@@ -2,7 +2,16 @@
 
 #include <string>
 #include <memory>
+#include <cstdint>
 #include "window-wrapper.hpp"
+
+// Cross-platform process ID type
+#ifdef _WIN32
+using process_id_t = uint32_t;
+#else
+#include <unistd.h>
+using process_id_t = pid_t;
+#endif
 
 // Forward declaration to avoid including Objective-C headers in C++ files
 class MenubarController;
@@ -25,7 +34,7 @@ private:
 	AppController() = default;
 	~AppController() = default;
     
-	pid_t _focusedAppPId = 0;
+	process_id_t _focusedAppPId = 0;
 	std::shared_ptr<WindowWrapper> _mainWindow;
 	std::shared_ptr<WindowWrapper> _assistantWindow;
 	void _copyContent();
