@@ -3,6 +3,16 @@
 #include "window-wrapper.hpp"
 #include "logger.hpp"
 
+// Static map to track WindowWrapper instances for keyboard hook
+#include <unordered_map>
+static std::unordered_map<HWND, WindowWrapper*> g_windowMap;
+
+// Forward declare the stable natives structure for window
+namespace saucer {
+    template<typename T> struct stable_natives;
+    template<> struct stable_natives<window> { HWND hwnd; };
+}
+
 WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup) 
     : _isPopup(isPopup), _isWindowVisible(false) {
     Logger::getInstance().info("WindowWrapper::WindowWrapper: start (Windows)");
@@ -61,6 +71,10 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup)
 
 WindowWrapper::~WindowWrapper() {
     Logger::getInstance().info("WindowWrapper::~WindowWrapper: start");
+    
+    if (_isPopup) {
+        uninstallKeyboardHook();
+    }
 }
 
 void WindowWrapper::show() {
@@ -75,6 +89,9 @@ void WindowWrapper::show() {
             _window->set_decorations(saucer::window::decoration::partial);
             saucer::color bgColor = { 255, 255, 255, 100 };
             _window->set_background(bgColor);
+            
+            // Install keyboard hook for Escape key handling
+            installKeyboardHook();
         }
 #endif  // _WIN32
     }
@@ -85,6 +102,13 @@ void WindowWrapper::hide() {
     if (_window) {
         _window->hide();
         _isWindowVisible = false;
+        
+#ifdef _WIN32
+        if (_isPopup) {
+            // Uninstall keyboard hook when hiding
+            uninstallKeyboardHook();
+        }
+#endif  // _WIN32
     }
 }
 
@@ -105,7 +129,6 @@ bool WindowWrapper::isVisible() {
 }
 
 std::string WindowWrapper::_getViewURL(const std::string& workflow) {
-    return "https://google.com";
 #ifdef DEBUG
     // Debug mode: Try webpack dev server first for hot reloading
     std::string hostUrl = "http://localhost:3000";
@@ -121,3 +144,80 @@ std::string WindowWrapper::_getViewURL(const std::string& workflow) {
     return "";
 #endif
 }
+
+#ifdef _WIN32
+// Keyboard hook procedure for Escape key handling
+LRESULT CALLBACK WindowWrapper::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode == HC_ACTION) {
+        KBDLLHOOKSTRUCT* pKeyboard = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+        
+        // Check for Escape key press (VK_ESCAPE = 0x1B)
+        if (wParam == WM_KEYDOWN && pKeyboard->vkCode == VK_ESCAPE) {
+            // Get the foreground window
+            HWND foregroundWindow = GetForegroundWindow();
+            
+            // Check if this window is in our map
+            auto it = g_windowMap.find(foregroundWindow);
+            if (it != g_windowMap.end()) {
+                WindowWrapper* wrapper = it->second;
+                if (wrapper && wrapper->_isWindowVisible && wrapper->_isPopup) {
+                    Logger::getInstance().info("WindowWrapper: Escape key pressed, hiding window");
+                    wrapper->hide();
+                    return 1; // Consume the event
+                }
+            }
+        }
+    }
+    
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+void WindowWrapper::installKeyboardHook() {
+    if (_keyboardHook) {
+        return; // Already installed
+    }
+    
+    // Get the native window handle
+    auto native_window = _window->native();
+    HWND hwnd = native_window.hwnd;
+    
+    // Add this window to the map
+    g_windowMap[hwnd] = this;
+    
+    // Install a low-level keyboard hook
+    _keyboardHook = SetWindowsHookEx(
+        WH_KEYBOARD_LL,
+        &WindowWrapper::KeyboardHookProc,
+        GetModuleHandle(NULL),
+        0
+    );
+    
+    if (_keyboardHook) {
+        Logger::getInstance().info("WindowWrapper: Keyboard hook installed for Escape key");
+    } else {
+        Logger::getInstance().error("WindowWrapper: Failed to install keyboard hook: {}", GetLastError());
+    }
+}
+
+void WindowWrapper::uninstallKeyboardHook() {
+    if (!_keyboardHook) {
+        return; // Not installed
+    }
+    
+    // Get the native window handle
+    auto native_window = _window->native();
+    HWND hwnd = native_window.hwnd;
+    
+    // Remove from map
+    g_windowMap.erase(hwnd);
+    
+    // Uninstall the hook
+    if (UnhookWindowsHookEx(_keyboardHook)) {
+        Logger::getInstance().info("WindowWrapper: Keyboard hook uninstalled");
+    } else {
+        Logger::getInstance().error("WindowWrapper: Failed to uninstall keyboard hook: {}", GetLastError());
+    }
+    
+    _keyboardHook = nullptr;
+}
+#endif  // _WIN32

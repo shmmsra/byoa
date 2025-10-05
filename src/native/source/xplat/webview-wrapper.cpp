@@ -25,7 +25,7 @@ WebviewWrapper::WebviewWrapper(shared_ptr<saucer::window> window) {
         // NOTE: There seems to be a bug on enabling the dev tools,
         // it shows up the window automatically with some delay
         // even it was hidden earlier.
-        _webview->set_dev_tools(true);
+        // _webview->set_dev_tools(true);
 #endif  // DEBUG
     }
 }
