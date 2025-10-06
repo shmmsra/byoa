@@ -9,6 +9,18 @@
 #include "app-controller.hpp"
 #include "logger.hpp"
 
+#ifdef DEBUG
+#define MAIN_WINDOW_WIDTH 1000
+#define MAIN_WINDOW_HEIGHT 600
+#define ASSISTANT_WINDOW_WIDTH 750
+#define ASSISTANT_WINDOW_HEIGHT 450
+#else
+#define MAIN_WINDOW_WIDTH 1500
+#define MAIN_WINDOW_HEIGHT 900
+#define ASSISTANT_WINDOW_WIDTH 1000
+#define ASSISTANT_WINDOW_HEIGHT 600
+#endif  // DEBUG
+
 using namespace std;
 
 WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(isPopup) {
@@ -17,17 +29,9 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(i
     _window->set_title("Build Your Own Assistant");
 
     if (_isPopup) {
-#ifdef DEBUG
-        _window->set_size({1500, 900});
-#else
-        _window->set_size({750, 450});
-#endif  // DEBUG
+        _window->set_size({ASSISTANT_WINDOW_WIDTH, ASSISTANT_WINDOW_HEIGHT});
     } else {
-#ifdef DEBUG
-        _window->set_size({1500, 900});
-#else
-        _window->set_size({1000, 600});
-#endif  // DEBUG
+        _window->set_size({MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT});
     }
     
     // Handle window close event - hide window instead of closing app

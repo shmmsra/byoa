@@ -3,6 +3,18 @@
 #include "window-wrapper.hpp"
 #include "logger.hpp"
 
+#ifdef DEBUG
+#define MAIN_WINDOW_WIDTH 1000
+#define MAIN_WINDOW_HEIGHT 600
+#define ASSISTANT_WINDOW_WIDTH 750
+#define ASSISTANT_WINDOW_HEIGHT 450
+#else
+#define MAIN_WINDOW_WIDTH 1500
+#define MAIN_WINDOW_HEIGHT 900
+#define ASSISTANT_WINDOW_WIDTH 1000
+#define ASSISTANT_WINDOW_HEIGHT 600
+#endif  // DEBUG
+
 // Static map to track WindowWrapper instances for keyboard hook
 #include <unordered_map>
 static std::unordered_map<HWND, WindowWrapper*> g_windowMap;
@@ -22,19 +34,11 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup)
     _window->set_title("Build Your Own Assistant");
     
     if (_isPopup) {
-#ifdef DEBUG
-        _window->set_size({1500, 900});
-#else
-        _window->set_size({750, 450});
-#endif  // DEBUG
+        _window->set_size({ASSISTANT_WINDOW_WIDTH, ASSISTANT_WINDOW_HEIGHT});
     } else {
-#ifdef DEBUG
-        _window->set_size({1500, 900});
-#else
-        _window->set_size({1000, 600});
-#endif  // DEBUG
+        _window->set_size({MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT});
     }
-    
+
     // Handle window close event - hide window instead of closing app
     _window->on<saucer::window::event::close>([&](){
         hide();
@@ -79,7 +83,30 @@ WindowWrapper::~WindowWrapper() {
 
 void WindowWrapper::show() {
     Logger::getInstance().info("WindowWrapper::show: start");
+
+    if (_isPopup) {
+        move();
+    } else {
+        // If not the AssistantPopup then activate the application
+    }
+
     if (_window) {
+#ifdef _WIN32
+        if (_isPopup) {
+            // Get the native window handle
+            auto native_window = _window->native();
+            HWND hwnd = native_window.hwnd;
+            
+            // Modify window style to hide from taskbar
+            // WS_EX_TOOLWINDOW: Creates a tool window with a smaller title bar
+            // WS_EX_NOACTIVATE: Prevents the window from being activated when clicked
+            LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+            exStyle |= WS_EX_TOOLWINDOW;   // Add tool window style (hides from taskbar)
+            exStyle &= ~WS_EX_APPWINDOW;   // Remove app window style
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle);
+        }
+#endif  // _WIN32
+
         _window->show();
         _isWindowVisible = true;
 
@@ -113,8 +140,55 @@ void WindowWrapper::hide() {
 }
 
 void WindowWrapper::move() {
-    Logger::getInstance().info("WindowWrapper::move: start (Windows stub)");
-    // TODO: Implement Windows-specific window positioning
+    Logger::getInstance().info("WindowWrapper::move: start");
+
+    // Get the current frame of the window
+    auto windowNative = _window->native();
+    HWND windowHwnd = windowNative.hwnd;
+
+    // Get current cursor position
+    POINT cursorPos;
+    GetCursorPos(&cursorPos);
+
+    // Get the current window rect
+    RECT currentRect;
+    GetWindowRect(windowHwnd, &currentRect);
+    int windowWidth = currentRect.right - currentRect.left;
+    int windowHeight = currentRect.bottom - currentRect.top;
+
+    // Get information about the monitor where the cursor is
+    HMONITOR hMonitor = MonitorFromPoint(cursorPos, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+    GetMonitorInfo(hMonitor, &monitorInfo);
+    RECT workArea = monitorInfo.rcWork; // Work area excludes taskbar
+
+    // Calculate new position, ensuring window stays within screen bounds
+    int newX = cursorPos.x;
+    int newY = cursorPos.y;
+
+    // Adjust if window would extend beyond right edge
+    if (newX + windowWidth > workArea.right) {
+        newX = workArea.right - windowWidth;
+    }
+
+    // Adjust if window would extend beyond left edge
+    if (newX < workArea.left) {
+        newX = workArea.left;
+    }
+
+    // Adjust if window would extend beyond bottom edge
+    if (newY + windowHeight > workArea.bottom) {
+        newY = workArea.bottom - windowHeight;
+    }
+
+    // Adjust if window would extend beyond top edge
+    if (newY < workArea.top) {
+        newY = workArea.top;
+    }
+
+    // Move the window to the new position
+    SetWindowPos(windowHwnd, NULL, newX, newY, 0, 0,
+        SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void WindowWrapper::resize(const int& width, const int& height, const bool& animate) {
