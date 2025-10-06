@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Input, Select, Spin, message } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
-import { LLMConfig } from '../app';
+import { LLMConfig, Action } from '../app';
 import { InvokeLLM } from '../utils/llm';
 
 interface AssistantPopupProps {
@@ -11,6 +11,7 @@ interface AssistantPopupProps {
   selectedLLM: 'auto' | 'all' | string;
   onLLMChange: (llm: 'auto' | 'all' | string) => void;
   llmConfigs: LLMConfig[];
+  actions: Action[];
 }
 
 type ProcessingState = 'idle' | 'processing' | 'completed';
@@ -21,24 +22,13 @@ interface LLMResult {
   result: string;
 }
 
-const QUICK_ACTIONS = [
-  { label: 'Fix Grammar', prompt: 'Fix the grammar and spelling in the following text:' },
-  { label: 'Improve Writing', prompt: 'Improve the writing quality of the following text:' },
-  { label: 'Summarize', prompt: 'Summarize the following text:' },
-  { label: 'Translate', prompt: 'Translate the following text to English:' },
-  { label: 'Simplify', prompt: 'Simplify the following text:' },
-  { label: 'Make Longer', prompt: 'Expand and make the following text longer:' },
-  { label: 'Make Shorter', prompt: 'Make the following text more concise:' },
-  { label: 'Convert to Code', prompt: 'Convert the following to code:' },
-  { label: 'Explain Code', prompt: 'Explain what this code does:' },
-];
-
 export function AssistantPopup({ 
   clipboardContent, 
   onClose, 
   selectedLLM,
   onLLMChange,
-  llmConfigs 
+  llmConfigs,
+  actions
 }: AssistantPopupProps) {
   const [customPrompt, setCustomPrompt] = useState('');
   const [state, setState] = useState<ProcessingState>('idle');
@@ -47,6 +37,7 @@ export function AssistantPopup({
 
   const showAllResults = selectedLLM === 'all';
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
+  const enabledActions = actions ? actions.filter(action => action.enabled) : [];
 
   // Helper function to invoke LLM using the configured baseURL
   const invokeLLM = async (config: LLMConfig, prompt: string): Promise<string> => {
@@ -59,13 +50,21 @@ export function AssistantPopup({
     }
   };
 
+  // Helper function to replace {{data}} placeholder
+  const replacePlaceholder = (prompt: string): string => {
+    return prompt.replace(/\{\{data\}\}/g, clipboardContent);
+  };
+
   // Process with selected LLM(s)
   const processWithLLM = async (prompt: string) => {
     setState('processing');
     setResults([]);
     setCopied(false);
 
-    const input = `${prompt}\n\n${clipboardContent}`;
+    // Replace {{data}} placeholder if present, otherwise use old format
+    const input = prompt.includes('{{data}}') 
+      ? replacePlaceholder(prompt)
+      : `${prompt}\n\n${clipboardContent}`;
     
     try {
       if (selectedLLM === 'all') {
@@ -123,7 +122,7 @@ export function AssistantPopup({
     }
   };
 
-  const handleQuickAction = (action: typeof QUICK_ACTIONS[0]) => {
+  const handleQuickAction = (action: Action) => {
     processWithLLM(action.prompt);
   };
 
@@ -199,23 +198,29 @@ export function AssistantPopup({
           {/* Quick Actions */}
           <div className="quick-actions">
             <div className="quick-actions-grid">
-              {QUICK_ACTIONS.map((action) => (
-                <Button
-                  key={action.label}
-                  size="small"
-                  onClick={() => handleQuickAction(action)}
-                  disabled={state === 'processing' || !clipboardContent}
-                  style={{ 
-                    justifyContent: 'flex-start', 
-                    height: '28px', 
-                    fontSize: '0.75rem',
-                    padding: '0 8px',
-                    textAlign: 'left'
-                  }}
-                >
-                  {action.label}
-                </Button>
-              ))}
+              {enabledActions.length > 0 ? (
+                enabledActions.map((action) => (
+                  <Button
+                    key={action.id}
+                    size="small"
+                    onClick={() => handleQuickAction(action)}
+                    disabled={state === 'processing' || !clipboardContent}
+                    style={{ 
+                      justifyContent: 'flex-start', 
+                      height: '28px', 
+                      fontSize: '0.75rem',
+                      padding: '0 8px',
+                      textAlign: 'left'
+                    }}
+                  >
+                    {action.label}
+                  </Button>
+                ))
+              ) : (
+                <div style={{ fontSize: '0.75rem', color: '#8c8c8c', padding: '8px' }}>
+                  No actions available. Configure actions in Settings.
+                </div>
+              )}
             </div>
           </div>
 

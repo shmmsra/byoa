@@ -1,21 +1,15 @@
 import { useState } from 'react';
 import { Button, Input, Select, Switch, Tabs, message } from 'antd';
 import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
-
-export interface LLMConfig {
-  id: string;
-  name: string;
-  modelName: string;
-  baseURL: string;
-  apiKey: string;
-  enabled: boolean;
-}
+import { Action, LLMConfig } from '../app';
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   llmConfigs: LLMConfig[];
   onLLMConfigsChange: (configs: LLMConfig[]) => void;
+  actions: Action[];
+  onActionsChange: (actions: Action[]) => void;
   theme: 'auto' | 'light' | 'dark';
   onThemeChange: (theme: 'auto' | 'light' | 'dark') => void;
 }
@@ -26,10 +20,13 @@ export function SettingsDialog({
   onOpenChange,
   llmConfigs,
   onLLMConfigsChange,
+  actions,
+  onActionsChange,
   theme,
   onThemeChange,
 }: SettingsDialogProps) {
   const [editingConfig, setEditingConfig] = useState<LLMConfig | null>(null);
+  const [editingAction, setEditingAction] = useState<Action | null>(null);
   const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
 
   const handleAddNew = () => {
@@ -97,6 +94,60 @@ export function SettingsDialog({
 
   const toggleShowApiKey = (id: string) => {
     setShowApiKey(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Action handlers
+  const handleAddNewAction = () => {
+    const newAction: Action = {
+      id: `action-${Date.now()}`,
+      label: 'New Action',
+      prompt: '',
+      enabled: true,
+    };
+    setEditingAction(newAction);
+  };
+
+  const handleSaveAction = () => {
+    if (!editingAction) return;
+
+    if (!editingAction.label.trim()) {
+      message.error('Please enter a label');
+      return;
+    }
+
+    if (!editingAction.prompt.trim()) {
+      message.error('Please enter a prompt');
+      return;
+    }
+
+    const existingIndex = actions ? actions.findIndex(a => a.id === editingAction.id) : -1;
+    let updatedActions;
+
+    if (existingIndex >= 0) {
+      updatedActions = [...(actions || [])];
+      updatedActions[existingIndex] = editingAction;
+    } else {
+      updatedActions = [...(actions || []), editingAction];
+    }
+
+    onActionsChange(updatedActions);
+    setEditingAction(null);
+    message.success('Action saved');
+  };
+
+  const handleDeleteAction = (id: string) => {
+    if (!actions) return;
+    const updatedActions = actions.filter(a => a.id !== id);
+    onActionsChange(updatedActions);
+    message.success('Action removed');
+  };
+
+  const handleToggleActionEnabled = (id: string) => {
+    if (!actions) return;
+    const updatedActions = actions.map(a =>
+      a.id === id ? { ...a, enabled: !a.enabled } : a
+    );
+    onActionsChange(updatedActions);
   };
 
   return (
@@ -232,6 +283,115 @@ export function SettingsDialog({
                         </Button>
                         <Button
                           onClick={() => setEditingConfig(null)}
+                          style={{ flex: 1 }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          },
+          {
+            key: 'actions',
+            label: 'Actions',
+            children: (
+              <div style={{ padding: '16px 24px', height: '100%', overflowY: 'auto' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  {/* Existing Actions */}
+                  <div style={{ marginBottom: '16px' }}>
+                    {actions && actions.length > 0 ? (
+                      actions.map((action) => (
+                        <div key={action.id} className="llm-config-item">
+                          <div className="llm-config-header">
+                            <div className="llm-config-info">
+                              <Switch
+                                checked={action.enabled}
+                                onChange={() => handleToggleActionEnabled(action.id)}
+                              />
+                              <div>
+                                <div style={{ fontSize: '0.875rem' }}>{action.label}</div>
+                                <div className="llm-config-details">
+                                  {action.prompt.length > 60 ? action.prompt.substring(0, 60) + '...' : action.prompt}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="llm-config-actions">
+                              <Button
+                                size="small"
+                                onClick={() => setEditingAction(action)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="small"
+                                danger
+                                icon={<Trash2 size={16} />}
+                                onClick={() => handleDeleteAction(action.id)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ fontSize: '0.875rem', color: '#8c8c8c', padding: '12px', textAlign: 'center' }}>
+                        No actions configured yet. Click "Add New Action" to create one.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Add New Button */}
+                  <Button
+                    onClick={handleAddNewAction}
+                    style={{ width: '100%' }}
+                    icon={<Plus size={16} />}
+                  >
+                    Add New Action
+                  </Button>
+
+                  {/* Edit Form */}
+                  {editingAction && (
+                    <div className="edit-form">
+                      <h3 className="edit-form-title">
+                        {actions && actions.find(a => a.id === editingAction.id) ? 'Edit' : 'Add'} Action
+                      </h3>
+
+                      {/* Label */}
+                      <div className="form-field">
+                        <label>Label</label>
+                        <Input
+                          value={editingAction.label}
+                          onChange={(e) =>
+                            setEditingAction({ ...editingAction, label: e.target.value })
+                          }
+                          placeholder="e.g., Fix Grammar"
+                        />
+                      </div>
+
+                      {/* Prompt */}
+                      <div className="form-field">
+                        <label>Prompt</label>
+                        <Input.TextArea
+                          value={editingAction.prompt}
+                          onChange={(e) =>
+                            setEditingAction({ ...editingAction, prompt: e.target.value })
+                          }
+                          placeholder="e.g., Fix the grammar in: {{data}}"
+                          rows={6}
+                        />
+                        <p style={{ fontSize: '0.75rem', color: '#8c8c8c', marginTop: '4px' }}>
+                          Use <code>{'{{data}}'}</code> to insert the clipboard content
+                        </p>
+                      </div>
+
+                      <div className="form-actions">
+                        <Button onClick={handleSaveAction} type="primary" style={{ flex: 1 }}>
+                          Save
+                        </Button>
+                        <Button
+                          onClick={() => setEditingAction(null)}
                           style={{ flex: 1 }}
                         >
                           Cancel

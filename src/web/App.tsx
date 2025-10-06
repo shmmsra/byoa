@@ -9,9 +9,16 @@ import { VaultUtils } from './utils/vault';
 export interface LLMConfig {
   id: string;
   name: string;
-  provider: 'gemini' | 'openai' | 'anthropic' | 'perplexity' | 'custom';
+  modelName: string;
+  baseURL: string;
   apiKey: string;
-  model: string;
+  enabled: boolean;
+}
+
+export interface Action {
+  id: string;
+  label: string;
+  prompt: string;
   enabled: boolean;
 }
 
@@ -21,10 +28,11 @@ function AppContent() {
   const [themeMode, setThemeMode] = useState<'auto' | 'light' | 'dark'>('auto');
   const [selectedLLM, setSelectedLLM] = useState<'auto' | 'all' | string>('auto');
   const [llmConfigs, setLLMConfigs] = useState<LLMConfig[]>([]);
+  const [actions, setActions] = useState<Action[]>([]);
 
   const workflow = searchParams.get('workflow');
 
-  // Load LLM configurations from vault on initialization
+  // Load LLM configurations and actions from vault on initialization
   useEffect(() => {
     const loadConfigs = async () => {
       try {
@@ -43,7 +51,32 @@ function AppContent() {
       }
     };
 
+    const loadActions = async () => {
+      try {
+        const hasVaultActions = await VaultUtils.hasActions();
+        const loadedActions = await VaultUtils.loadActions();
+        
+        console.log('Loaded actions:', loadedActions.length, 'actions');
+        setActions(loadedActions);
+        
+        // If no actions in vault, save the default ones
+        if (!hasVaultActions && loadedActions.length > 0) {
+          console.log('Saving default actions to vault...');
+          await VaultUtils.saveActions(loadedActions);
+        }
+        
+        if (hasVaultActions) {
+          console.log('Loaded actions from vault');
+        } else {
+          console.log('Using default actions (vault is empty)');
+        }
+      } catch (error) {
+        console.error('Failed to load actions:', error);
+      }
+    };
+
     loadConfigs();
+    loadActions();
   }, []);
 
   useEffect(() => {
@@ -80,6 +113,16 @@ function AppContent() {
     }
   };
 
+  // Handle actions changes and save to vault
+  const handleActionsChange = async (newActions: Action[]) => {
+    setActions(newActions);
+    try {
+      await VaultUtils.saveActions(newActions);
+    } catch (error) {
+      console.error('Failed to save actions to vault:', error);
+    }
+  };
+
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
 
   const isDark = themeMode === 'dark' || (themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -94,6 +137,7 @@ function AppContent() {
             selectedLLM={selectedLLM}
             onLLMChange={setSelectedLLM}
             llmConfigs={enabledLLMs}
+            actions={actions}
           />
         ) : (
           <SettingsDialog
@@ -101,6 +145,8 @@ function AppContent() {
             onOpenChange={() => {}}
             llmConfigs={llmConfigs}
             onLLMConfigsChange={handleLLMConfigsChange}
+            actions={actions}
+            onActionsChange={handleActionsChange}
             theme={themeMode}
             onThemeChange={setThemeMode}
           />
