@@ -112,6 +112,30 @@ void WindowWrapper::show() {
 
 #ifdef _WIN32
         if (_isPopup) {
+            // Get the native window handle
+            auto native_window = _window->native();
+            HWND hwnd = native_window.hwnd;
+            
+            // Bring window to the front and activate it
+            // HWND_TOPMOST makes it stay on top of all other windows
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, 
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+            
+            // Optionally, if you don't want it to be always on top (topmost),
+            // you can change it back to HWND_TOP after bringing it to front
+            // This makes it appear on top but allows other windows to cover it later
+            SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, 
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+            
+            // Force the window to be the foreground window
+            SetForegroundWindow(hwnd);
+            
+            // Ensure the window is activated
+            SetActiveWindow(hwnd);
+            
+            // Set focus to the window
+            SetFocus(hwnd);
+            
             // Set decorations BEFORE initializing webview
             _window->set_decorations(saucer::window::decoration::partial);
             saucer::color bgColor = { 255, 255, 255, 100 };

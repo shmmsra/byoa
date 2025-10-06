@@ -7,6 +7,11 @@
 #import <Cocoa/Cocoa.h>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#include <shellapi.h>
+#endif
+
 class MenubarController {
 public:
     // Singleton access method
@@ -31,5 +36,18 @@ private:
     
     void createMenubarIcon();
     void createMenu();
+#endif
+
+#ifdef _WIN32
+    NOTIFYICONDATAW _notifyIconData;
+    HWND _hiddenWindow;
+    HMENU _menu;
+    bool _iconAdded;
+    
+    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void createTrayIcon();
+    void createMenu();
+    void showContextMenu();
+    HICON createFallbackIcon();
 #endif
 };

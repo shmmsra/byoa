@@ -214,6 +214,12 @@ int AppController::start() {
     return status;
 }
 
+int AppController::stop() {
+    Logger::getInstance().info("AppController::stop: start");
+    [NSApp terminate:nil];
+    return 0;
+}
+
 std::shared_ptr<WindowWrapper> AppController::getMainWindow() {
     return _mainWindow;
 }

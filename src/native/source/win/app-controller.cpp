@@ -6,6 +6,7 @@
 #include "window-wrapper.hpp"
 #include "shortcut.hpp"
 #include "clipboard.hpp"
+#include "menubar-controller.hpp"
 
 using namespace std;
 
@@ -24,13 +25,14 @@ int AppController::start() {
     
     auto start = [&](saucer::application* app) -> coco::stray {
         Logger::getInstance().info("AppController::init: create window");
+        _app = app;
         
-        _mainWindow = make_shared<WindowWrapper>(app, false);
-        _assistantWindow = make_shared<WindowWrapper>(app, true);
+        _mainWindow = make_shared<WindowWrapper>(_app, false);
+        _assistantWindow = make_shared<WindowWrapper>(_app, true);
         _mainWindow->show();
 
         // Keep the app running until it finishes
-        co_await app->finish();
+        co_await _app->finish();
     };
 
     Shortcut::getInstance().registerHandler([&]() {
@@ -53,9 +55,16 @@ int AppController::start() {
     });
 
     auto app = saucer::application::create({.id = "com.byoa.assistant"});
+    MenubarController::getInstance().init();
     
     int status = app->run(start);
     return status;
+}
+
+int AppController::stop() {
+    Logger::getInstance().info("AppController::stop: start");
+    _app->quit();
+    return 0;
 }
 
 std::shared_ptr<WindowWrapper> AppController::getMainWindow() {

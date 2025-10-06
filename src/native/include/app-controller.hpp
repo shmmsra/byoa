@@ -27,6 +27,7 @@ public:
 
 	void init();
 	int start();
+	int stop();
 	std::shared_ptr<WindowWrapper> getMainWindow();
 	std::shared_ptr<WindowWrapper> getAssistantWindow();
 
@@ -35,6 +36,7 @@ private:
 	~AppController() = default;
     
 	process_id_t _focusedAppPId = 0;
+	saucer::application* _app;
 	std::shared_ptr<WindowWrapper> _mainWindow;
 	std::shared_ptr<WindowWrapper> _assistantWindow;
 	void _copyContent();
