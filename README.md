@@ -1,214 +1,337 @@
-# Desktop Assistant
+# BYOA (Build Your Own AI) Assistant
 
-A cross-platform desktop assistant application with AI-powered features for image processing, text editing, and workflow automation.
+A native macOS desktop assistant application that enables you to use your own AI models for intelligent text processing and clipboard automation. Built with modern web technologies and native C++ for optimal performance.
 
 ## Features
 
-- **AI Image Processing**: Advanced image manipulation including background removal, image generation, and image expansion
-- **Smart Text Processing**: Grammar correction, text generation, and content expansion
-- **Cross-platform Support**: Works on Windows, macOS, and Linux
-- **Modern Web UI**: React-based frontend with responsive design
-- **Native Performance**: C++ backend for optimal performance
-- **Clipboard Integration**: Seamless integration with system clipboard
-- **Workflow Automation**: Streamlined editing workflows for productivity
+- **Multi-LLM Support**: Configure and use multiple AI models simultaneously (OpenAI, Claude, local models, etc.)
+- **Smart Text Processing**: Process clipboard content with AI-powered actions (grammar correction, translation, summarization, etc.)
+- **Custom Actions**: Create and configure your own quick actions with custom prompts
+- **Clipboard Integration**: Seamless integration with macOS clipboard for instant text processing
+- **Native Performance**: C++23 backend with Saucer webview for optimal performance
+- **Modern Web UI**: React 18 with TypeScript, Ant Design, and Vite
+- **Secure Credential Storage**: Uses macOS Keychain for secure API key storage
+- **System Menubar Integration**: Quick access from the macOS menu bar
+- **Theme Support**: Light, dark, and auto themes
 
 ## Architecture
 
 This application consists of two main components:
 
-### Native Backend (`/native`)
-- **Language**: C++17
-- **Platforms**: Windows, macOS, Linux
-- **Build System**: CMake
+### Native Backend (`src/native`)
+- **Language**: C++23
+- **Platform**: macOS (13.3+)
+- **Build System**: CMake 3.16+
+- **Key Libraries**:
+  - [Saucer](https://github.com/saucer/saucer) - Modern C++ webview wrapper
+  - [spdlog](https://github.com/gabime/spdlog) - Fast C++ logging library
+  - [keychain](https://github.com/hrantzsch/keychain) - Secure credential storage
+  - [nlohmann/json](https://github.com/nlohmann/json) - JSON parsing
+  - [CPR](https://github.com/libcpr/cpr) - HTTP requests
 - **Key Components**:
-  - Window management and UI hosting
+  - Application and menubar controller
+  - Window management and webview hosting
   - System integration (clipboard, shortcuts)
-  - Message handling between native and web layers
-  - Application context and preferences
+  - Secure vault for API keys and configuration
+  - HTTP client for LLM API requests
 
-### Frontend (`/frontend`)
+### Web Frontend (`src/web`)
 - **Framework**: React 18
-- **Language**: JavaScript/JSX
-- **Build Tool**: Webpack 5
-- **Styling**: SCSS with CSS Modules
+- **Language**: TypeScript
+- **Build Tool**: Vite 6.3
+- **UI Library**: Ant Design 5
 - **Key Components**:
-  - AI-powered image and text processing components
-  - Modern carousel and preview interfaces
-  - Responsive assistant interface
-  - Real-time communication with native backend
+  - Assistant popup for AI interactions
+  - Settings dialog for LLM and action configuration
+  - Clipboard data processing
+  - Real-time communication with native backend via Saucer bridge
 
 ## Getting Started
 
 ### Prerequisites
 
+- **macOS** 13.3 (Ventura) or later
 - **Node.js** >= 16.0.0
-- **npm** >= 8.0.0
+- **npm** or **yarn**
 - **CMake** >= 3.16
-- **C++17 compatible compiler**
-  - Windows: Visual Studio 2019 or later
-  - macOS: Xcode 12 or later
-  - Linux: GCC 9+ or Clang 10+
-
-### Platform-specific Dependencies
-
-**macOS:**
-```bash
-# No additional dependencies required
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt-get install build-essential cmake
-sudo apt-get install libgtk-3-dev libwebkit2gtk-4.0-dev
-```
-
-**Windows:**
-```bash
-# Install Visual Studio with C++ support
-# CMake and Git should be in PATH
-```
+- **Xcode Command Line Tools** (includes C++23 compiler)
+  ```bash
+  xcode-select --install
+  ```
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/desktop-assistant.git
-   cd desktop-assistant
+   git clone https://github.com/shmmsra/byoa.git
+   cd byoa
    ```
 
 2. **Install JavaScript dependencies**
    ```bash
+   yarn install
+   # or
    npm install
    ```
 
-3. **Build the frontend**
+3. **Build the web frontend**
    ```bash
+   yarn build
+   # or
    npm run build
    ```
 
-4. **Configure and build the native backend**
+4. **Configure and build the native application**
    ```bash
+   yarn cmake:configure
+   yarn cmake:build
+   # or
    npm run cmake:configure
    npm run cmake:build
    ```
 
-5. **Build everything**
-   ```bash
-   npm run build:all
+5. **Run the application**
+   
+   The built application will be located at:
    ```
+   build/Debug/ai_assistant.app
+   ```
+   
+   You can open it from Finder or via command line:
+   ```bash
+   open build/Debug/ai_assistant.app
+   ```
+
+### First-Time Setup
+
+1. **Launch the application** - A menubar icon will appear
+2. **Configure LLM Settings** - Click the menubar icon and select "Settings"
+3. **Add AI Model Configuration**:
+   - Click "Add LLM Config"
+   - Enter a name (e.g., "OpenAI GPT-4")
+   - Enter the model name (e.g., "gpt-4")
+   - Enter the base URL (e.g., "https://api.openai.com/v1")
+   - Enter your API key (stored securely in macOS Keychain)
+   - Enable the configuration
+4. **Configure Quick Actions** - Customize or add actions in the Actions tab
+5. **Set Keyboard Shortcut** - Configure global shortcut to trigger the assistant
 
 ## Development
 
 ### Frontend Development
 
-Start the development server with hot reloading:
+Start the Vite development server with hot reloading:
 ```bash
-npm start
+yarn dev
 # or
 npm run dev
 ```
 
+This will start a development server at `http://localhost:3000` where you can preview the web UI independently.
+
 ### Native Development
 
-Configure and build the C++ backend:
+#### Building Debug Version
 ```bash
-npm run cmake:configure
-npm run cmake:build
+yarn cmake:configure
+yarn cmake:debug
 ```
 
-For debugging, you can build in debug mode:
+#### Building Release Version
 ```bash
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
+yarn cmake:configure
+yarn cmake:release
+```
+
+#### Cleaning Build
+```bash
+yarn cmake:clean
+# To completely rebuild
+rm -rf build
+yarn cmake:configure
+yarn cmake:build
 ```
 
 ### Code Quality
 
-Run linting and formatting:
+Lint TypeScript/React code:
 ```bash
-npm run lint
-npm run lint:fix
-npm run format
+yarn lint
+yarn lint:fix
 ```
 
-Run tests:
+Format code:
 ```bash
-npm test
-npm run test:coverage
+yarn format
 ```
 
 ## Project Structure
 
 ```
-├── native/                 # C++ native code
-│   ├── include/            # Header files
-│   │   ├── xplat/         # Cross-platform headers
-│   │   └── mac/           # macOS-specific headers
-│   ├── source/            # Implementation files
-│   │   ├── xplat/         # Cross-platform code
-│   │   ├── mac/           # macOS-specific code
-│   │   └── win/           # Windows-specific code
-│   └── resource/          # Platform resources
-├── frontend/              # React frontend
-│   ├── components/        # React components
-│   ├── stores/           # State management
-│   ├── styles/           # SCSS stylesheets
-│   └── utils/            # Utility functions
-├── CMakeLists.txt        # CMake configuration
-├── webpack.config.js     # Webpack configuration
-├── package.json          # Node.js dependencies
-└── README.md            # This file
+├── src/
+│   ├── native/              # C++ native backend
+│   │   ├── include/         # Header files
+│   │   │   ├── app-controller.hpp
+│   │   │   ├── menubar-controller.hpp
+│   │   │   ├── window-wrapper.hpp
+│   │   │   ├── webview-wrapper.hpp
+│   │   │   ├── clipboard.hpp
+│   │   │   ├── shortcut.hpp
+│   │   │   ├── vault.hpp
+│   │   │   ├── network.hpp
+│   │   │   └── logger.hpp
+│   │   ├── source/          # Implementation files
+│   │   │   ├── xplat/       # Cross-platform code
+│   │   │   ├── mac/         # macOS-specific code (.mm)
+│   │   │   └── win/         # Windows-specific code (.cpp)
+│   │   └── resource/        # Platform resources
+│   │       └── mac/         # macOS resources (icons, plist)
+│   └── web/                 # React web frontend
+│       ├── components/      # React components
+│       │   ├── assistant-popup.tsx
+│       │   └── settings-dialog.tsx
+│       ├── stores/          # State management
+│       ├── utils/           # Utility functions
+│       │   ├── vault.ts     # Vault integration
+│       │   ├── llm.ts       # LLM API calls
+│       │   └── utility.ts   # Helper functions
+│       ├── styles/          # CSS stylesheets
+│       ├── App.tsx          # Main application component
+│       └── main.tsx         # Application entry point
+├── build/                   # Build output directory
+│   ├── Resources/           # Built web assets
+│   └── Debug/               # Debug build
+│       └── ai_assistant.app # macOS application bundle
+├── CMakeLists.txt          # CMake configuration
+├── vite.config.ts          # Vite build configuration
+├── package.json            # Node.js dependencies and scripts
+├── tsconfig.json           # TypeScript configuration
+└── README.md               # This file
+```
+
+## Usage
+
+### Triggering the Assistant
+
+1. **Keyboard Shortcut**: Use your configured global shortcut (default can be set in Settings)
+2. **Menubar**: Click the menubar icon and select "Show Assistant"
+
+### Working with Clipboard Content
+
+1. Copy text to your clipboard
+2. Trigger the assistant
+3. The clipboard content will automatically appear in the right panel
+4. Select a quick action or enter a custom prompt
+5. Click the result to copy it back to clipboard
+
+### Creating Custom Actions
+
+Custom actions support the `{{data}}` placeholder:
+
+```
+Example Action: "Translate to Spanish"
+Prompt: "Translate the following text to Spanish:\n\n{{data}}"
+```
+
+The `{{data}}` will be replaced with your clipboard content.
+
+### Using Multiple LLMs
+
+1. Configure multiple LLM providers in Settings
+2. In the assistant popup, select "All LLMs" from the dropdown
+3. See responses from all enabled LLMs side-by-side
+
+## Building for Production
+
+### Complete Production Build
+
+```bash
+# Build web frontend for production
+yarn build
+
+# Configure CMake for Release
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+# Build native application
+cmake --build build --config Release
+```
+
+The production application will be at:
+```
+build/Release/ai_assistant.app
+```
+
+### Code Signing (for Distribution)
+
+To distribute the app outside the App Store, you'll need to sign it:
+
+```bash
+codesign --force --deep --sign "Developer ID Application: Your Name" \
+  build/Release/ai_assistant.app
+```
+
+### Creating a DMG
+
+```bash
+# Create a disk image for distribution
+hdiutil create -volname "BYOA Assistant" -srcfolder build/Release/ai_assistant.app \
+  -ov -format UDZO BYOA-Assistant.dmg
 ```
 
 ## Contributing
 
+Contributions are welcome! Here's how to get started:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes and test them
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
 
 ### Development Guidelines
 
-- Follow the existing code style and formatting
+- Follow the existing code style (use `.clang-format` for C++ code)
 - Write clear commit messages
-- Add tests for new features
+- Test on macOS before submitting
 - Update documentation as needed
-- Ensure all platforms build successfully
+- For C++ code, ensure C++23 compatibility
 
-## Building for Production
+## Troubleshooting
 
-### Frontend
-```bash
-NODE_ENV=production npm run build
-```
+### Common Issues
 
-### Native (Release build)
-```bash
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release
-```
+**Application won't launch**
+- Ensure you have macOS 13.3 or later
+- Check that Xcode Command Line Tools are installed
+- Try rebuilding: `rm -rf build && yarn cmake:configure && yarn cmake:build`
 
-### Complete build
-```bash
-npm run build:all
-```
+**API Key not working**
+- Verify the API key is correct in Settings
+- Check the base URL format (should include scheme: `https://`)
+- Ensure the model name matches your provider's requirements
 
-## Platform-specific Notes
+**Clipboard content not detected**
+- Grant clipboard permissions to the application in System Settings → Privacy & Security
+- Try copying text again after the assistant window opens
 
-### macOS
-- The application builds as a `.app` bundle
-- Requires macOS 10.14 or later
-- Code signing may be required for distribution
+**Build errors**
+- Clear CMake cache: `rm -rf build`
+- Ensure all dependencies are installed
+- Check that you have enough disk space for the build
 
-### Windows
-- Builds as a Windows executable
-- Requires Windows 10 or later
-- May require Visual C++ Redistributable
+## Roadmap
 
-### Linux
-- Requires GTK3 and WebKit2GTK
-- Tested on Ubuntu 20.04+ and similar distributions
+Potential future features:
+
+- [ ] Support for Windows and Linux
+- [ ] Image processing capabilities
+- [ ] Voice input support
+- [ ] Custom keyboard shortcuts per action
+- [ ] Action history and favorites
+- [ ] Streaming responses for better UX
+- [ ] Plugin system for extensibility
+- [ ] Support for local LLM models (Ollama, LM Studio)
 
 ## License
 
@@ -216,15 +339,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Built with modern C++ and React
-- Uses CMake for cross-platform native builds
-- Webpack for efficient frontend bundling
-- Thanks to all contributors who make this project possible
+- Built with [Saucer](https://github.com/saucer/saucer) for modern C++ webview integration
+- UI powered by [React](https://react.dev/) and [Ant Design](https://ant.design/)
+- Fast builds with [Vite](https://vite.dev/)
+- Secure credential storage via [keychain](https://github.com/hrantzsch/keychain)
+- HTTP client by [CPR](https://github.com/libcpr/cpr)
+- Thanks to all open-source contributors who make projects like this possible
 
 ## Support
 
-For support, please open an issue on GitHub or contact the maintainers.
+For support, bug reports, or feature requests:
+- Open an issue on [GitHub Issues](https://github.com/shmmsra/byoa/issues)
+- Check existing issues for solutions to common problems
 
 ---
 
-**Note**: This is an open-source project focused on providing a modern, cross-platform desktop assistant experience. The codebase has been restructured and cleaned for open-source distribution.
+**BYOA** - Build Your Own AI to your desktop workflow. No vendor lock-in, full control over your AI models.

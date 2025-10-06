@@ -123,7 +123,7 @@ else()
     )
 endif()
 
-set_property(TARGET ai_assistant PROPERTY CXX_STANDARD 17)
+set_property(TARGET ai_assistant PROPERTY CXX_STANDARD 23)
 
 # Set debug macro for debug builds
 target_compile_definitions(ai_assistant PRIVATE 
