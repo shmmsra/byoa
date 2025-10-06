@@ -1,6 +1,6 @@
 # BYOA (Build Your Own AI) Assistant
 
-A native macOS desktop assistant application that enables you to use your own AI models for intelligent text processing and clipboard automation. Built with modern web technologies and native C++ for optimal performance.
+A native cross-platform desktop assistant application that enables you to use your own/public AI models for intelligent text/image processing. Built with modern web technologies and native C++ for optimal performance.
 
 ## Features
 
@@ -240,6 +240,16 @@ The `{{data}}` will be replaced with your clipboard content.
 1. Configure multiple LLM providers in Settings
 2. In the assistant popup, select "All LLMs" from the dropdown
 3. See responses from all enabled LLMs side-by-side
+
+## Screenshots
+
+### Assistant Popup
+![Assistant Popup](docs/assets/assistant-macos-dark-1.png)
+*AI-powered text processing with multiple LLM support and quick actions*
+
+### Settings Dialog
+![Settings Dialog](docs/assets/settings-macos-dark-1.png)
+*Configure multiple LLM providers and custom actions*
 
 ## Building for Production
 
