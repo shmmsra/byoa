@@ -754,3 +754,13 @@
   background-color: transparent;
   border: none;
 }
+
+/* Diff toggle label */
+.diff-toggle-label {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.dark .diff-toggle-label {
+  color: #999;
+}

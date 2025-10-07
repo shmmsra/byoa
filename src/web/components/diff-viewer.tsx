@@ -8,6 +8,7 @@ interface DiffViewerProps {
   result: string;
   threshold?: number; // Similarity threshold (0-1), default 0.7
   className?: string;
+  showDiff?: boolean; // Force show diff regardless of similarity
 }
 
 interface SimilarityResult {
@@ -71,10 +72,13 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
   original, 
   result, 
   threshold = 0.7,
-  className = ''
+  className = '',
+  showDiff = undefined
 }) => {
   const similarityResult = calculateStringSimilarity(original, result);
-  const shouldShowDiff = similarityResult.isSimilar && similarityResult.similarity >= threshold;
+  const shouldShowDiff = showDiff !== undefined 
+    ? showDiff 
+    : (similarityResult.isSimilar && similarityResult.similarity >= threshold);
   
   if (!shouldShowDiff) {
     // If not similar enough, show result as-is

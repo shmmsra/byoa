@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Button, Input, Select, Spin, message } from 'antd';
+import { Button, Input, Select, Spin, message, Switch } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
 import { LLMConfig, Action } from '../app';
 import { InvokeLLM } from '../utils/llm';
 import { ClipboardUtils } from '../utils/clipboard';
 import { DiffViewer } from './diff-viewer';
+import { calculateStringSimilarity } from '../utils/similarity';
 
 interface AssistantPopupProps {
   clipboardContent: string;
@@ -37,6 +38,7 @@ export function AssistantPopup({
   const [results, setResults] = useState<LLMResult[]>([]);
   const [copied, setCopied] = useState(false);
   const [lastProcessedContent, setLastProcessedContent] = useState<string>('');
+  const [showDiffViewer, setShowDiffViewer] = useState(true);
 
   const showAllResults = selectedLLM === 'all';
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
@@ -104,6 +106,13 @@ export function AssistantPopup({
         
         const results = await Promise.all(promises);
         setResults(results);
+        
+        // Reset diff toggle based on similarity of the first result
+        if (results.length > 0) {
+          const firstResult = results[0];
+          const similarity = calculateStringSimilarity(clipboardContent, firstResult.result);
+          setShowDiffViewer(similarity.isSimilar);
+        }
       } else {
         // Process with selected LLM or auto-select first enabled
         let targetConfig: LLMConfig | undefined;
@@ -123,16 +132,22 @@ export function AssistantPopup({
         }
         
         const result = await invokeLLM(targetConfig, input);
-        setResults([{
+        const singleResult = {
           llmId: targetConfig.id,
           llmName: targetConfig.name,
           result: result
-        }]);
+        };
+        setResults([singleResult]);
+        
+        // Reset diff toggle based on similarity
+        const similarity = calculateStringSimilarity(clipboardContent, result);
+        setShowDiffViewer(similarity.isSimilar);
       }
       
       setState('completed');
       // Track the clipboard content that was processed
       setLastProcessedContent(clipboardContent);
+      
     } catch (error) {
       console.error('Error processing with LLM:', error);
       message.error(error instanceof Error ? error.message : 'Failed to process request', 8);
@@ -196,22 +211,34 @@ export function AssistantPopup({
       <div className="popup-header">
         <AppIcon style={{ width: '16px', height: '16px', color: '#1890ff', flexShrink: 0 }} />
         <h2 style={{ fontSize: '0.875rem', flex: 1, margin: 0, fontWeight: 500, color: '#262626' }}>AI Assistant</h2>
-        <Select 
-          value={selectedLLM} 
-          onChange={onLLMChange}
-          style={{ width: 140 }}
-          size="small"
-        >
-          <Select.Option value="auto">Auto</Select.Option>
-          {enabledLLMs.length > 1 && (
-            <Select.Option value="all">All LLMs</Select.Option>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {state === 'completed' && results.length > 0 && (
+            <>
+              <span className="diff-toggle-label">Diff</span>
+              <Switch
+                size="small"
+                checked={showDiffViewer}
+                onChange={setShowDiffViewer}
+              />
+            </>
           )}
-          {enabledLLMs.map((llm) => (
-            <Select.Option key={llm.id} value={llm.id}>
-              {llm.name}
-            </Select.Option>
-          ))}
-        </Select>
+          <Select 
+            value={selectedLLM} 
+            onChange={onLLMChange}
+            style={{ width: 140 }}
+            size="small"
+          >
+            <Select.Option value="auto">Auto</Select.Option>
+            {enabledLLMs.length > 1 && (
+              <Select.Option value="all">All LLMs</Select.Option>
+            )}
+            {enabledLLMs.map((llm) => (
+              <Select.Option key={llm.id} value={llm.id}>
+                {llm.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
       </div>
 
       {/* Content */}
@@ -342,6 +369,7 @@ export function AssistantPopup({
                         original={clipboardContent} 
                         result={result.result}
                         threshold={0.7}
+                        showDiff={showDiffViewer}
                       />
                     </div>
                     {showAllResults && index < results.length - 1 && (

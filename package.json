@@ -38,8 +38,10 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.2",
+    "@types/diff": "^8.0.0",
     "antd": "^5.27.4",
     "classnames": "^2.5.1",
+    "fast-levenshtein": "^3.0.0",
     "lucide-react": "^0.544.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -52,6 +54,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.0",
     "@babel/preset-env": "^7.22.0",
     "@babel/preset-react": "^7.22.0",
+    "@types/fast-levenshtein": "^0.0.4",
     "@types/node": "^20.10.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
