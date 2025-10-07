@@ -667,7 +667,7 @@
 
 /* Diff Viewer Styles */
 .diff-viewer {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family: inherit;
   font-size: 0.875rem;
   line-height: 1.5;
 }
