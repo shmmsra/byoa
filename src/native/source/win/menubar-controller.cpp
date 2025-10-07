@@ -9,9 +9,6 @@
 #define ID_MENU_SETTINGS 2001
 #define ID_MENU_QUIT 2002
 
-// Window class name
-static const wchar_t* TRAY_WINDOW_CLASS = L"ByoaTrayWindowClass";
-
 MenubarController& MenubarController::getInstance() {
     static MenubarController instance;
     return instance;
@@ -22,46 +19,6 @@ void MenubarController::init() {
     
     _iconAdded = false;
     _menu = nullptr;
-    _hiddenWindow = nullptr;
-    
-    // Register window class for hidden window
-    WNDCLASSEXW wc = {};
-    wc.cbSize = sizeof(WNDCLASSEXW);
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = GetModuleHandle(nullptr);
-    wc.lpszClassName = TRAY_WINDOW_CLASS;
-    
-    if (!RegisterClassExW(&wc)) {
-        DWORD error = GetLastError();
-        if (error != ERROR_CLASS_ALREADY_EXISTS) {
-            Logger::getInstance().error("MenubarController::init: Failed to register window class: {}", error);
-            return;
-        }
-    }
-    
-    // TODO: We can perhaps merge this hidden window with the one for Shortcuts!
-    // Create hidden window for receiving tray icon messages
-    _hiddenWindow = CreateWindowExW(
-        0,
-        TRAY_WINDOW_CLASS,
-        L"Byoa Tray Window",
-        0,
-        0, 0, 0, 0,
-        HWND_MESSAGE,  // Message-only window
-        nullptr,
-        GetModuleHandle(nullptr),
-        this  // Pass 'this' pointer to WM_CREATE
-    );
-    
-    if (!_hiddenWindow) {
-        Logger::getInstance().error("MenubarController::init: Failed to create hidden window: {}", GetLastError());
-        return;
-    }
-    
-    // Store the instance pointer in the window's user data
-    SetWindowLongPtrW(_hiddenWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-    
-    Logger::getInstance().info("MenubarController::init: Hidden window created successfully");
     
     // Create the system tray icon
     createTrayIcon();
@@ -84,27 +41,21 @@ void MenubarController::cleanup() {
         DestroyMenu(_menu);
         _menu = nullptr;
     }
-    
-    // Destroy hidden window
-    if (_hiddenWindow) {
-        DestroyWindow(_hiddenWindow);
-        _hiddenWindow = nullptr;
-    }
-    
-    // Unregister window class
-    UnregisterClassW(TRAY_WINDOW_CLASS, GetModuleHandle(nullptr));
 }
 
 void MenubarController::createTrayIcon() {
     Logger::getInstance().info("MenubarController::createTrayIcon: start");
-    
+
+    auto hiddenWindow = AppController::getInstance().getHiddenWindowHandle();
+
     // Initialize NOTIFYICONDATA structure
     ZeroMemory(&_notifyIconData, sizeof(NOTIFYICONDATAW));
     _notifyIconData.cbSize = sizeof(NOTIFYICONDATAW);
-    _notifyIconData.hWnd = _hiddenWindow;
+    _notifyIconData.hWnd = hiddenWindow;
     _notifyIconData.uID = ID_TRAY_ICON;
     _notifyIconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     _notifyIconData.uCallbackMessage = WM_TRAYICON;
+    Logger::getInstance().info("MenubarController::createTrayIcon: WM_TRAYICON = {:#x}", WM_TRAYICON);
     
     // Set tooltip
     wcscpy_s(_notifyIconData.szTip, L"Build Your Own Assistant");
@@ -158,9 +109,10 @@ void MenubarController::createMenu() {
 
 void MenubarController::showContextMenu() {
     Logger::getInstance().info("MenubarController::showContextMenu: start");
-    
-    if (!_menu) {
-        Logger::getInstance().error("MenubarController::showContextMenu: Menu not initialized");
+    auto hiddenWindow = AppController::getInstance().getHiddenWindowHandle();
+
+    if (!_menu || !hiddenWindow) {
+        Logger::getInstance().error("MenubarController::showContextMenu: Menu/HiddenWindow not initialized");
         return;
     }
     
@@ -169,7 +121,7 @@ void MenubarController::showContextMenu() {
     GetCursorPos(&pt);
     
     // Required for popup menus to work correctly
-    SetForegroundWindow(_hiddenWindow);
+    SetForegroundWindow(hiddenWindow);
     
     // Show the menu
     TrackPopupMenu(
@@ -178,12 +130,12 @@ void MenubarController::showContextMenu() {
         pt.x,
         pt.y,
         0,
-        _hiddenWindow,
+        hiddenWindow,
         nullptr
     );
     
     // Required for popup menus to work correctly
-    PostMessage(_hiddenWindow, WM_NULL, 0, 0);
+    PostMessage(hiddenWindow, WM_NULL, 0, 0);
 }
 
 void MenubarController::showSettings() {
@@ -252,45 +204,22 @@ HICON MenubarController::createFallbackIcon() {
     return hIcon;
 }
 
-LRESULT CALLBACK MenubarController::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    MenubarController* pThis = nullptr;
-    
-    if (uMsg == WM_CREATE) {
-        // Get the instance pointer from CREATESTRUCT
-        CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
-        pThis = reinterpret_cast<MenubarController*>(pCreate->lpCreateParams);
-        SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis));
-    } else {
-        // Retrieve the instance pointer
-        pThis = reinterpret_cast<MenubarController*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+bool MenubarController::onTrigger(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    // Handle both left and right clicks on tray icon
+    if (uMsg == WM_TRAYICON && (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)) {
+        Logger::getInstance().info("MenubarController::onTrigger: Tray icon clicked (message: {})", lParam);
+        MenubarController::getInstance().showContextMenu();
+        return true;
     }
-    
-    if (pThis) {
-        switch (uMsg) {
-            case WM_TRAYICON:
-                if (lParam == WM_RBUTTONUP || lParam == WM_LBUTTONUP) {
-                    pThis->showContextMenu();
-                }
-                return 0;
-                
-            case WM_COMMAND:
-                switch (LOWORD(wParam)) {
-                    case ID_MENU_SETTINGS:
-                        pThis->showSettings();
-                        return 0;
-                        
-                    case ID_MENU_QUIT:
-                        Logger::getInstance().info("MenubarController: Quit menu item clicked");
-                        AppController::getInstance().stop();
-                        return 0;
-                }
-                break;
-                
-            case WM_DESTROY:
-                PostQuitMessage(0);
-                return 0;
-        }
+    if (uMsg == WM_COMMAND && LOWORD(wParam) == ID_MENU_SETTINGS) {
+        Logger::getInstance().info("MenubarController::onTrigger: Settings menu item selected");
+        MenubarController::getInstance().showSettings();
+        return true;
     }
-    
-    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+    if (uMsg == WM_COMMAND && LOWORD(wParam) == ID_MENU_QUIT) {
+        Logger::getInstance().info("MenubarController::onTrigger: Quit menu item selected");
+        AppController::getInstance().stop();
+        return true;
+    }
+    return false;
 }

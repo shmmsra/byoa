@@ -25,6 +25,12 @@ public:
     void cleanup();
     void showSettings();
 
+#ifdef _WIN32
+    bool onTrigger(UINT uMsg, WPARAM wParam, LPARAM lParam);
+#else
+    bool onTrigger();
+#endif  // _WIN32
+
 private:
     MenubarController() = default;
     ~MenubarController() = default;
@@ -40,11 +46,9 @@ private:
 
 #ifdef _WIN32
     NOTIFYICONDATAW _notifyIconData;
-    HWND _hiddenWindow;
     HMENU _menu;
     bool _iconAdded;
     
-    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void createTrayIcon();
     void createMenu();
     void showContextMenu();

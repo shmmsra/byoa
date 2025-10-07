@@ -41,6 +41,7 @@ Shortcut& Shortcut::getInstance() {
 
 bool Shortcut::registerHandler(Shortcut::ShortcutCallback&& callback) {
     EventHotKeyRef* _OutCarbonHotKey = 0;
+    _shortcutCallback = std::move(callback);
 
     // Define the lambda function
     auto lambda = [callback](EventHandlerCallRef _InHandlerCallRef, EventRef _InEvent) -> OSStatus {
@@ -55,7 +56,7 @@ bool Shortcut::registerHandler(Shortcut::ShortcutCallback&& callback) {
         if (hotKeyID.signature != kShortcutSignature)
             return noErr;
 
-        callback();
+        onTrigger();
 
         return noErr;
     };
@@ -85,6 +86,13 @@ bool Shortcut::unregisterHandler() {
     if ( sEventHandler ) {
         RemoveEventHandler( sEventHandler );
         sEventHandler = NULL;
+    }
+    return true;
+}
+
+bool Shortcut::onTrigger() {
+    if (_shortcutCallback) {
+        _shortcutCallback();
     }
     return true;
 }

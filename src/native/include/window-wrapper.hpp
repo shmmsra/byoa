@@ -10,17 +10,24 @@
 
 class WindowWrapper {
 public:
-    WindowWrapper(saucer::application* app, bool isPopup);
+    enum WINDOW_TYPE {
+        MAIN,
+        POPUP
+    };
+
+    WindowWrapper(saucer::application* app, WINDOW_TYPE windowType);
     ~WindowWrapper();
     bool isVisible();
     void show();
     void hide();
     void move();
     void resize(const int& width, const int& height, const bool& animate = false);
+#ifdef _WIN32
+    HWND getWindowHandle();
+#endif
 
 private:
-
-    bool _isPopup = false;
+    WINDOW_TYPE _windowType;
     bool _isWindowVisible = false;
     std::shared_ptr<saucer::window> _window;
     std::shared_ptr<WebviewWrapper> _webview;

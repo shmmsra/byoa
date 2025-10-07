@@ -23,12 +23,12 @@
 
 using namespace std;
 
-WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(isPopup) {
+WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType): _windowType(windowType) {
     // Create and configure the window
     _window = saucer::window::create(app).value();
     _window->set_title("Build Your Own Assistant");
 
-    if (_isPopup) {
+    if (_windowType == WINDOW_TYPE::POPUP) {
         _window->set_size({ASSISTANT_WINDOW_WIDTH, ASSISTANT_WINDOW_HEIGHT});
     } else {
         _window->set_size({MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT});
@@ -41,9 +41,9 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(i
     });
 
     _webview = std::make_shared<WebviewWrapper>(_window);
-    _webview->init(_getViewURL(isPopup ? "assistant" : ""));
+    _webview->init(_getViewURL(_windowType == WINDOW_TYPE::POPUP ? "assistant" : ""));
 
-    if (_isPopup) {
+    if (_windowType == WINDOW_TYPE::POPUP) {
         _window->set_decorations(saucer::window::decoration::partial);
         saucer::color bgColor = {255, 255, 255, 100};
         _window->set_background(bgColor);
@@ -70,7 +70,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup): _isPopup(i
         NSWindow *nsWindow = windowNative.window;
         // Add global key event monitoring for escape key when window is active
         [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^NSEvent *(NSEvent *event) {
-            if (event.window == nsWindow && event.keyCode == 53 && _isWindowVisible) { // Escape key code is 53
+            if (event.window == nsWindow && event.keyCode == 53 && _isWindowVisible && _windowType == WINDOW_TYPE::POPUP) { // Escape key code is 53
                 Logger::getInstance().info("WindowWrapper::WindowWrapper: Native escape key pressed, hiding window");
                 hide();
                 return nil; // Consume the event
@@ -90,7 +90,7 @@ bool WindowWrapper::isVisible() {
 
 void WindowWrapper::show() {
     Logger::getInstance().info("WindowWrapper::show: start");
-    if (_isPopup) {
+    if (_windowType == WINDOW_TYPE::POPUP) {
         move();
     } else {
         // If not the AssistantPopup then activate the application
@@ -116,7 +116,7 @@ void WindowWrapper::hide() {
         [[NSApplication sharedApplication] hide:nil];
     }
 
-    if (!_isPopup) {
+    if (_windowType != WINDOW_TYPE::POPUP) {
         // If not the Assistant Popup then deactivate the application
         [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
     }

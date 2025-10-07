@@ -13,8 +13,9 @@ using process_id_t = uint32_t;
 using process_id_t = pid_t;
 #endif
 
-// Forward declaration to avoid including Objective-C headers in C++ files
-class MenubarController;
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 class AppController {
 public:
@@ -30,6 +31,9 @@ public:
 	int stop();
 	std::shared_ptr<WindowWrapper> getMainWindow();
 	std::shared_ptr<WindowWrapper> getAssistantWindow();
+#ifdef _WIN32
+	HWND getHiddenWindowHandle();
+#endif
 
 private:
 	AppController() = default;

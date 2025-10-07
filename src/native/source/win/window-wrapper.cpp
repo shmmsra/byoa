@@ -1,7 +1,14 @@
+#include <unordered_map>
 #include <windows.h>
 #include <saucer/window.hpp>
 #include "window-wrapper.hpp"
+#include "shortcut.hpp"
+#include "menubar-controller.hpp"
+#include "app-controller.hpp"
 #include "logger.hpp"
+
+// Static map to track WindowWrapper instances for keyboard hook
+static std::unordered_map<HWND, WindowWrapper*> g_windowMap;
 
 #ifdef DEBUG
 #define MAIN_WINDOW_WIDTH 1000
@@ -15,25 +22,21 @@
 #define ASSISTANT_WINDOW_HEIGHT 600
 #endif  // DEBUG
 
-// Static map to track WindowWrapper instances for keyboard hook
-#include <unordered_map>
-static std::unordered_map<HWND, WindowWrapper*> g_windowMap;
-
 // Forward declare the stable natives structure for window
 namespace saucer {
     template<typename T> struct stable_natives;
     template<> struct stable_natives<window> { HWND hwnd; };
 }
 
-WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup) 
-    : _isPopup(isPopup), _isWindowVisible(false) {
+WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType) 
+    : _windowType(windowType), _isWindowVisible(false) {
     Logger::getInstance().info("WindowWrapper::WindowWrapper: start (Windows)");
-    
+
     // Create window using factory method
     _window = saucer::window::create(app).value();
     _window->set_title("Build Your Own Assistant");
     
-    if (_isPopup) {
+    if (_windowType == WINDOW_TYPE::POPUP) {
         _window->set_size({ASSISTANT_WINDOW_WIDTH, ASSISTANT_WINDOW_HEIGHT});
     } else {
         _window->set_size({MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT});
@@ -45,7 +48,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup)
         return saucer::policy::block;
     });
     
-    if (_isPopup) {
+    if (_windowType == WINDOW_TYPE::POPUP) {
         // Set decorations BEFORE initializing webview
         _window->set_decorations(saucer::window::decoration::none);
         saucer::color bgColor = {255, 255, 255, 100};
@@ -70,13 +73,13 @@ WindowWrapper::WindowWrapper(saucer::application* app, bool isPopup)
     }
     
     _webview = std::make_shared<WebviewWrapper>(_window);
-    _webview->init(_getViewURL(_isPopup ? "assistant" : ""));
+    _webview->init(_getViewURL(_windowType == WINDOW_TYPE::POPUP ? "assistant" : ""));
 }
 
 WindowWrapper::~WindowWrapper() {
     Logger::getInstance().info("WindowWrapper::~WindowWrapper: start");
     
-    if (_isPopup) {
+    if (_windowType == WINDOW_TYPE::POPUP) {
         uninstallKeyboardHook();
     }
 }
@@ -84,15 +87,13 @@ WindowWrapper::~WindowWrapper() {
 void WindowWrapper::show() {
     Logger::getInstance().info("WindowWrapper::show: start");
 
-    if (_isPopup) {
+    if (_windowType == WINDOW_TYPE::POPUP) {
         move();
-    } else {
-        // If not the AssistantPopup then activate the application
     }
 
     if (_window) {
 #ifdef _WIN32
-        if (_isPopup) {
+        if (_windowType == WINDOW_TYPE::POPUP) {
             // Get the native window handle
             auto native_window = _window->native();
             HWND hwnd = native_window.hwnd;
@@ -108,34 +109,15 @@ void WindowWrapper::show() {
 #endif  // _WIN32
 
         _window->show();
+        _window->focus();
         _isWindowVisible = true;
 
 #ifdef _WIN32
-        if (_isPopup) {
-            // Get the native window handle
-            auto native_window = _window->native();
-            HWND hwnd = native_window.hwnd;
-            
-            // Bring window to the front and activate it
-            // HWND_TOPMOST makes it stay on top of all other windows
-            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, 
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-            
-            // Optionally, if you don't want it to be always on top (topmost),
-            // you can change it back to HWND_TOP after bringing it to front
-            // This makes it appear on top but allows other windows to cover it later
-            SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, 
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-            
-            // Force the window to be the foreground window
-            SetForegroundWindow(hwnd);
-            
-            // Ensure the window is activated
-            SetActiveWindow(hwnd);
-            
-            // Set focus to the window
-            SetFocus(hwnd);
-            
+        // Get the native window handle for activation logic
+        auto native_window = _window->native();
+        HWND hwnd = native_window.hwnd;
+        
+        if (_windowType == WINDOW_TYPE::POPUP) {
             // Set decorations BEFORE initializing webview
             _window->set_decorations(saucer::window::decoration::partial);
             saucer::color bgColor = { 255, 255, 255, 100 };
@@ -155,7 +137,7 @@ void WindowWrapper::hide() {
         _isWindowVisible = false;
         
 #ifdef _WIN32
-        if (_isPopup) {
+        if (_windowType == WINDOW_TYPE::POPUP) {
             // Uninstall keyboard hook when hiding
             uninstallKeyboardHook();
         }
@@ -258,7 +240,7 @@ LRESULT CALLBACK WindowWrapper::KeyboardHookProc(int nCode, WPARAM wParam, LPARA
             auto it = g_windowMap.find(foregroundWindow);
             if (it != g_windowMap.end()) {
                 WindowWrapper* wrapper = it->second;
-                if (wrapper && wrapper->_isWindowVisible && wrapper->_isPopup) {
+                if (wrapper && wrapper->_isWindowVisible && wrapper->_windowType == WINDOW_TYPE::POPUP) {
                     Logger::getInstance().info("WindowWrapper: Escape key pressed, hiding window");
                     wrapper->hide();
                     return 1; // Consume the event

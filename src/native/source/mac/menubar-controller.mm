@@ -154,3 +154,8 @@ void MenubarController::showSettings() {
 }
 
 @end
+
+// NOOP for Mac
+bool MenubarController::onTrigger() {
+    return false;
+}
