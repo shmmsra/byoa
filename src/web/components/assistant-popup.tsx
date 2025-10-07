@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Input, Select, Spin, message } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
@@ -35,10 +35,24 @@ export function AssistantPopup({
   const [state, setState] = useState<ProcessingState>('idle');
   const [results, setResults] = useState<LLMResult[]>([]);
   const [copied, setCopied] = useState(false);
+  const [lastProcessedContent, setLastProcessedContent] = useState<string>('');
 
   const showAllResults = selectedLLM === 'all';
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
   const enabledActions = actions ? actions.filter(action => action.enabled) : [];
+
+  // Reset popup state when clipboard content changes
+  useEffect(() => {
+    if (clipboardContent !== lastProcessedContent && clipboardContent.trim() !== '') {
+      // If clipboard content is different from what was last processed, reset to idle state
+      if (state === 'completed' && results.length > 0) {
+        setState('idle');
+        setResults([]);
+        setCopied(false);
+        setCustomPrompt('');
+      }
+    }
+  }, [clipboardContent, lastProcessedContent, state, results.length]);
 
   // Helper function to invoke LLM using the configured baseURL
   const invokeLLM = async (config: LLMConfig, prompt: string): Promise<string> => {
@@ -116,6 +130,8 @@ export function AssistantPopup({
       }
       
       setState('completed');
+      // Track the clipboard content that was processed
+      setLastProcessedContent(clipboardContent);
     } catch (error) {
       console.error('Error processing with LLM:', error);
       message.error(error instanceof Error ? error.message : 'Failed to process request', 8);
@@ -156,6 +172,12 @@ export function AssistantPopup({
   const handleRegenerate = () => {
     if (customPrompt) {
       processWithLLM(customPrompt);
+    } else if (results.length > 0) {
+      // If regenerating without a custom prompt, use the last action that was performed
+      // For now, we'll just reprocess with the same custom prompt if it exists
+      if (customPrompt.trim()) {
+        processWithLLM(customPrompt);
+      }
     }
   };
 
