@@ -3,7 +3,7 @@ import { BrowserRouter as Router, useSearchParams } from 'react-router-dom';
 import { ConfigProvider, theme } from 'antd';
 import { AssistantPopup } from './components/assistant-popup';
 import { SettingsDialog } from './components/settings-dialog';
-import { GetClipboardData } from './utils/utility';
+import { ClipboardUtils } from './utils/clipboard';
 import { VaultUtils } from './utils/vault';
 
 export interface LLMConfig {
@@ -82,7 +82,7 @@ function AppContent() {
   useEffect(() => {
     window.__nativeCallback = (eventName: string, data: string) => {
       if (eventName === 'on-focus-change' && data === 'true') {
-        GetClipboardData().then(data => {
+        ClipboardUtils.readData().then(data => {
           if (data && data[0] && data[0].type === 'text') {
             setClipboardContent(data[0].data as string);
           }
