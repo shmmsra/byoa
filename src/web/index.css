@@ -664,3 +664,93 @@
     border-bottom-color: #434343;
   }
 }
+
+/* Diff Viewer Styles */
+.diff-viewer {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.diff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.dark .diff-header {
+  background-color: #2a2a2a;
+}
+
+.diff-similarity {
+  color: #666;
+  font-weight: 500;
+}
+
+.dark .diff-similarity {
+  color: #999;
+}
+
+.diff-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #fafafa;
+  border: 1px solid #e8e8e8;
+}
+
+.dark .diff-content {
+  background-color: #1a1a1a;
+  border-color: #404040;
+}
+
+.diff-added {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.dark .diff-added {
+  background-color: #0d4a1a;
+  color: #75b798;
+}
+
+.diff-removed {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1px 2px;
+  border-radius: 2px;
+  text-decoration: line-through;
+}
+
+.dark .diff-removed {
+  background-color: #4a0d0d;
+  color: #f5a5a5;
+}
+
+.diff-unchanged {
+  color: inherit;
+}
+
+/* Diff viewer in result content */
+.result-content .diff-viewer {
+  margin: 0;
+}
+
+.result-content .diff-viewer .diff-content {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.dark .result-content .diff-viewer .diff-content {
+  background-color: transparent;
+  border: none;
+}

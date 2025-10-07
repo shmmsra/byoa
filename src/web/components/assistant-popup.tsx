@@ -5,6 +5,7 @@ import AppIcon from '../assets/app-icon.svg?react';
 import { LLMConfig, Action } from '../app';
 import { InvokeLLM } from '../utils/llm';
 import { ClipboardUtils } from '../utils/clipboard';
+import { DiffViewer } from './diff-viewer';
 
 interface AssistantPopupProps {
   clipboardContent: string;
@@ -337,7 +338,11 @@ export function AssistantPopup({
                       </div>
                     </div>
                     <div className="result-content">
-                      {result.result}
+                      <DiffViewer 
+                        original={clipboardContent} 
+                        result={result.result}
+                        threshold={0.7}
+                      />
                     </div>
                     {showAllResults && index < results.length - 1 && (
                       <div style={{ borderTop: '1px solid #d9d9d9', margin: '16px 0' }} />
