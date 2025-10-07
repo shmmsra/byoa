@@ -177,8 +177,8 @@ int AppController::start() {
         Logger::getInstance().info("AppController::init: create window");
         [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
         
-        _mainWindow = make_shared<WindowWrapper>(app, false);
-        _assistantWindow = make_shared<WindowWrapper>(app, true);
+        _mainWindow = make_shared<WindowWrapper>(app, WindowWrapper::WINDOW_TYPE::MAIN);
+        _assistantWindow = make_shared<WindowWrapper>(app, WindowWrapper::WINDOW_TYPE::POPUP);
         _mainWindow->show();
 
         // Keep the app running until it finishes

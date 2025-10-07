@@ -44,7 +44,7 @@ bool Shortcut::registerHandler(Shortcut::ShortcutCallback&& callback) {
     _shortcutCallback = std::move(callback);
 
     // Define the lambda function
-    auto lambda = [callback](EventHandlerCallRef _InHandlerCallRef, EventRef _InEvent) -> OSStatus {
+    auto lambda = [callback, this](EventHandlerCallRef _InHandlerCallRef, EventRef _InEvent) -> OSStatus {
         if (GetEventClass(_InEvent) != kEventClassKeyboard)
             return noErr;
 
