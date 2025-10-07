@@ -1,4 +1,4 @@
-# BYOA (Build Your Own AI) Assistant
+# BYOA (Build Your Own Assistant)
 
 A native cross-platform desktop assistant application that enables you to use your own/public AI models for intelligent text/image processing. Built with modern web technologies and native C++ for optimal performance.
 
@@ -364,4 +364,4 @@ For support, bug reports, or feature requests:
 
 ---
 
-**BYOA** - Build Your Own AI to your desktop workflow. No vendor lock-in, full control over your AI models.
+**BYOA** - Build Your Own Assistant for your desktop workflow: no vendor lock-in, full control over your AI models.
