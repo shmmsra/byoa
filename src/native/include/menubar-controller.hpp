@@ -8,8 +8,10 @@
 #endif
 
 #ifdef _WIN32
-#include <shellapi.h>
+// clang-format off
 #include <windows.h>
+#include <shellapi.h>
+// clang-format on
 #endif
 
 class MenubarController {
