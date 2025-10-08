@@ -4,6 +4,10 @@
 #include <string>
 #include <unordered_map>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 class Shortcut {
   public:
     typedef std::function<void(void)> ShortcutCallback;

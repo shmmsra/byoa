@@ -131,6 +131,33 @@ target_compile_definitions(ai_assistant PRIVATE
     $<$<CONFIG:RelWithDebInfo>:DEBUG=1>
 )
 
+# Windows-specific configuration
+if(WIN32)
+    # Define Windows version and features
+    target_compile_definitions(ai_assistant PRIVATE 
+        WIN32_LEAN_AND_MEAN
+        NOMINMAX
+        _WIN32_WINNT=0x0A00  # Windows 10
+        WINVER=0x0A00        # Windows 10
+        _CRT_SECURE_NO_WARNINGS
+    )
+    
+    # Link Windows libraries
+    target_link_libraries(ai_assistant PRIVATE 
+        shell32
+        user32
+        gdi32
+        winspool
+        comdlg32
+        advapi32
+        ole32
+        oleaut32
+        uuid
+        odbc32
+        odbccp32
+    )
+endif()
+
 # Add include directories
 target_include_directories(ai_assistant PRIVATE 
     src/native/include

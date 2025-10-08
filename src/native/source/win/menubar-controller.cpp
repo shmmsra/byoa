@@ -1,8 +1,8 @@
 #include "menubar-controller.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
-#include <shellapi.h>
 #include <windows.h>
+#include <shellapi.h>
 
 #define WM_TRAYICON      (WM_USER + 1)
 #define ID_TRAY_ICON     1001

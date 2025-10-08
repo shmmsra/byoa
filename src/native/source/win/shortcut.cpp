@@ -5,12 +5,9 @@
 #include <thread>
 #include <windows.h>
 
-#ifdef _WIN32
-#include <windows.h>
 #ifndef SHORTCUT_HOTKEY_ID
 #define SHORTCUT_HOTKEY_ID 1000
 #endif // SHORTCUT_HOTKEY_ID
-#endif // _WIN32
 
 Shortcut &Shortcut::getInstance() {
     static Shortcut instance;
