@@ -22,6 +22,7 @@ public:
     void hide();
     void move();
     void resize(const int& width, const int& height, const bool& animate = false);
+    void sendEventToWebview(const std::string& eventName, const std::string& data);
 #ifdef _WIN32
     HWND getWindowHandle();
 #endif

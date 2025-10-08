@@ -7,6 +7,7 @@ import { InvokeLLM } from '../utils/llm';
 import { ClipboardUtils } from '../utils/clipboard';
 import { DiffViewer } from './diff-viewer';
 import { calculateStringSimilarity } from '../utils/similarity';
+import { events } from '../utils/events';
 
 interface AssistantPopupProps {
   clipboardContent: string;
@@ -43,6 +44,46 @@ export function AssistantPopup({
   const showAllResults = selectedLLM === 'all';
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
   const enabledActions = actions ? actions.filter(action => action.enabled) : [];
+
+  // Initialize events system and set up listeners
+  useEffect(() => {
+    events.initialize();
+
+    // Listen for settings changes from other webviews
+    const unsubscribeTheme = events.on('settings:theme-changed', (data) => {
+      console.log('Theme changed in settings:', data.theme);
+      // Theme changes are handled by the parent app component
+    });
+
+    const unsubscribeLLMConfigs = events.on('settings:llm-configs-changed', (data) => {
+      console.log('LLM configs changed in settings:', data.configs);
+      // LLM configs are handled by the parent app component
+    });
+
+    const unsubscribeActions = events.on('settings:actions-changed', (data) => {
+      console.log('Actions changed in settings:', data.actions);
+      // Actions are handled by the parent app component
+    });
+
+    const unsubscribeLLMEnabled = events.on('settings:llm-enabled-changed', (data) => {
+      console.log('LLM enabled changed:', data.llmId, data.enabled);
+      // This will be reflected when the parent component updates the props
+    });
+
+    const unsubscribeActionEnabled = events.on('settings:action-enabled-changed', (data) => {
+      console.log('Action enabled changed:', data.actionId, data.enabled);
+      // This will be reflected when the parent component updates the props
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      unsubscribeTheme();
+      unsubscribeLLMConfigs();
+      unsubscribeActions();
+      unsubscribeLLMEnabled();
+      unsubscribeActionEnabled();
+    };
+  }, []);
 
   // Reset popup state when clipboard content changes
   useEffect(() => {

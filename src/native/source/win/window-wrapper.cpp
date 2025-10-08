@@ -58,7 +58,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType)
             if (status) {
                 _isWindowVisible = true;            
                 // Call native callback if registered
-                _webview->triggerEvent("on-focus-change", "true");
+                sendEventToWebview("on-focus-change", "true");
             } else {
                 if (!_isWindowVisible) {
                     return;
@@ -66,7 +66,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType)
                 hide();
                 _isWindowVisible = false;
                 // Call native callback if registered
-                _webview->triggerEvent("on-focus-change", "false");
+                sendEventToWebview("on-focus-change", "false");
                 // Note: Don't hide here as this might fire too aggressively
             }
         });
@@ -201,6 +201,12 @@ void WindowWrapper::resize(const int& width, const int& height, const bool& anim
     Logger::getInstance().info("WindowWrapper::resize: start");
     if (_window) {
         _window->set_size({width, height});
+    }
+}
+
+void WindowWrapper::sendEventToWebview(const std::string& eventName, const std::string& data) {
+    if (_webview) {
+        _webview->triggerEvent(eventName, data);
     }
 }
 

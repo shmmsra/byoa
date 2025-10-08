@@ -27,6 +27,7 @@ declare global {
         vault_deleteData(key: string): Promise<boolean>;
         vault_hasData(key: string): Promise<boolean>;
         network_fetch(url: string, options: string): Promise<string>;
+        event_trigger(eventName: string, data: string): Promise<void>;
       };
     };
     

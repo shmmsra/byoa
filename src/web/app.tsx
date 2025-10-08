@@ -5,6 +5,7 @@ import { AssistantPopup } from './components/assistant-popup';
 import { SettingsDialog } from './components/settings-dialog';
 import { ClipboardUtils } from './utils/clipboard';
 import { VaultUtils } from './utils/vault';
+import { events } from './utils/events';
 
 export interface LLMConfig {
   id: string;
@@ -80,7 +81,12 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    // Initialize events system
+    events.initialize();
+
+    // Set up native callback for clipboard changes and events
     window.__nativeCallback = (eventName: string, data: string) => {
+      // Handle clipboard focus changes
       if (eventName === 'on-focus-change' && data === 'true') {
         ClipboardUtils.readData().then(data => {
           if (data && data[0] && data[0].type === 'text') {
@@ -88,6 +94,42 @@ function AppContent() {
           }
         });
       }
+      
+      // Handle events from other webviews
+      events.handleNativeEvent(eventName, data);
+    };
+
+    // Listen for settings changes from other webviews
+    const unsubscribeTheme = events.on('settings:theme-changed', (data) => {
+      console.log('Theme changed, updating:', data.theme);
+      setThemeMode(data.theme);
+    });
+
+    const unsubscribeLLMConfigs = events.on('settings:llm-configs-changed', async (data) => {
+      console.log('LLM configs changed, refreshing from vault');
+      try {
+        const configs = await VaultUtils.loadLLMConfigs();
+        setLLMConfigs(configs);
+      } catch (error) {
+        console.error('Failed to refresh LLM configs:', error);
+      }
+    });
+
+    const unsubscribeActions = events.on('settings:actions-changed', async (data) => {
+      console.log('Actions changed, refreshing from vault');
+      try {
+        const loadedActions = await VaultUtils.loadActions();
+        setActions(loadedActions);
+      } catch (error) {
+        console.error('Failed to refresh actions:', error);
+      }
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      unsubscribeTheme();
+      unsubscribeLLMConfigs();
+      unsubscribeActions();
     };
   }, []);
 

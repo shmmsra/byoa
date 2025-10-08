@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Input, Select, Switch, Tabs, message } from 'antd';
 import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
 import { Action, LLMConfig } from '../app';
+import { events } from '../utils/events';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -28,6 +29,29 @@ export function SettingsDialog({
   const [editingConfig, setEditingConfig] = useState<LLMConfig | null>(null);
   const [editingAction, setEditingAction] = useState<Action | null>(null);
   const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
+
+  // Initialize events system
+  useEffect(() => {
+    events.initialize();
+  }, []);
+
+  // Wrapper for theme change to emit events
+  const handleThemeChange = (newTheme: 'auto' | 'light' | 'dark') => {
+    onThemeChange(newTheme);
+    events.triggerToOtherWebview('settings:theme-changed', { theme: newTheme });
+  };
+
+  // Wrapper for LLM configs change to emit events
+  const handleLLMConfigsChange = (newConfigs: LLMConfig[]) => {
+    onLLMConfigsChange(newConfigs);
+    events.triggerToOtherWebview('settings:llm-configs-changed', { configs: newConfigs });
+  };
+
+  // Wrapper for actions change to emit events
+  const handleActionsChange = (newActions: Action[]) => {
+    onActionsChange(newActions);
+    events.triggerToOtherWebview('settings:actions-changed', { actions: newActions });
+  };
 
   const handleAddNew = () => {
     const newConfig: LLMConfig = {
@@ -74,14 +98,14 @@ export function SettingsDialog({
       updatedConfigs = [...llmConfigs, editingConfig];
     }
 
-    onLLMConfigsChange(updatedConfigs);
+    handleLLMConfigsChange(updatedConfigs);
     setEditingConfig(null);
     message.success('LLM configuration saved');
   };
 
   const handleDelete = (id: string) => {
     const updatedConfigs = llmConfigs.filter(c => c.id !== id);
-    onLLMConfigsChange(updatedConfigs);
+    handleLLMConfigsChange(updatedConfigs);
     message.success('LLM configuration removed');
   };
 
@@ -89,7 +113,16 @@ export function SettingsDialog({
     const updatedConfigs = llmConfigs.map(c =>
       c.id === id ? { ...c, enabled: !c.enabled } : c
     );
-    onLLMConfigsChange(updatedConfigs);
+    handleLLMConfigsChange(updatedConfigs);
+    
+    // Emit event to notify other components
+    const config = updatedConfigs.find(c => c.id === id);
+    if (config) {
+      events.triggerToOtherWebview('settings:llm-enabled-changed', {
+        llmId: id,
+        enabled: config.enabled
+      });
+    }
   };
 
   const toggleShowApiKey = (id: string) => {
@@ -130,7 +163,7 @@ export function SettingsDialog({
       updatedActions = [...(actions || []), editingAction];
     }
 
-    onActionsChange(updatedActions);
+    handleActionsChange(updatedActions);
     setEditingAction(null);
     message.success('Action saved');
   };
@@ -138,7 +171,7 @@ export function SettingsDialog({
   const handleDeleteAction = (id: string) => {
     if (!actions) return;
     const updatedActions = actions.filter(a => a.id !== id);
-    onActionsChange(updatedActions);
+    handleActionsChange(updatedActions);
     message.success('Action removed');
   };
 
@@ -147,7 +180,16 @@ export function SettingsDialog({
     const updatedActions = actions.map(a =>
       a.id === id ? { ...a, enabled: !a.enabled } : a
     );
-    onActionsChange(updatedActions);
+    handleActionsChange(updatedActions);
+    
+    // Emit event to notify other components
+    const action = updatedActions.find(a => a.id === id);
+    if (action) {
+      events.triggerToOtherWebview('settings:action-enabled-changed', {
+        actionId: id,
+        enabled: action.enabled
+      });
+    }
   };
 
   return (
@@ -412,7 +454,7 @@ export function SettingsDialog({
                   <label>Theme</label>
                   <Select 
                     value={theme} 
-                    onChange={onThemeChange}
+                    onChange={handleThemeChange}
                     style={{ width: '100%' }}
                   >
                     <Select.Option value="auto">Auto (Follow System)</Select.Option>

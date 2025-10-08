@@ -9,16 +9,16 @@
 #include "app-controller.hpp"
 #include "logger.hpp"
 
-#ifdef DEBUG
-#define MAIN_WINDOW_WIDTH 1000
-#define MAIN_WINDOW_HEIGHT 600
-#define ASSISTANT_WINDOW_WIDTH 750
-#define ASSISTANT_WINDOW_HEIGHT 450
-#else
+#ifndef DEBUG
 #define MAIN_WINDOW_WIDTH 1500
 #define MAIN_WINDOW_HEIGHT 900
 #define ASSISTANT_WINDOW_WIDTH 1000
 #define ASSISTANT_WINDOW_HEIGHT 600
+#else
+#define MAIN_WINDOW_WIDTH 1000
+#define MAIN_WINDOW_HEIGHT 600
+#define ASSISTANT_WINDOW_WIDTH 750
+#define ASSISTANT_WINDOW_HEIGHT 450
 #endif  // DEBUG
 
 using namespace std;
@@ -52,7 +52,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType): 
             if (status) {
                 _isWindowVisible = true;            
                 // Call native callback if registered
-                _webview->triggerEvent("on-focus-change", "true");
+                sendEventToWebview("on-focus-change", "true");
             } else {
                 if (!_isWindowVisible) {
                     return;
@@ -60,7 +60,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType): 
                 hide();
                 _isWindowVisible = false;
                 // Call native callback if registered
-                _webview->triggerEvent("on-focus-change", "false");
+                sendEventToWebview("on-focus-change", "false");
                 // Note: Don't hide here as this might fire too aggressively
             }
         });
@@ -230,6 +230,12 @@ void WindowWrapper::resize(const int& width, const int& height, const bool& anim
 
     [nsWindow setFrame:newFrame display:YES];
     _window->set_position({(int)newFrame.origin.x, (int)newFrame.origin.y});
+}
+
+void WindowWrapper::sendEventToWebview(const std::string& eventName, const std::string& data) {
+    if (_webview) {
+        _webview->triggerEvent(eventName, data);
+    }
 }
 
 std::string WindowWrapper::_getViewURL(const string& workflow/* = ""*/) {

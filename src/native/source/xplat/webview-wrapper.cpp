@@ -2,6 +2,7 @@
 #include <saucer/window.hpp>
 
 #include "webview-wrapper.hpp"
+#include "app-controller.hpp"
 #include "logger.hpp"
 #include "clipboard.hpp"
 #include "vault.hpp"
@@ -20,12 +21,12 @@ WebviewWrapper::WebviewWrapper(shared_ptr<saucer::window> window) {
         // Set the webview background (this is what you'll actually see)
         _webview->set_background({0, 0, 0, 100});
 
-#ifdef DEBUG
+#ifndef DEBUG
         // Enable developer tools for debugging
         // NOTE: There seems to be a bug on enabling the dev tools,
         // it shows up the window automatically with some delay
         // even it was hidden earlier.
-        // _webview->set_dev_tools(true);
+        _webview->set_dev_tools(true);
 #endif  // DEBUG
     }
 }
@@ -77,6 +78,12 @@ bool WebviewWrapper::init(const string& viewURL) {
         // The coroutine will automatically resume when the background thread completes
         string response = co_await Network::fetchAsync(url, options);
         co_return response;
+    });
+
+    _webview->expose("event_trigger", [this](const string& eventName, const string& data) -> coco::task<void> {
+        AppController::getInstance().getAssistantWindow()->sendEventToWebview(eventName, data);
+        AppController::getInstance().getMainWindow()->sendEventToWebview(eventName, data);
+        co_return;
     });
 
     if (!viewURL.empty()) {
