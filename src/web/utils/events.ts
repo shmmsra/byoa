@@ -4,7 +4,9 @@
  * across separate webviews using native APIs
  */
 
-export type EventData = Record<string, any>;
+import type { LLMConfig, Action } from '../app';
+
+export type EventData = Record<string, unknown>;
 
 export type EventListener = (data: EventData) => void;
 
@@ -20,8 +22,8 @@ export interface EventMap {
             | 'high-contrast-light'
             | 'high-contrast-dark';
     };
-    'settings:llm-configs-changed': { configs: any[] };
-    'settings:actions-changed': { actions: any[] };
+    'settings:llm-configs-changed': { configs: LLMConfig[] };
+    'settings:actions-changed': { actions: Action[] };
     'settings:llm-enabled-changed': { llmId: string; enabled: boolean };
     'settings:action-enabled-changed': { actionId: string; enabled: boolean };
     'assistant:request-refresh': { reason: string };
@@ -167,7 +169,10 @@ class Events {
             this.listeners.set(eventName, new Set());
         }
 
-        this.listeners.get(eventName)!.add(listener);
+        const eventListeners = this.listeners.get(eventName);
+        if (eventListeners) {
+            eventListeners.add(listener);
+        }
 
         // Return unsubscribe function
         return () => {
@@ -259,14 +264,14 @@ const events = Events.getInstance();
 
 // Add debug functions to window for testing
 if (typeof window !== 'undefined') {
-    (window as any).testEvents = {
-        trigger: (eventName: string, data: any) => {
+    (window as Record<string, unknown>).testEvents = {
+        trigger: (eventName: string, data: unknown) => {
             console.log('[Test] Triggering event:', eventName, data);
-            events.triggerToOtherWebview(eventName as any, data);
+            events.triggerToOtherWebview(eventName as EventName, data);
         },
-        listen: (eventName: string, callback: (data: any) => void) => {
+        listen: (eventName: string, callback: (data: unknown) => void) => {
             console.log('[Test] Listening for event:', eventName);
-            return events.on(eventName as any, callback);
+            return events.on(eventName as EventName, callback);
         },
         getListeners: () => {
             console.log('[Test] Active listeners:', events.getActiveListeners());
