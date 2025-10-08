@@ -1,0 +1,37 @@
+name: Build (macOS & Windows)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install frontend deps
+        run: |
+          npm install -g yarn
+          yarn install
+
+      - name: Build frontend
+        run: yarn build
+
+      - name: Configure CMake
+        run: cmake -B build -S .
+
+      - name: Build native app
+        run: cmake --build build --config Release

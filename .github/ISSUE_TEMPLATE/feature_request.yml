@@ -1,0 +1,15 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      placeholder: "What would you like BYOA to do?"
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      placeholder: "Why is this important?"
