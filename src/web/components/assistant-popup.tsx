@@ -13,7 +13,7 @@ interface AssistantPopupProps {
     clipboardContent: string;
     onClose: () => void;
     selectedLLM: 'auto' | 'all' | string;
-    onLLMChange: (llm: 'auto' | 'all' | string) => void;
+    onLLMChange: (_llm: 'auto' | 'all' | string) => void;
     llmConfigs: LLMConfig[];
     actions: Action[];
 }

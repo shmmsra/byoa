@@ -20,19 +20,19 @@ declare global {
         saucer?: {
             exposed: {
                 clipboard_readText(): Promise<string>;
-                clipboard_writeText(text: string): Promise<boolean>;
+                clipboard_writeText(_text: string): Promise<boolean>;
                 clipboard_clear(): Promise<void>;
-                vault_getData(key: string): Promise<string>;
-                vault_setData(key: string, value: string): Promise<boolean>;
-                vault_deleteData(key: string): Promise<boolean>;
-                vault_hasData(key: string): Promise<boolean>;
-                network_fetch(url: string, options: string): Promise<string>;
-                event_trigger(eventName: string, data: string): Promise<void>;
+                vault_getData(_key: string): Promise<string>;
+                vault_setData(_key: string, _value: string): Promise<boolean>;
+                vault_deleteData(_key: string): Promise<boolean>;
+                vault_hasData(_key: string): Promise<boolean>;
+                network_fetch(_url: string, _options: string): Promise<string>;
+                event_trigger(_eventName: string, _data: string): Promise<void>;
             };
         };
 
         // Native callback function that C++ can call
-        __nativeCallback?: (eventName: string, data: string) => void;
+        __nativeCallback?: (_eventName: string, _data: string) => void;
     }
 }
 

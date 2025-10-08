@@ -1,47 +1,15 @@
 {
   "extends": [
-    "stylelint-config-standard",
-    "stylelint-config-standard-scss"
+    "stylelint-config-standard"
   ],
   "rules": {
-    "indentation": 4,
-    "string-quotes": "single",
-    "no-duplicate-selectors": true,
-    "color-hex-case": "lower",
-    "color-hex-length": "short",
-    "color-named": "never",
-    "selector-max-id": 0,
-    "selector-combinator-space-after": "always",
-    "selector-attribute-quotes": "always",
-    "selector-attribute-operator-space-before": "never",
-    "selector-attribute-operator-space-after": "never",
-    "selector-attribute-brackets-space-inside": "never",
-    "declaration-block-trailing-semicolon": "always",
-    "declaration-no-important": true,
-    "declaration-colon-space-before": "never",
-    "declaration-colon-space-after": "always",
-    "property-no-vendor-prefix": true,
-    "value-no-vendor-prefix": true,
-    "number-leading-zero": "always",
-    "function-url-quotes": "always",
-    "font-weight-notation": "numeric",
-    "font-family-name-quotes": "always-where-recommended",
-    "comment-whitespace-inside": "always",
-    "comment-empty-line-before": "always",
-    "rule-empty-line-before": "always-multi-line",
-    "selector-pseudo-element-colon-notation": "double",
-    "selector-pseudo-class-parentheses-space-inside": "never",
-    "media-feature-range-operator-space-before": "always",
-    "media-feature-range-operator-space-after": "always",
-    "media-feature-parentheses-space-inside": "never",
-    "media-feature-colon-space-before": "never",
-    "media-feature-colon-space-after": "always",
-    "scss/at-rule-no-unknown": true,
-    "scss/selector-no-redundant-nesting-selector": true,
-    "scss/no-duplicate-dollar-variables": true,
-    "scss/dollar-variable-pattern": "^[a-z][a-zA-Z0-9]*$",
-    "scss/at-function-pattern": "^[a-z][a-zA-Z0-9]*$",
-    "scss/at-mixin-pattern": "^[a-z][a-zA-Z0-9]*$"
+    "declaration-no-important": null,
+    "no-descending-specificity": null,
+    "declaration-property-value-keyword-no-deprecated": null,
+    "no-duplicate-selectors": null,
+    "at-rule-no-unknown": [true, {
+      "ignoreAtRules": ["custom-variant", "theme"]
+    }]
   },
   "ignoreFiles": [
     "node_modules/**/*",

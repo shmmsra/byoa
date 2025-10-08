@@ -1,5 +1,4 @@
 import React from 'react';
-import { DiffMethod } from 'diff';
 import * as Diff from 'diff';
 import { calculateStringSimilarity } from '../utils/similarity';
 

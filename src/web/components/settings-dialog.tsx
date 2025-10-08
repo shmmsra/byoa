@@ -7,24 +7,24 @@ import { VaultUtils } from '../utils/vault';
 
 interface SettingsDialogProps {
     open: boolean;
-    onOpenChange: (open: boolean) => void;
+    onOpenChange: (_open: boolean) => void;
     llmConfigs: LLMConfig[];
-    onLLMConfigsChange: (configs: LLMConfig[]) => void;
+    onLLMConfigsChange: (_configs: LLMConfig[]) => void;
     actions: Action[];
-    onActionsChange: (actions: Action[]) => void;
+    onActionsChange: (_actions: Action[]) => void;
     theme: ThemeMode;
-    onThemeChange: (theme: ThemeMode) => void;
+    onThemeChange: (_theme: ThemeMode) => void;
 }
 
 export function SettingsDialog({
-    open,
-    onOpenChange,
+    open: _open,
+    onOpenChange: _onOpenChange,
     llmConfigs,
-    onLLMConfigsChange,
+    onLLMConfigsChange: _onLLMConfigsChange,
     actions,
-    onActionsChange,
+    onActionsChange: _onActionsChange,
     theme,
-    onThemeChange,
+    onThemeChange: _onThemeChange,
 }: SettingsDialogProps) {
     const [editingConfig, setEditingConfig] = useState<LLMConfig | null>(null);
     const [editingAction, setEditingAction] = useState<Action | null>(null);

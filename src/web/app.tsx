@@ -139,7 +139,7 @@ function AppContent() {
             }
         });
 
-        const unsubscribeLLMConfigs = events.on('settings:llm-configs-changed', async data => {
+        const unsubscribeLLMConfigs = events.on('settings:llm-configs-changed', async () => {
             console.log('LLM configs changed, refreshing from vault');
             try {
                 const configs = await VaultUtils.loadLLMConfigs();
@@ -149,7 +149,7 @@ function AppContent() {
             }
         });
 
-        const unsubscribeActions = events.on('settings:actions-changed', async data => {
+        const unsubscribeActions = events.on('settings:actions-changed', async () => {
             console.log('Actions changed, refreshing from vault');
             try {
                 const loadedActions = await VaultUtils.loadActions();
@@ -244,7 +244,9 @@ function AppContent() {
                 {workflow === 'assistant' ? (
                     <AssistantPopup
                         clipboardContent={clipboardContent}
-                        onClose={() => {}}
+                        onClose={() => {
+                            // Close handler - could be implemented if needed
+                        }}
                         selectedLLM={selectedLLM}
                         onLLMChange={setSelectedLLM}
                         llmConfigs={enabledLLMs}
@@ -253,7 +255,9 @@ function AppContent() {
                 ) : (
                     <SettingsDialog
                         open={true}
-                        onOpenChange={() => {}}
+                        onOpenChange={() => {
+                            // Open change handler - could be implemented if needed
+                        }}
                         llmConfigs={llmConfigs}
                         onLLMConfigsChange={handleLLMConfigsChange}
                         actions={actions}

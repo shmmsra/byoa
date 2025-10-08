@@ -104,7 +104,7 @@ export class ClipboardUtils {
     /**
      * Get cached clipboard data
      */
-    static getCachedData(): ClipboardData {
+    getCachedData(): ClipboardData {
         return this._cache;
     }
 
