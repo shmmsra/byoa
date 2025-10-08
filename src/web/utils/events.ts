@@ -13,7 +13,7 @@ export interface EventListener {
 }
 
 export interface EventMap {
-  'settings:theme-changed': { theme: 'auto' | 'light' | 'dark' };
+  'settings:theme-changed': { theme: 'auto' | 'light' | 'dark' | 'orange' | 'skyblue' | 'lightgreen' | 'high-contrast-light' | 'high-contrast-dark' };
   'settings:llm-configs-changed': { configs: any[] };
   'settings:actions-changed': { actions: any[] };
   'settings:llm-enabled-changed': { llmId: string; enabled: boolean };

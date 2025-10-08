@@ -7,6 +7,8 @@ import { ClipboardUtils } from './utils/clipboard';
 import { VaultUtils } from './utils/vault';
 import { events } from './utils/events';
 
+export type ThemeMode = 'auto' | 'light' | 'dark' | 'orange' | 'skyblue' | 'lightgreen' | 'high-contrast-light' | 'high-contrast-dark';
+
 export interface LLMConfig {
   id: string;
   name: string;
@@ -26,7 +28,7 @@ export interface Action {
 function AppContent() {
   const [searchParams] = useSearchParams();
   const [clipboardContent, setClipboardContent] = useState('');
-  const [themeMode, setThemeMode] = useState<'auto' | 'light' | 'dark'>('auto');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('auto');
   const [selectedLLM, setSelectedLLM] = useState<'auto' | 'all' | string>('auto');
   const [llmConfigs, setLLMConfigs] = useState<LLMConfig[]>([]);
   const [actions, setActions] = useState<Action[]>([]);
@@ -161,11 +163,24 @@ function AppContent() {
   useEffect(() => {
     const root = document.documentElement;
     
+    // Remove all theme classes first
+    root.classList.remove('dark', 'theme-orange', 'theme-skyblue', 'theme-lightgreen', 'theme-high-contrast-light', 'theme-high-contrast-dark');
+    
     if (themeMode === 'auto') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       root.classList.toggle('dark', prefersDark);
-    } else {
-      root.classList.toggle('dark', themeMode === 'dark');
+    } else if (themeMode === 'dark') {
+      root.classList.add('dark');
+    } else if (themeMode === 'orange') {
+      root.classList.add('theme-orange');
+    } else if (themeMode === 'skyblue') {
+      root.classList.add('theme-skyblue');
+    } else if (themeMode === 'lightgreen') {
+      root.classList.add('theme-lightgreen');
+    } else if (themeMode === 'high-contrast-light') {
+      root.classList.add('theme-high-contrast-light');
+    } else if (themeMode === 'high-contrast-dark') {
+      root.classList.add('theme-high-contrast-dark');
     }
   }, [themeMode]);
 
@@ -192,10 +207,21 @@ function AppContent() {
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
 
   const isDark = themeMode === 'dark' || (themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  
+  // Get theme class name
+  const getThemeClass = () => {
+    if (themeMode === 'dark') return 'dark';
+    if (themeMode === 'orange') return 'theme-orange';
+    if (themeMode === 'skyblue') return 'theme-skyblue';
+    if (themeMode === 'lightgreen') return 'theme-lightgreen';
+    if (themeMode === 'high-contrast-light') return 'theme-high-contrast-light';
+    if (themeMode === 'high-contrast-dark') return 'theme-high-contrast-dark';
+    return '';
+  };
 
   return (
     <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
-      <div className={`app-container ${isDark ? 'dark' : ''}`}>
+      <div className={`app-container ${getThemeClass()}`}>
         {workflow === 'assistant' ? (
           <AssistantPopup
             clipboardContent={clipboardContent}

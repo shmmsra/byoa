@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Input, Select, Switch, Tabs, message } from 'antd';
 import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
-import { Action, LLMConfig } from '../app';
+import { Action, LLMConfig, ThemeMode } from '../app';
 import { events } from '../utils/events';
 import { VaultUtils } from '../utils/vault';
 
@@ -12,8 +12,8 @@ interface SettingsDialogProps {
   onLLMConfigsChange: (configs: LLMConfig[]) => void;
   actions: Action[];
   onActionsChange: (actions: Action[]) => void;
-  theme: 'auto' | 'light' | 'dark';
-  onThemeChange: (theme: 'auto' | 'light' | 'dark') => void;
+  theme: ThemeMode;
+  onThemeChange: (theme: ThemeMode) => void;
 }
 
 
@@ -37,7 +37,7 @@ export function SettingsDialog({
   }, []);
 
   // Wrapper for theme change to emit events
-  const handleThemeChange = async (newTheme: 'auto' | 'light' | 'dark') => {
+  const handleThemeChange = async (newTheme: ThemeMode) => {
     onThemeChange(newTheme);
     
     // Save theme to vault
@@ -470,6 +470,11 @@ export function SettingsDialog({
                     <Select.Option value="auto">Auto (Follow System)</Select.Option>
                     <Select.Option value="light">Light</Select.Option>
                     <Select.Option value="dark">Dark</Select.Option>
+                    <Select.Option value="orange">Orange</Select.Option>
+                    <Select.Option value="skyblue">Sky Blue</Select.Option>
+                    <Select.Option value="lightgreen">Light Green</Select.Option>
+                    <Select.Option value="high-contrast-light">High Contrast Light</Select.Option>
+                    <Select.Option value="high-contrast-dark">High Contrast Dark</Select.Option>
                   </Select>
                   <p style={{ fontSize: '0.75rem', color: '#8c8c8c', marginTop: '4px' }}>
                     Choose how the assistant should appear

@@ -1,4 +1,4 @@
-import { LLMConfig, Action } from '../app';
+import { LLMConfig, Action, ThemeMode } from '../app';
 
 // Vault utility functions for LLM configurations and actions
 export class VaultUtils {
@@ -237,7 +237,7 @@ export class VaultUtils {
   /**
    * Load theme from the vault
    */
-  static async loadTheme(): Promise<'auto' | 'light' | 'dark'> {
+  static async loadTheme(): Promise<ThemeMode> {
     try {
       if (!window.saucer?.exposed?.vault_getData) {
         console.warn('Vault API not available, using default theme');
@@ -251,7 +251,7 @@ export class VaultUtils {
         return 'auto';
       }
 
-      const theme = JSON.parse(data) as 'auto' | 'light' | 'dark';
+      const theme = JSON.parse(data) as ThemeMode;
       console.log('Loaded theme from vault:', theme);
       return theme;
     } catch (error) {
@@ -263,7 +263,7 @@ export class VaultUtils {
   /**
    * Save theme to the vault
    */
-  static async saveTheme(theme: 'auto' | 'light' | 'dark'): Promise<boolean> {
+  static async saveTheme(theme: ThemeMode): Promise<boolean> {
     try {
       if (!window.saucer?.exposed?.vault_setData) {
         console.warn('Vault API not available, cannot save theme');
