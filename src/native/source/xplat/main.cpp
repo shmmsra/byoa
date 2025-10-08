@@ -1,5 +1,5 @@
-#include "logger.hpp"
 #include "app-controller.hpp"
+#include "logger.hpp"
 
 #ifdef _WIN32
 #include <windows.h>

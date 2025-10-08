@@ -1,6 +1,6 @@
 export interface ClipboardData {
-  type: 'text' | 'image';
-  data: string | Blob;
+    type: 'text' | 'image';
+    data: string | Blob;
 }
 
 export class ClipboardUtils {
@@ -10,9 +10,9 @@ export class ClipboardUtils {
   };
 
   /**
-   * Read data from clipboard
-   * Returns an array of clipboard items or null if no data available
-   */
+     * Read data from clipboard
+     * Returns an array of clipboard items or null if no data available
+     */
   static async readData(): Promise<ClipboardData[] | null> {
     try {
       // Use our native clipboard API if available, fallback to browser API
@@ -33,17 +33,21 @@ export class ClipboardUtils {
           for (const type of item.types) {
             if (type.startsWith('image/')) {
               const blob = await item.getType(type);
-              return [{
-                type: 'image',
-                data: blob,
-              }];
+              return [
+                {
+                  type: 'image',
+                  data: blob,
+                },
+              ];
             } else if (type.startsWith('text/plain')) {
               const blob = await item.getType(type);
               const text = await blob.text();
-              return [{
-                type: 'text',
-                data: text,
-              }];
+              return [
+                {
+                  type: 'text',
+                  data: text,
+                },
+              ];
             }
           }
         }
@@ -55,9 +59,9 @@ export class ClipboardUtils {
   }
 
   /**
-   * Write text to clipboard
-   * Returns true if successful, false otherwise
-   */
+     * Write text to clipboard
+     * Returns true if successful, false otherwise
+     */
   static async writeText(text: string): Promise<boolean> {
     try {
       // Use our native clipboard API if available, fallback to browser API
@@ -75,9 +79,9 @@ export class ClipboardUtils {
   }
 
   /**
-   * Write blob data to clipboard
-   * Returns true if successful, false otherwise
-   */
+     * Write blob data to clipboard
+     * Returns true if successful, false otherwise
+     */
   static async writeBlob(blob: Blob, type: string): Promise<boolean> {
     try {
       // Use browser clipboard API for blob data
@@ -91,22 +95,22 @@ export class ClipboardUtils {
   }
 
   /**
-   * Check if clipboard API is available
-   */
+     * Check if clipboard API is available
+     */
   static isAvailable(): boolean {
     return !!(window.saucer?.exposed?.clipboard_readText || navigator.clipboard);
   }
 
   /**
-   * Get cached clipboard data
-   */
+     * Get cached clipboard data
+     */
   static getCachedData(): ClipboardData {
     return this._cache;
   }
 
   /**
-   * Clear cached clipboard data
-   */
+     * Clear cached clipboard data
+     */
   static clearCache(): void {
     this._cache = {
       type: 'text',

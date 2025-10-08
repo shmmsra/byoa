@@ -1,25 +1,25 @@
-#include <windows.h>
-#include <functional>
-#include <thread>
 #include "shortcut.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
+#include <functional>
+#include <thread>
+#include <windows.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #ifndef SHORTCUT_HOTKEY_ID
-#define SHORTCUT_HOTKEY_ID  1000
-#endif  // SHORTCUT_HOTKEY_ID
-#endif  // _WIN32
+#define SHORTCUT_HOTKEY_ID 1000
+#endif // SHORTCUT_HOTKEY_ID
+#endif // _WIN32
 
-Shortcut& Shortcut::getInstance() {
+Shortcut &Shortcut::getInstance() {
     static Shortcut instance;
     return instance;
 }
 
-bool Shortcut::registerHandler(ShortcutCallback&& callback) {
+bool Shortcut::registerHandler(ShortcutCallback &&callback) {
     Logger::getInstance().info("Shortcut::registerHandler: start (Windows)");
-    
+
     _shortcutCallback = std::move(callback);
     auto hiddenWindow = AppController::getInstance().getHiddenWindowHandle();
 
@@ -34,13 +34,13 @@ bool Shortcut::registerHandler(ShortcutCallback&& callback) {
 
 bool Shortcut::unregisterHandler() {
     Logger::getInstance().info("Shortcut::unregisterHandler: start (Windows)");
-    
+
     auto hiddenWindow = AppController::getInstance().getHiddenWindowHandle();
     if (hiddenWindow) {
         UnregisterHotKey(hiddenWindow, SHORTCUT_HOTKEY_ID);
         PostMessage(hiddenWindow, WM_QUIT, 0, 0);
     }
-    
+
     _shortcutCallback = nullptr;
     return true;
 }

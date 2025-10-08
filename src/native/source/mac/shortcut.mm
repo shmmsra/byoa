@@ -4,12 +4,12 @@
 #import <Cocoa/Cocoa.h>
 
 FourCharCode const kShortcutSignature = 'com.byoa.assistant';
-static EventHandlerRef sEventHandler = NULL;
+static EventHandlerRef sEventHandler  = NULL;
 
 // Static dispatcher that handles the event and invokes the lambda
-static OSStatus CarbonCallbackDispatcher(EventHandlerCallRef _InHandlerCallRef, EventRef _InEvent, void* _InUserData) {
+static OSStatus CarbonCallbackDispatcher(EventHandlerCallRef _InHandlerCallRef, EventRef _InEvent, void *_InUserData) {
     if (_InUserData) {
-        auto callback = *reinterpret_cast<std::shared_ptr<std::function<OSStatus(EventHandlerCallRef, EventRef)>>*>(_InUserData);
+        auto callback = *reinterpret_cast<std::shared_ptr<std::function<OSStatus(EventHandlerCallRef, EventRef)>> *>(_InUserData);
         return (*callback)(_InHandlerCallRef, _InEvent);
     }
     return noErr;
@@ -17,14 +17,12 @@ static OSStatus CarbonCallbackDispatcher(EventHandlerCallRef _InHandlerCallRef, 
 
 bool InstallCommonEventHandler(std::shared_ptr<std::function<OSStatus(EventHandlerCallRef, EventRef)>> callback) {
     if (!sEventHandler) {
-        EventTypeSpec hotKeyPressedSpec = { kEventClassKeyboard, kEventHotKeyPressed };
+        EventTypeSpec hotKeyPressedSpec = {kEventClassKeyboard, kEventHotKeyPressed};
 
-        OSStatus status = InstallEventHandler(GetApplicationEventTarget(),
-                                              CarbonCallbackDispatcher,
-                                              1,
-                                              &hotKeyPressedSpec,
-                                              reinterpret_cast<void*>(new std::shared_ptr<std::function<OSStatus(EventHandlerCallRef, EventRef)>>(callback)),
-                                              &sEventHandler);
+        OSStatus status = InstallEventHandler(
+            GetApplicationEventTarget(), CarbonCallbackDispatcher, 1, &hotKeyPressedSpec,
+            reinterpret_cast<void *>(new std::shared_ptr<std::function<OSStatus(EventHandlerCallRef, EventRef)>>(callback)),
+            &sEventHandler);
         if (status != noErr) {
             sEventHandler = NULL;
             NSLog(@"Failed to install event handler: %d", status);
@@ -34,14 +32,14 @@ bool InstallCommonEventHandler(std::shared_ptr<std::function<OSStatus(EventHandl
     return YES;
 }
 
-Shortcut& Shortcut::getInstance() {
+Shortcut &Shortcut::getInstance() {
     static Shortcut instance;
     return instance;
 }
 
-bool Shortcut::registerHandler(Shortcut::ShortcutCallback&& callback) {
-    EventHotKeyRef* _OutCarbonHotKey = 0;
-    _shortcutCallback = std::move(callback);
+bool Shortcut::registerHandler(Shortcut::ShortcutCallback &&callback) {
+    EventHotKeyRef *_OutCarbonHotKey = 0;
+    _shortcutCallback                = std::move(callback);
 
     // Define the lambda function
     auto lambda = [callback, this](EventHandlerCallRef _InHandlerCallRef, EventRef _InEvent) -> OSStatus {
@@ -67,15 +65,10 @@ bool Shortcut::registerHandler(Shortcut::ShortcutCallback&& callback) {
         return false;
 
     static UInt32 sCarbonHotKeyID = 0;
-	EventHotKeyID hotKeyID = { .signature = kShortcutSignature, .id = ++sCarbonHotKeyID };
-    EventHotKeyRef carbonHotKey = NULL;
-    if ( RegisterEventHotKey( kVK_Space
-                            , cmdKey|shiftKey
-                            , hotKeyID
-                            , GetEventDispatcherTarget()
-                            , kEventHotKeyExclusive
-                            , &carbonHotKey
-                             ) != noErr ) {
+    EventHotKeyID hotKeyID        = {.signature = kShortcutSignature, .id = ++sCarbonHotKeyID};
+    EventHotKeyRef carbonHotKey   = NULL;
+    if (RegisterEventHotKey(kVK_Space, cmdKey | shiftKey, hotKeyID, GetEventDispatcherTarget(), kEventHotKeyExclusive, &carbonHotKey) !=
+        noErr) {
         return false;
     }
 
@@ -83,8 +76,8 @@ bool Shortcut::registerHandler(Shortcut::ShortcutCallback&& callback) {
 }
 
 bool Shortcut::unregisterHandler() {
-    if ( sEventHandler ) {
-        RemoveEventHandler( sEventHandler );
+    if (sEventHandler) {
+        RemoveEventHandler(sEventHandler);
         sEventHandler = NULL;
     }
     return true;

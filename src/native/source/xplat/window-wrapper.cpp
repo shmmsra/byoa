@@ -12,7 +12,7 @@ bool WindowWrapper::isVisible() {
     return _isWindowVisible;
 }
 
-std::string WindowWrapper::_getViewURL(const std::string& workflow) {
+std::string WindowWrapper::_getViewURL(const std::string &workflow) {
 #ifdef DEBUG
     // Debug mode: Try webpack dev server first for hot reloading
     std::string hostUrl = "http://localhost:3000";

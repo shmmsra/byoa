@@ -1,11 +1,11 @@
-#include <windows.h>
-#include <string>
-#include <vector>
-#include <sstream>
 #include "clipboard.hpp"
 #include "logger.hpp"
+#include <sstream>
+#include <string>
+#include <vector>
+#include <windows.h>
 
-Clipboard& Clipboard::getInstance() {
+Clipboard &Clipboard::getInstance() {
     static Clipboard instance;
     return instance;
 }
@@ -20,9 +20,8 @@ bool Clipboard::hasString() {
     }
 
     // Check for text formats in order of preference
-    bool hasText = IsClipboardFormatAvailable(CF_UNICODETEXT) ||
-                  IsClipboardFormatAvailable(CF_TEXT) ||
-                  IsClipboardFormatAvailable(CF_OEMTEXT);
+    bool hasText =
+        IsClipboardFormatAvailable(CF_UNICODETEXT) || IsClipboardFormatAvailable(CF_TEXT) || IsClipboardFormatAvailable(CF_OEMTEXT);
 
     // Always close the clipboard when done
     CloseClipboard();
@@ -41,11 +40,11 @@ bool Clipboard::hasImage() {
     }
 
     // Check for various image formats in order of preference
-    bool hasImage = IsClipboardFormatAvailable(CF_DIB) ||           // Device Independent Bitmap
-                   IsClipboardFormatAvailable(CF_DIBV5) ||          // Extended DIB format
-                   IsClipboardFormatAvailable(CF_BITMAP) ||         // Handle to a bitmap
-                   IsClipboardFormatAvailable(CF_ENHMETAFILE) ||    // Enhanced metafile
-                   IsClipboardFormatAvailable(CF_TIFF);             // TIFF format
+    bool hasImage = IsClipboardFormatAvailable(CF_DIB) ||         // Device Independent Bitmap
+                    IsClipboardFormatAvailable(CF_DIBV5) ||       // Extended DIB format
+                    IsClipboardFormatAvailable(CF_BITMAP) ||      // Handle to a bitmap
+                    IsClipboardFormatAvailable(CF_ENHMETAFILE) || // Enhanced metafile
+                    IsClipboardFormatAvailable(CF_TIFF);          // TIFF format
 
     // Check for custom PNG format if not found in standard formats
     if (!hasImage) {
@@ -108,7 +107,7 @@ std::string Clipboard::getString() {
     return result;
 }
 
-bool Clipboard::writeText(const std::string& text) {
+bool Clipboard::writeText(const std::string &text) {
     Logger::getInstance().info("Clipboard::writeText: start, length: {}", text.length());
 
     if (!OpenClipboard(NULL)) {
@@ -136,11 +135,11 @@ bool Clipboard::writeText(const std::string& text) {
     }
 
     // Lock the memory and copy the text
-    wchar_t* pMem = static_cast<wchar_t*>(GlobalLock(hMem));
+    wchar_t *pMem = static_cast<wchar_t *>(GlobalLock(hMem));
     if (pMem) {
         MultiByteToWideChar(CP_UTF8, 0, text.c_str(), -1, pMem, wideSize);
         GlobalUnlock(hMem);
-        
+
         // Set the clipboard data
         if (SetClipboardData(CF_UNICODETEXT, hMem)) {
             CloseClipboard();
@@ -212,6 +211,6 @@ void Clipboard::clear() {
 
     EmptyClipboard();
     CloseClipboard();
-    
+
     Logger::getInstance().info("Clipboard::clear: complete");
 }

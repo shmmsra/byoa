@@ -1,41 +1,44 @@
-#include <unordered_map>
-#include <windows.h>
-#include <saucer/window.hpp>
 #include "window-wrapper.hpp"
-#include "shortcut.hpp"
-#include "menubar-controller.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
+#include "menubar-controller.hpp"
+#include "shortcut.hpp"
+#include <saucer/window.hpp>
+#include <unordered_map>
+#include <windows.h>
 
 // Static map to track WindowWrapper instances for keyboard hook
-static std::unordered_map<HWND, WindowWrapper*> g_windowMap;
+static std::unordered_map<HWND, WindowWrapper *> g_windowMap;
 
 #ifdef DEBUG
-#define MAIN_WINDOW_WIDTH 1000
-#define MAIN_WINDOW_HEIGHT 600
-#define ASSISTANT_WINDOW_WIDTH 750
+#define MAIN_WINDOW_WIDTH       1000
+#define MAIN_WINDOW_HEIGHT      600
+#define ASSISTANT_WINDOW_WIDTH  750
 #define ASSISTANT_WINDOW_HEIGHT 450
 #else
-#define MAIN_WINDOW_WIDTH 1500
-#define MAIN_WINDOW_HEIGHT 900
-#define ASSISTANT_WINDOW_WIDTH 1000
+#define MAIN_WINDOW_WIDTH       1500
+#define MAIN_WINDOW_HEIGHT      900
+#define ASSISTANT_WINDOW_WIDTH  1000
 #define ASSISTANT_WINDOW_HEIGHT 600
-#endif  // DEBUG
+#endif // DEBUG
 
 // Forward declare the stable natives structure for window
 namespace saucer {
-    template<typename T> struct stable_natives;
-    template<> struct stable_natives<window> { HWND hwnd; };
-}
+    template <typename T>
+    struct stable_natives;
+    template <>
+    struct stable_natives<window> {
+        HWND hwnd;
+    };
+} // namespace saucer
 
-WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType) 
-    : _windowType(windowType), _isWindowVisible(false) {
+WindowWrapper::WindowWrapper(saucer::application *app, WINDOW_TYPE windowType) : _windowType(windowType), _isWindowVisible(false) {
     Logger::getInstance().info("WindowWrapper::WindowWrapper: start (Windows)");
 
     // Create window using factory method
     _window = saucer::window::create(app).value();
     _window->set_title("Build Your Own Assistant");
-    
+
     if (_windowType == WINDOW_TYPE::POPUP) {
         _window->set_size({ASSISTANT_WINDOW_WIDTH, ASSISTANT_WINDOW_HEIGHT});
     } else {
@@ -43,11 +46,11 @@ WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType)
     }
 
     // Handle window close event - hide window instead of closing app
-    _window->on<saucer::window::event::close>([&](){
+    _window->on<saucer::window::event::close>([&]() {
         hide();
         return saucer::policy::block;
     });
-    
+
     if (_windowType == WINDOW_TYPE::POPUP) {
         // Set decorations BEFORE initializing webview
         _window->set_decorations(saucer::window::decoration::none);
@@ -56,7 +59,7 @@ WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType)
 
         _window->on<saucer::window::event::focus>([&](bool status) {
             if (status) {
-                _isWindowVisible = true;            
+                _isWindowVisible = true;
                 // Call native callback if registered
                 sendEventToWebview("on-focus-change", "true");
             } else {
@@ -71,14 +74,14 @@ WindowWrapper::WindowWrapper(saucer::application* app, WINDOW_TYPE windowType)
             }
         });
     }
-    
+
     _webview = std::make_shared<WebviewWrapper>(_window);
     _webview->init(_getViewURL(_windowType == WINDOW_TYPE::POPUP ? "assistant" : ""));
 }
 
 WindowWrapper::~WindowWrapper() {
     Logger::getInstance().info("WindowWrapper::~WindowWrapper: start");
-    
+
     if (_windowType == WINDOW_TYPE::POPUP) {
         uninstallKeyboardHook();
     }
@@ -96,17 +99,17 @@ void WindowWrapper::show() {
         if (_windowType == WINDOW_TYPE::POPUP) {
             // Get the native window handle
             auto native_window = _window->native();
-            HWND hwnd = native_window.hwnd;
-            
+            HWND hwnd          = native_window.hwnd;
+
             // Modify window style to hide from taskbar
             // WS_EX_TOOLWINDOW: Creates a tool window with a smaller title bar
             // WS_EX_NOACTIVATE: Prevents the window from being activated when clicked
             LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-            exStyle |= WS_EX_TOOLWINDOW;   // Add tool window style (hides from taskbar)
-            exStyle &= ~WS_EX_APPWINDOW;   // Remove app window style
+            exStyle |= WS_EX_TOOLWINDOW; // Add tool window style (hides from taskbar)
+            exStyle &= ~WS_EX_APPWINDOW; // Remove app window style
             SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle);
         }
-#endif  // _WIN32
+#endif // _WIN32
 
         _window->show();
         _window->focus();
@@ -115,18 +118,18 @@ void WindowWrapper::show() {
 #ifdef _WIN32
         // Get the native window handle for activation logic
         auto native_window = _window->native();
-        HWND hwnd = native_window.hwnd;
-        
+        HWND hwnd          = native_window.hwnd;
+
         if (_windowType == WINDOW_TYPE::POPUP) {
             // Set decorations BEFORE initializing webview
             _window->set_decorations(saucer::window::decoration::partial);
-            saucer::color bgColor = { 255, 255, 255, 100 };
+            saucer::color bgColor = {255, 255, 255, 100};
             _window->set_background(bgColor);
-            
+
             // Install keyboard hook for Escape key handling
             installKeyboardHook();
         }
-#endif  // _WIN32
+#endif // _WIN32
     }
 }
 
@@ -135,13 +138,13 @@ void WindowWrapper::hide() {
     if (_window) {
         _window->hide();
         _isWindowVisible = false;
-        
+
 #ifdef _WIN32
         if (_windowType == WINDOW_TYPE::POPUP) {
             // Uninstall keyboard hook when hiding
             uninstallKeyboardHook();
         }
-#endif  // _WIN32
+#endif // _WIN32
     }
 }
 
@@ -150,7 +153,7 @@ void WindowWrapper::move() {
 
     // Get the current frame of the window
     auto windowNative = _window->native();
-    HWND windowHwnd = windowNative.hwnd;
+    HWND windowHwnd   = windowNative.hwnd;
 
     // Get current cursor position
     POINT cursorPos;
@@ -159,12 +162,12 @@ void WindowWrapper::move() {
     // Get the current window rect
     RECT currentRect;
     GetWindowRect(windowHwnd, &currentRect);
-    int windowWidth = currentRect.right - currentRect.left;
+    int windowWidth  = currentRect.right - currentRect.left;
     int windowHeight = currentRect.bottom - currentRect.top;
 
     // Get information about the monitor where the cursor is
-    HMONITOR hMonitor = MonitorFromPoint(cursorPos, MONITOR_DEFAULTTONEAREST);
-    MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+    HMONITOR hMonitor       = MonitorFromPoint(cursorPos, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO monitorInfo = {sizeof(MONITORINFO)};
     GetMonitorInfo(hMonitor, &monitorInfo);
     RECT workArea = monitorInfo.rcWork; // Work area excludes taskbar
 
@@ -193,18 +196,17 @@ void WindowWrapper::move() {
     }
 
     // Move the window to the new position
-    SetWindowPos(windowHwnd, NULL, newX, newY, 0, 0,
-        SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+    SetWindowPos(windowHwnd, NULL, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
-void WindowWrapper::resize(const int& width, const int& height, const bool& animate) {
+void WindowWrapper::resize(const int &width, const int &height, const bool &animate) {
     Logger::getInstance().info("WindowWrapper::resize: start");
     if (_window) {
         _window->set_size({width, height});
     }
 }
 
-void WindowWrapper::sendEventToWebview(const std::string& eventName, const std::string& data) {
+void WindowWrapper::sendEventToWebview(const std::string &eventName, const std::string &data) {
     if (_webview) {
         _webview->triggerEvent(eventName, data);
     }
@@ -214,7 +216,7 @@ bool WindowWrapper::isVisible() {
     return _isWindowVisible;
 }
 
-std::string WindowWrapper::_getViewURL(const std::string& workflow) {
+std::string WindowWrapper::_getViewURL(const std::string &workflow) {
 #ifdef DEBUG
     // Debug mode: Try webpack dev server first for hot reloading
     std::string hostUrl = "http://localhost:3000";
@@ -235,17 +237,17 @@ std::string WindowWrapper::_getViewURL(const std::string& workflow) {
 // Keyboard hook procedure for Escape key handling
 LRESULT CALLBACK WindowWrapper::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
-        KBDLLHOOKSTRUCT* pKeyboard = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-        
+        KBDLLHOOKSTRUCT *pKeyboard = reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam);
+
         // Check for Escape key press (VK_ESCAPE = 0x1B)
         if (wParam == WM_KEYDOWN && pKeyboard->vkCode == VK_ESCAPE) {
             // Get the foreground window
             HWND foregroundWindow = GetForegroundWindow();
-            
+
             // Check if this window is in our map
             auto it = g_windowMap.find(foregroundWindow);
             if (it != g_windowMap.end()) {
-                WindowWrapper* wrapper = it->second;
+                WindowWrapper *wrapper = it->second;
                 if (wrapper && wrapper->_isWindowVisible && wrapper->_windowType == WINDOW_TYPE::POPUP) {
                     Logger::getInstance().info("WindowWrapper: Escape key pressed, hiding window");
                     wrapper->hide();
@@ -254,7 +256,7 @@ LRESULT CALLBACK WindowWrapper::KeyboardHookProc(int nCode, WPARAM wParam, LPARA
             }
         }
     }
-    
+
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
@@ -262,22 +264,17 @@ void WindowWrapper::installKeyboardHook() {
     if (_keyboardHook) {
         return; // Already installed
     }
-    
+
     // Get the native window handle
     auto native_window = _window->native();
-    HWND hwnd = native_window.hwnd;
-    
+    HWND hwnd          = native_window.hwnd;
+
     // Add this window to the map
     g_windowMap[hwnd] = this;
-    
+
     // Install a low-level keyboard hook
-    _keyboardHook = SetWindowsHookEx(
-        WH_KEYBOARD_LL,
-        &WindowWrapper::KeyboardHookProc,
-        GetModuleHandle(NULL),
-        0
-    );
-    
+    _keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, &WindowWrapper::KeyboardHookProc, GetModuleHandle(NULL), 0);
+
     if (_keyboardHook) {
         Logger::getInstance().info("WindowWrapper: Keyboard hook installed for Escape key");
     } else {
@@ -289,21 +286,21 @@ void WindowWrapper::uninstallKeyboardHook() {
     if (!_keyboardHook) {
         return; // Not installed
     }
-    
+
     // Get the native window handle
     auto native_window = _window->native();
-    HWND hwnd = native_window.hwnd;
-    
+    HWND hwnd          = native_window.hwnd;
+
     // Remove from map
     g_windowMap.erase(hwnd);
-    
+
     // Uninstall the hook
     if (UnhookWindowsHookEx(_keyboardHook)) {
         Logger::getInstance().info("WindowWrapper: Keyboard hook uninstalled");
     } else {
         Logger::getInstance().error("WindowWrapper: Failed to uninstall keyboard hook: {}", GetLastError());
     }
-    
+
     _keyboardHook = nullptr;
 }
-#endif  // _WIN32
+#endif // _WIN32

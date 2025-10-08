@@ -1,25 +1,25 @@
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 
 #ifdef __APPLE__
 #import <Cocoa/Cocoa.h>
 #endif
 
 #ifdef _WIN32
-#include <windows.h>
 #include <shellapi.h>
+#include <windows.h>
 #endif
 
 class MenubarController {
-public:
+  public:
     // Singleton access method
-    static MenubarController& getInstance();
+    static MenubarController &getInstance();
 
     // Delete copy constructor and assignment operator
-    MenubarController(const MenubarController&) = delete;
-    MenubarController& operator=(const MenubarController&) = delete;
+    MenubarController(const MenubarController &)            = delete;
+    MenubarController &operator=(const MenubarController &) = delete;
 
     void init();
     void cleanup();
@@ -29,17 +29,17 @@ public:
     bool onTrigger(UINT uMsg, WPARAM wParam, LPARAM lParam);
 #else
     bool onTrigger();
-#endif  // _WIN32
+#endif // _WIN32
 
-private:
-    MenubarController() = default;
+  private:
+    MenubarController()  = default;
     ~MenubarController() = default;
 
 #ifdef __APPLE__
-    NSStatusItem* _statusItem;
-    NSMenu* _menu;
-    NSWindow* _settingsWindow;
-    
+    NSStatusItem *_statusItem;
+    NSMenu *_menu;
+    NSWindow *_settingsWindow;
+
     void createMenubarIcon();
     void createMenu();
 #endif
@@ -48,7 +48,7 @@ private:
     NOTIFYICONDATAW _notifyIconData;
     HMENU _menu;
     bool _iconAdded;
-    
+
     void createTrayIcon();
     void createMenu();
     void showContextMenu();

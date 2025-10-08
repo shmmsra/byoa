@@ -6,19 +6,22 @@ import * as levenshtein from 'fast-levenshtein';
  * @param str2 Second string to compare
  * @returns Object containing similarity score (0-1) and whether strings are similar (>0.7)
  */
-export const calculateStringSimilarity = (str1: string, str2: string): {
-  similarity: number;
-  isSimilar: boolean;
-  distance: number;
+export const calculateStringSimilarity = (
+  str1: string,
+  str2: string,
+): {
+    similarity: number;
+    isSimilar: boolean;
+    distance: number;
 } => {
   const distance = levenshtein.get(str1, str2);
   const maxLen = Math.max(str1.length, str2.length);
   const similarity = maxLen === 0 ? 1 : (maxLen - distance) / maxLen;
-  
+
   return {
     similarity,
     isSimilar: similarity > 0.7,
-    distance
+    distance,
   };
 };
 

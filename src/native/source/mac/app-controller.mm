@@ -1,17 +1,17 @@
+#import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
-#import <ApplicationServices/ApplicationServices.h>
 #import <WebKit/WebKit.h>
 
-#include <saucer/window.hpp>
 #include <saucer/modules/stable/webkit.hpp>
+#include <saucer/window.hpp>
 
-#include "logger.hpp"
 #include "app-controller.hpp"
-#include "window-wrapper.hpp"
-#include "shortcut.hpp"
 #include "clipboard.hpp"
+#include "logger.hpp"
 #include "menubar-controller.hpp"
+#include "shortcut.hpp"
+#include "window-wrapper.hpp"
 
 using namespace std;
 
@@ -19,7 +19,7 @@ bool RequestAccessibilityPermissions() {
     Logger::getInstance().info("AppController::RequestAccessibilityPermissions: start");
 
     @autoreleasepool {
-        NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
+        NSDictionary *options     = @{(id)kAXTrustedCheckOptionPrompt : @YES};
         BOOL accessibilityEnabled = AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef)options);
 
         if (!accessibilityEnabled) {
@@ -37,7 +37,7 @@ bool ActivateAppWithPID(pid_t pid) {
 
     // Wait until the app is activated
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    int counter = 10000;
+    int counter            = 10000;
     while ([workspace frontmostApplication].processIdentifier != pid) {
         if (counter-- < 1) {
             return false;
@@ -98,86 +98,86 @@ bool PerformCmdShortcut(pid_t pid, CGKeyCode keyCode) {
     return true;
 }
 
-bool ShowToastWithMessage(const std::string& message) {
+bool ShowToastWithMessage(const std::string &message) {
     NSRect screenFrame = [[NSScreen mainScreen] visibleFrame];
 
     // Calculate the vertical center for the text field
     unsigned int HorizontalPadding = 32;
-    unsigned int VerticalPadding = 32;
-    NSRect textFieldFrame = NSMakeRect(HorizontalPadding, VerticalPadding, 50, 50);
+    unsigned int VerticalPadding   = 32;
+    NSRect textFieldFrame          = NSMakeRect(HorizontalPadding, VerticalPadding, 50, 50);
 
-    NSTextField *textField = [[NSTextField alloc] initWithFrame:textFieldFrame];
-    textField.stringValue = [NSString stringWithUTF8String: message.c_str()];
-    textField.textColor = [NSColor whiteColor];
-    textField.font = [NSFont boldSystemFontOfSize:16.0];
-    textField.alignment = NSTextAlignmentCenter;
-    textField.bezeled = NO;
+    NSTextField *textField    = [[NSTextField alloc] initWithFrame:textFieldFrame];
+    textField.stringValue     = [NSString stringWithUTF8String:message.c_str()];
+    textField.textColor       = [NSColor whiteColor];
+    textField.font            = [NSFont boldSystemFontOfSize:16.0];
+    textField.alignment       = NSTextAlignmentCenter;
+    textField.bezeled         = NO;
     textField.drawsBackground = NO;
-    textField.editable = NO;
-    textField.selectable = NO;
+    textField.editable        = NO;
+    textField.selectable      = NO;
 
     CGRect frame = textField.frame;
     [textField sizeToFit];
     frame.size.width = textField.fittingSize.width;
-    textField.frame = frame;
+    textField.frame  = frame;
 
-    NSRect toastFrame = NSMakeRect(
-        NSMidX(screenFrame) - 100,
-        250,
-        frame.size.width + (2 * HorizontalPadding),
-        frame.size.height + (2 * VerticalPadding)
-    );
+    NSRect toastFrame =
+        NSMakeRect(NSMidX(screenFrame) - 100, 250, frame.size.width + (2 * HorizontalPadding), frame.size.height + (2 * VerticalPadding));
     NSWindow *toastWindow = [[NSWindow alloc] initWithContentRect:toastFrame
                                                         styleMask:NSWindowStyleMaskBorderless
                                                           backing:NSBackingStoreBuffered
                                                             defer:NO];
 
     toastWindow.backgroundColor = [NSColor clearColor]; // Transparent background
-    toastWindow.opaque = NO;
-    toastWindow.level = NSStatusWindowLevel;
-    toastWindow.hasShadow = YES;
+    toastWindow.opaque          = NO;
+    toastWindow.level           = NSStatusWindowLevel;
+    toastWindow.hasShadow       = YES;
 
     // Make the content view layer-backed
-    toastWindow.contentView.wantsLayer = YES;
+    toastWindow.contentView.wantsLayer            = YES;
     toastWindow.contentView.layer.backgroundColor = [[NSColor colorWithWhite:0.2 alpha:0.9] CGColor];
-    toastWindow.contentView.layer.cornerRadius = 20.0;
-    toastWindow.contentView.layer.masksToBounds = YES;
+    toastWindow.contentView.layer.cornerRadius    = 20.0;
+    toastWindow.contentView.layer.masksToBounds   = YES;
 
     [toastWindow.contentView addSubview:textField];
     [toastWindow makeKeyAndOrderFront:nil];
 
-    [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
-        context.duration = 0.5;
-        toastWindow.animator.alphaValue = 1.0;
-    } completionHandler:^{
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
-                context.duration = 0.5;
-                toastWindow.animator.alphaValue = 0.0;
-            } completionHandler:^{
-                [toastWindow orderOut:nil];
-            }];
-        });
-    }];
+    [NSAnimationContext
+        runAnimationGroup:^(NSAnimationContext *context) {
+          context.duration                = 0.5;
+          toastWindow.animator.alphaValue = 1.0;
+        }
+        completionHandler:^{
+          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [NSAnimationContext
+                runAnimationGroup:^(NSAnimationContext *context) {
+                  context.duration                = 0.5;
+                  toastWindow.animator.alphaValue = 0.0;
+                }
+                completionHandler:^{
+                  [toastWindow orderOut:nil];
+                }];
+          });
+        }];
 }
 
-AppController& AppController::getInstance() {
+AppController &AppController::getInstance() {
     static AppController instance;
     return instance;
 }
 
 void AppController::init() {
     Logger::getInstance().info("AppController::init: start");
-//    RequestAccessibilityPermissions();
+    //    RequestAccessibilityPermissions();
 }
 
 int AppController::start() {
     Logger::getInstance().info("AppController::start: start");
-    auto start = [&](saucer::application* app) -> coco::stray {
+    auto start = [&](saucer::application *app) -> coco::stray {
         Logger::getInstance().info("AppController::init: create window");
         [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyAccessory];
-        
-        _mainWindow = make_shared<WindowWrapper>(app, WindowWrapper::WINDOW_TYPE::MAIN);
+
+        _mainWindow      = make_shared<WindowWrapper>(app, WindowWrapper::WINDOW_TYPE::MAIN);
         _assistantWindow = make_shared<WindowWrapper>(app, WindowWrapper::WINDOW_TYPE::POPUP);
         _mainWindow->show();
 
@@ -188,13 +188,13 @@ int AppController::start() {
     Shortcut::getInstance().registerHandler([&]() {
         if (!_assistantWindow->isVisible()) {
             // Get the frontmost application PID
-            NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+            NSWorkspace *workspace           = [NSWorkspace sharedWorkspace];
             NSRunningApplication *focusedApp = [workspace frontmostApplication];
-            _focusedAppPId = focusedApp.processIdentifier;
+            _focusedAppPId                   = focusedApp.processIdentifier;
             _copyContent();
 
             bool hasString = Clipboard::getInstance().hasString();
-            bool hasImage = Clipboard::getInstance().hasImage();
+            bool hasImage  = Clipboard::getInstance().hasImage();
             if (!hasString && !hasImage) {
                 // Show a native Toast message
                 ShowToastWithMessage("Unsupported\ncontent");
@@ -231,7 +231,7 @@ std::shared_ptr<WindowWrapper> AppController::getAssistantWindow() {
 void AppController::_copyContent() {
     Logger::getInstance().info("AppController::copyContent: start: pid: {}", _focusedAppPId);
 
-    if(_focusedAppPId < 1) {
+    if (_focusedAppPId < 1) {
         return;
     }
 
@@ -239,13 +239,13 @@ void AppController::_copyContent() {
     PerformCmdShortcut(_focusedAppPId, 8);
 }
 
-void AppController::_pasteContent(const std::string& type, const std::string& data) {
+void AppController::_pasteContent(const std::string &type, const std::string &data) {
     Logger::getInstance().info("AppController::pasteContent: start: pid: {}", _focusedAppPId);
 
     // Show a native Toast message
     ShowToastWithMessage("Copied to\nClipboard");
 
-    if(_focusedAppPId < 1) {
+    if (_focusedAppPId < 1) {
         return;
     }
 

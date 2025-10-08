@@ -7,22 +7,30 @@ import { ClipboardUtils } from './utils/clipboard';
 import { VaultUtils } from './utils/vault';
 import { events } from './utils/events';
 
-export type ThemeMode = 'auto' | 'light' | 'dark' | 'orange' | 'skyblue' | 'lightgreen' | 'high-contrast-light' | 'high-contrast-dark';
+export type ThemeMode =
+    | 'auto'
+    | 'light'
+    | 'dark'
+    | 'orange'
+    | 'skyblue'
+    | 'lightgreen'
+    | 'high-contrast-light'
+    | 'high-contrast-dark';
 
 export interface LLMConfig {
-  id: string;
-  name: string;
-  modelName: string;
-  baseURL: string;
-  apiKey: string;
-  enabled: boolean;
+    id: string;
+    name: string;
+    modelName: string;
+    baseURL: string;
+    apiKey: string;
+    enabled: boolean;
 }
 
 export interface Action {
-  id: string;
-  label: string;
-  prompt: string;
-  enabled: boolean;
+    id: string;
+    label: string;
+    prompt: string;
+    enabled: boolean;
 }
 
 function AppContent() {
@@ -41,7 +49,7 @@ function AppContent() {
       try {
         const configs = await VaultUtils.loadLLMConfigs();
         setLLMConfigs(configs);
-        
+
         // Log the source of configurations for debugging
         const hasVaultConfigs = await VaultUtils.hasLLMConfigs();
         if (hasVaultConfigs) {
@@ -58,16 +66,16 @@ function AppContent() {
       try {
         const hasVaultActions = await VaultUtils.hasActions();
         const loadedActions = await VaultUtils.loadActions();
-        
+
         console.log('Loaded actions:', loadedActions.length, 'actions');
         setActions(loadedActions);
-        
+
         // If no actions in vault, save the default ones
         if (!hasVaultActions && loadedActions.length > 0) {
           console.log('Saving default actions to vault...');
           await VaultUtils.saveActions(loadedActions);
         }
-        
+
         if (hasVaultActions) {
           console.log('Loaded actions from vault');
         } else {
@@ -82,7 +90,7 @@ function AppContent() {
       try {
         const savedTheme = await VaultUtils.loadTheme();
         setThemeMode(savedTheme);
-        
+
         const hasVaultTheme = await VaultUtils.hasTheme();
         if (hasVaultTheme) {
           console.log('Loaded theme from vault:', savedTheme);
@@ -113,16 +121,16 @@ function AppContent() {
           }
         });
       }
-      
+
       // Handle events from other webviews
       events.handleNativeEvent(eventName, data);
     };
 
     // Listen for settings changes from other webviews
-    const unsubscribeTheme = events.on('settings:theme-changed', async (data) => {
+    const unsubscribeTheme = events.on('settings:theme-changed', async data => {
       console.log('Theme changed, updating:', data.theme);
       setThemeMode(data.theme);
-      
+
       // Save theme to vault
       try {
         await VaultUtils.saveTheme(data.theme);
@@ -131,7 +139,7 @@ function AppContent() {
       }
     });
 
-    const unsubscribeLLMConfigs = events.on('settings:llm-configs-changed', async (data) => {
+    const unsubscribeLLMConfigs = events.on('settings:llm-configs-changed', async data => {
       console.log('LLM configs changed, refreshing from vault');
       try {
         const configs = await VaultUtils.loadLLMConfigs();
@@ -141,7 +149,7 @@ function AppContent() {
       }
     });
 
-    const unsubscribeActions = events.on('settings:actions-changed', async (data) => {
+    const unsubscribeActions = events.on('settings:actions-changed', async data => {
       console.log('Actions changed, refreshing from vault');
       try {
         const loadedActions = await VaultUtils.loadActions();
@@ -162,10 +170,17 @@ function AppContent() {
   // Apply theme
   useEffect(() => {
     const root = document.documentElement;
-    
+
     // Remove all theme classes first
-    root.classList.remove('dark', 'theme-orange', 'theme-skyblue', 'theme-lightgreen', 'theme-high-contrast-light', 'theme-high-contrast-dark');
-    
+    root.classList.remove(
+      'dark',
+      'theme-orange',
+      'theme-skyblue',
+      'theme-lightgreen',
+      'theme-high-contrast-light',
+      'theme-high-contrast-dark',
+    );
+
     if (themeMode === 'auto') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       root.classList.toggle('dark', prefersDark);
@@ -206,8 +221,10 @@ function AppContent() {
 
   const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
 
-  const isDark = themeMode === 'dark' || (themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  
+  const isDark =
+        themeMode === 'dark' ||
+        (themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   // Get theme class name
   const getThemeClass = () => {
     if (themeMode === 'dark') return 'dark';
@@ -220,7 +237,9 @@ function AppContent() {
   };
 
   return (
-    <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+    <ConfigProvider
+      theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}
+    >
       <div className={`app-container ${getThemeClass()}`}>
         {workflow === 'assistant' ? (
           <AssistantPopup
@@ -242,7 +261,7 @@ function AppContent() {
             theme={themeMode}
             onThemeChange={setThemeMode}
           />
-      )}
+        )}
       </div>
     </ConfigProvider>
   );

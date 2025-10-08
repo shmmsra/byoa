@@ -4,22 +4,28 @@
  * across separate webviews using native APIs
  */
 
-export interface EventData {
-  [key: string]: any;
-}
+export type EventData = Record<string, any>;
 
-export interface EventListener {
-  (data: EventData): void;
-}
+export type EventListener = (data: EventData) => void;
 
 export interface EventMap {
-  'settings:theme-changed': { theme: 'auto' | 'light' | 'dark' | 'orange' | 'skyblue' | 'lightgreen' | 'high-contrast-light' | 'high-contrast-dark' };
-  'settings:llm-configs-changed': { configs: any[] };
-  'settings:actions-changed': { actions: any[] };
-  'settings:llm-enabled-changed': { llmId: string; enabled: boolean };
-  'settings:action-enabled-changed': { actionId: string; enabled: boolean };
-  'assistant:request-refresh': { reason: string };
-  'assistant:clipboard-changed': { content: string };
+    'settings:theme-changed': {
+        theme:
+            | 'auto'
+            | 'light'
+            | 'dark'
+            | 'orange'
+            | 'skyblue'
+            | 'lightgreen'
+            | 'high-contrast-light'
+            | 'high-contrast-dark';
+    };
+    'settings:llm-configs-changed': { configs: any[] };
+    'settings:actions-changed': { actions: any[] };
+    'settings:llm-enabled-changed': { llmId: string; enabled: boolean };
+    'settings:action-enabled-changed': { actionId: string; enabled: boolean };
+    'assistant:request-refresh': { reason: string };
+    'assistant:clipboard-changed': { content: string };
 }
 
 export type EventName = keyof EventMap;
@@ -30,14 +36,14 @@ export type EventName = keyof EventMap;
  */
 class Events {
   private static instance: Events;
-  private listeners: Map<EventName, Set<EventListener>> = new Map();
+  private listeners = new Map<EventName, Set<EventListener>>();
   private isInitialized = false;
 
   private constructor() {}
 
   /**
-   * Get singleton instance
-   */
+     * Get singleton instance
+     */
   static getInstance(): Events {
     if (!Events.instance) {
       Events.instance = new Events();
@@ -46,9 +52,9 @@ class Events {
   }
 
   /**
-   * Initialize the event system
-   * Note: Native callback handler should be set up in the app component
-   */
+     * Initialize the event system
+     * Note: Native callback handler should be set up in the app component
+     */
   initialize(): void {
     if (this.isInitialized) {
       return;
@@ -59,46 +65,46 @@ class Events {
   }
 
   /**
-   * Handle events from native code
-   */
+     * Handle events from native code
+     */
   handleNativeEvent(eventName: string, data: string): void {
     try {
       console.log(`[Events] Received native event: ${eventName}`);
-      console.log(`[Events] Raw data:`, data);
-      console.log(`[Events] Data type:`, typeof data);
-      console.log(`[Events] Data length:`, data?.length);
-      
+      console.log('[Events] Raw data:', data);
+      console.log('[Events] Data type:', typeof data);
+      console.log('[Events] Data length:', data?.length);
+
       let parsedData = {};
-      
+
       if (data && data.trim() !== '') {
         try {
           parsedData = JSON.parse(data);
         } catch (parseError) {
-          console.error(`[Events] JSON parse failed for data:`, data);
-          console.error(`[Events] Parse error:`, parseError);
-          
+          console.error('[Events] JSON parse failed for data:', data);
+          console.error('[Events] Parse error:', parseError);
+
           // Try to handle escaped JSON (from native code escaping)
           try {
             // The native code escapes quotes and backslashes for JavaScript execution
             // So we need to unescape them
             let cleanedData = data;
-            
+
             // Unescape quotes: \" -> "
             cleanedData = cleanedData.replace(/\\"/g, '"');
-            
+
             // Unescape backslashes: \\ -> \ (but be careful not to break escaped quotes)
             cleanedData = cleanedData.replace(/\\\\/g, '\\');
-            
+
             // Unescape newlines and other characters
             cleanedData = cleanedData.replace(/\\n/g, '\n');
             cleanedData = cleanedData.replace(/\\r/g, '\r');
             cleanedData = cleanedData.replace(/\\t/g, '\t');
-            
-            console.log(`[Events] Trying cleaned data:`, cleanedData);
+
+            console.log('[Events] Trying cleaned data:', cleanedData);
             parsedData = JSON.parse(cleanedData);
           } catch (secondError) {
-            console.error(`[Events] Second parse attempt failed:`, secondError);
-            
+            console.error('[Events] Second parse attempt failed:', secondError);
+
             // Try one more approach - maybe the data is just a simple string
             try {
               if (data.startsWith('"') && data.endsWith('"')) {
@@ -109,14 +115,14 @@ class Events {
                 parsedData = { rawData: data };
               }
             } catch (thirdError) {
-              console.error(`[Events] Third parse attempt failed:`, thirdError);
+              console.error('[Events] Third parse attempt failed:', thirdError);
               parsedData = { rawData: data };
             }
           }
         }
       }
-      
-      console.log(`[Events] Parsed data:`, parsedData);
+
+      console.log('[Events] Parsed data:', parsedData);
       this.emit(eventName as EventName, parsedData);
     } catch (error) {
       console.error('[Events] Failed to handle native event:', error);
@@ -126,17 +132,23 @@ class Events {
   }
 
   /**
-   * Emit an event to all listeners
-   */
+     * Emit an event to all listeners
+     */
   emit<T extends EventName>(eventName: T, data: EventMap[T]): void {
-    console.log(`[Events] Emitting event: ${eventName} to ${this.listeners.get(eventName)?.size || 0} listeners`);
+    console.log(
+      `[Events] Emitting event: ${eventName} to ${
+        this.listeners.get(eventName)?.size || 0
+      } listeners`,
+    );
     const eventListeners = this.listeners.get(eventName);
     if (eventListeners) {
       let listenerIndex = 0;
-      eventListeners.forEach((listener) => {
+      eventListeners.forEach(listener => {
         try {
           listenerIndex++;
-          console.log(`[Events] Calling listener ${listenerIndex}/${eventListeners.size} for ${eventName}`);
+          console.log(
+            `[Events] Calling listener ${listenerIndex}/${eventListeners.size} for ${eventName}`,
+          );
           listener(data);
         } catch (error) {
           console.error(`[Events] Error in event listener for ${eventName}:`, error);
@@ -148,30 +160,30 @@ class Events {
   }
 
   /**
-   * Subscribe to an event
-   */
+     * Subscribe to an event
+     */
   on<T extends EventName>(eventName: T, listener: EventListener): () => void {
     if (!this.listeners.has(eventName)) {
       this.listeners.set(eventName, new Set());
     }
-    
-    this.listeners.get(eventName)!.add(listener);
 
-    // Return unsubscribe function
-    return () => {
-      const eventListeners = this.listeners.get(eventName);
-      if (eventListeners) {
-        eventListeners.delete(listener);
-        if (eventListeners.size === 0) {
-          this.listeners.delete(eventName);
-        }
-      }
-    };
+        this.listeners.get(eventName)!.add(listener);
+
+        // Return unsubscribe function
+        return () => {
+          const eventListeners = this.listeners.get(eventName);
+          if (eventListeners) {
+            eventListeners.delete(listener);
+            if (eventListeners.size === 0) {
+              this.listeners.delete(eventName);
+            }
+          }
+        };
   }
 
   /**
-   * Unsubscribe from an event
-   */
+     * Unsubscribe from an event
+     */
   off<T extends EventName>(eventName: T, listener: EventListener): void {
     const eventListeners = this.listeners.get(eventName);
     if (eventListeners) {
@@ -183,37 +195,40 @@ class Events {
   }
 
   /**
-   * Subscribe to an event once (auto-unsubscribe after first call)
-   */
+     * Subscribe to an event once (auto-unsubscribe after first call)
+     */
   once<T extends EventName>(eventName: T, listener: EventListener): () => void {
     const onceListener = (data: EventData) => {
       listener(data);
       this.off(eventName, onceListener);
     };
-    
+
     return this.on(eventName, onceListener);
   }
 
   /**
-   * Trigger an event to other webviews via native API
-   * This is used to communicate between SettingsDialog and AssistantPopup
-   */
+     * Trigger an event to other webviews via native API
+     * This is used to communicate between SettingsDialog and AssistantPopup
+     */
   triggerToOtherWebview<T extends EventName>(eventName: T, data: EventMap[T]): void {
     try {
       console.log(`[Events] Triggering event: ${eventName}`);
-      console.log(`[Events] Event data:`, data);
-      
+      console.log('[Events] Event data:', data);
+
       const jsonData = JSON.stringify(data);
-      console.log(`[Events] JSON string:`, jsonData);
-      console.log(`[Events] JSON length:`, jsonData.length);
-      
+      console.log('[Events] JSON string:', jsonData);
+      console.log('[Events] JSON length:', jsonData.length);
+
       // Use saucer's event trigger API if available
       if (window.saucer?.exposed?.event_trigger) {
         console.log('[Events] Using saucer event_trigger API');
         window.saucer.exposed.event_trigger(eventName, jsonData);
       } else {
         console.warn('[Events] event_trigger API not available');
-        console.log('[Events] Available saucer APIs:', Object.keys(window.saucer?.exposed || {}));
+        console.log(
+          '[Events] Available saucer APIs:',
+          Object.keys(window.saucer?.exposed || {}),
+        );
       }
     } catch (error) {
       console.error('[Events] Failed to trigger event to other webview:', error);
@@ -221,8 +236,8 @@ class Events {
   }
 
   /**
-   * Get all active listeners for debugging
-   */
+     * Get all active listeners for debugging
+     */
   getActiveListeners(): Record<string, number> {
     const result: Record<string, number> = {};
     this.listeners.forEach((listeners, eventName) => {
@@ -232,8 +247,8 @@ class Events {
   }
 
   /**
-   * Clear all listeners (useful for cleanup)
-   */
+     * Clear all listeners (useful for cleanup)
+     */
   clearAll(): void {
     this.listeners.clear();
   }
@@ -261,14 +276,14 @@ if (typeof window !== 'undefined') {
       events.triggerToOtherWebview('settings:theme-changed', { theme: 'dark' });
     },
     testLLMChange: () => {
-      events.triggerToOtherWebview('settings:llm-configs-changed', { 
-        configs: [{ id: 'test', name: 'Test LLM', enabled: true }] 
+      events.triggerToOtherWebview('settings:llm-configs-changed', {
+        configs: [{ id: 'test', name: 'Test LLM', enabled: true }],
       });
     },
     testJSONParsing: (testData: string) => {
       console.log('[Test] Testing JSON parsing with:', testData);
       events.handleNativeEvent('test-event', testData);
-    }
+    },
   };
 }
 

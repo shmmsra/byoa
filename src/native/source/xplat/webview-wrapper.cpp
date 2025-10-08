@@ -1,23 +1,21 @@
 #include <saucer/smartview.hpp>
 #include <saucer/window.hpp>
 
-#include "webview-wrapper.hpp"
 #include "app-controller.hpp"
-#include "logger.hpp"
 #include "clipboard.hpp"
-#include "vault.hpp"
+#include "logger.hpp"
 #include "network.hpp"
+#include "vault.hpp"
+#include "webview-wrapper.hpp"
 
 using namespace std;
 using namespace byoa;
 
 WebviewWrapper::WebviewWrapper(shared_ptr<saucer::window> window) {
-    auto result = saucer::smartview<>::create({
-        .window = window
-    });
+    auto result = saucer::smartview<>::create({.window = window});
     if (result.has_value()) {
         _webview.emplace(std::move(result.value()));
-        
+
         // Set the webview background (this is what you'll actually see)
         _webview->set_background({0, 0, 0, 100});
 
@@ -27,22 +25,20 @@ WebviewWrapper::WebviewWrapper(shared_ptr<saucer::window> window) {
         // it shows up the window automatically with some delay
         // even it was hidden earlier.
         _webview->set_dev_tools(true);
-#endif  // DEBUG
+#endif // DEBUG
     }
 }
 
-bool WebviewWrapper::init(const string& viewURL) {
+bool WebviewWrapper::init(const string &viewURL) {
     if (!_webview.has_value()) {
         Logger::getInstance().error("WebviewWrapper::init: Webview not initialized");
         return false;
     }
-    
-    // Expose clipboard functions
-    _webview->expose("clipboard_readText", []() -> coco::task<string> {
-        co_return Clipboard::readText();
-    });
 
-    _webview->expose("clipboard_writeText", [](const string& text) -> coco::task<bool> {
+    // Expose clipboard functions
+    _webview->expose("clipboard_readText", []() -> coco::task<string> { co_return Clipboard::readText(); });
+
+    _webview->expose("clipboard_writeText", [](const string &text) -> coco::task<bool> {
         bool success = Clipboard::writeText(text);
         co_return success;
     });
@@ -52,27 +48,27 @@ bool WebviewWrapper::init(const string& viewURL) {
         co_return;
     });
 
-    _webview->expose("vault_getData", [](const string& key) -> coco::task<string> {
+    _webview->expose("vault_getData", [](const string &key) -> coco::task<string> {
         auto data = Vault::getData(key);
         co_return data.value_or("");
     });
 
-    _webview->expose("vault_setData", [](const string& key, const string& value) -> coco::task<bool> {
+    _webview->expose("vault_setData", [](const string &key, const string &value) -> coco::task<bool> {
         bool success = Vault::storeData(key, value);
         co_return success;
     });
 
-    _webview->expose("vault_deleteData", [](const string& key) -> coco::task<bool> {
+    _webview->expose("vault_deleteData", [](const string &key) -> coco::task<bool> {
         bool success = Vault::deleteData(key);
         co_return success;
     });
 
-    _webview->expose("vault_hasData", [](const string& key) -> coco::task<bool> {
+    _webview->expose("vault_hasData", [](const string &key) -> coco::task<bool> {
         bool success = Vault::hasData(key);
         co_return success;
     });
 
-    _webview->expose("network_fetch", [](const string& url, const string& options) -> coco::task<string> {
+    _webview->expose("network_fetch", [](const string &url, const string &options) -> coco::task<string> {
         // co_await the future directly - the function returns a temporary (rvalue) that can be awaited
         // This suspends the coroutine without blocking the thread
         // The coroutine will automatically resume when the background thread completes
@@ -80,7 +76,7 @@ bool WebviewWrapper::init(const string& viewURL) {
         co_return response;
     });
 
-    _webview->expose("event_trigger", [this](const string& eventName, const string& data) -> coco::task<void> {
+    _webview->expose("event_trigger", [this](const string &eventName, const string &data) -> coco::task<void> {
         AppController::getInstance().getAssistantWindow()->sendEventToWebview(eventName, data);
         AppController::getInstance().getMainWindow()->sendEventToWebview(eventName, data);
         co_return;
@@ -98,16 +94,16 @@ bool WebviewWrapper::init(const string& viewURL) {
     return true;
 }
 
-void WebviewWrapper::triggerEvent(const string& eventName, const string& data) {
+void WebviewWrapper::triggerEvent(const string &eventName, const string &data) {
     if (!_webview.has_value()) {
         Logger::getInstance().warn("WebviewWrapper::triggerEvent: Webview not available");
         return;
     }
-    
+
     Logger::getInstance().info("AppController::triggerEvent: Calling native callback with event: {}", eventName);
-    
+
     // Escape the strings for JavaScript execution
-    auto escapeString = [](const string& str) {
+    auto escapeString = [](const string &str) {
         string result;
         for (char c : str) {
             if (c == '"' || c == '\'') {
@@ -127,18 +123,17 @@ void WebviewWrapper::triggerEvent(const string& eventName, const string& data) {
         }
         return result;
     };
-    
+
     string escapedEventName = escapeString(eventName);
-    string escapedData = escapeString(data);
-    
+    string escapedData      = escapeString(data);
+
     try {
         // Use saucer's format string with placeholders - don't add quotes since saucer adds them
         auto result = _webview->evaluate<string>(
-            "(function() {{ if (window.__nativeCallback) {{ window.__nativeCallback({}, {}); }} return ''; }})()",
-            escapedEventName, escapedData
-        );
+            "(function() {{ if (window.__nativeCallback) {{ window.__nativeCallback({}, {}); }} return ''; }})()", escapedEventName,
+            escapedData);
         // We don't need to wait for the result since it's fire-and-forget
-    } catch (const exception& e) {
+    } catch (const exception &e) {
         Logger::getInstance().error("AppController::triggerEvent: Failed to call JavaScript callback: {}", e.what());
     }
 }

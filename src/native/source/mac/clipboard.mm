@@ -1,17 +1,16 @@
 #include "clipboard.hpp"
 
-#import <Cocoa/Cocoa.h>
-#import <AppKit/NSPasteboard.h>
-#import <AppKit/NSImage.h>
 #import <AppKit/AppKit.h>
+#import <AppKit/NSImage.h>
+#import <AppKit/NSPasteboard.h>
+#import <Cocoa/Cocoa.h>
 
-Clipboard& Clipboard::getInstance() {
+Clipboard &Clipboard::getInstance() {
     static Clipboard instance;
     return instance;
 }
 
-bool Clipboard::hasString()
-{
+bool Clipboard::hasString() {
     // Access the general pasteboard
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
 
@@ -24,18 +23,18 @@ bool Clipboard::hasString()
     }
 
     // Check if the pasteboard contains plain text
-    BOOL containsPlainText = [pasteboard canReadItemWithDataConformingToTypes:@[(NSString *)kUTTypePlainText]];
+    BOOL containsPlainText = [pasteboard canReadItemWithDataConformingToTypes:@[ (NSString *)kUTTypePlainText ]];
 
     // Check if the pasteboard contains HTML
     if (@available(macOS 10.13, *)) {
-        BOOL containsFileURL = [pasteboard canReadItemWithDataConformingToTypes:@[NSPasteboardTypeFileURL]];
+        BOOL containsFileURL = [pasteboard canReadItemWithDataConformingToTypes:@[ NSPasteboardTypeFileURL ]];
 
         // If pasteboard contains plain text but not FileURL (e.g., images copied from Apple Notes are also FileURLs)
         if (containsPlainText && !containsFileURL) {
             return true;
         }
     } else {
-        BOOL containsFileURL = [pasteboard canReadItemWithDataConformingToTypes:@[(NSString *)@"public.file-url"]];
+        BOOL containsFileURL = [pasteboard canReadItemWithDataConformingToTypes:@[ (NSString *)@"public.file-url" ]];
 
         // If pasteboard contains plain text but not FileURL (e.g., images copied from Apple Notes are also FileURLs)
         if (containsPlainText && !containsFileURL) {
@@ -46,15 +45,14 @@ bool Clipboard::hasString()
     return false;
 }
 
-bool Clipboard::hasImage()
-{
+bool Clipboard::hasImage() {
     // Access the general pasteboard
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
 
     // Check if a specific type is available
-    BOOL isPNG = [pasteboard canReadItemWithDataConformingToTypes:@[NSPasteboardTypePNG]];
-    BOOL isJPEG = [pasteboard canReadItemWithDataConformingToTypes:@[(NSString *)@"public.jpeg"]];
-    BOOL isTIFF = [pasteboard canReadItemWithDataConformingToTypes:@[NSPasteboardTypeTIFF]];
+    BOOL isPNG  = [pasteboard canReadItemWithDataConformingToTypes:@[ NSPasteboardTypePNG ]];
+    BOOL isJPEG = [pasteboard canReadItemWithDataConformingToTypes:@[ (NSString *)@"public.jpeg" ]];
+    BOOL isTIFF = [pasteboard canReadItemWithDataConformingToTypes:@[ NSPasteboardTypeTIFF ]];
 
     if (isPNG || isJPEG || isTIFF) {
         return true;
@@ -63,16 +61,15 @@ bool Clipboard::hasImage()
     return false;
 }
 
-std::string Clipboard::getString()
-{
+std::string Clipboard::getString() {
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-    NSDictionary *options = [NSDictionary dictionary];
+    NSArray *classArray      = [NSArray arrayWithObject:[NSString class]];
+    NSDictionary *options    = [NSDictionary dictionary];
 
-    if( [pasteboard canReadObjectForClasses:classArray options:options] ) {
+    if ([pasteboard canReadObjectForClasses:classArray options:options]) {
         NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classArray options:options];
-        NSString *text = [objectsToPaste firstObject];
-        if(!text)
+        NSString *text          = [objectsToPaste firstObject];
+        if (!text)
             return std::string();
         else
             return std::string([text UTF8String]);
@@ -81,7 +78,7 @@ std::string Clipboard::getString()
     }
 }
 
-bool Clipboard::writeText(const std::string& text) {
+bool Clipboard::writeText(const std::string &text) {
     @autoreleasepool {
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
         [pasteboard clearContents];
@@ -93,7 +90,7 @@ bool Clipboard::writeText(const std::string& text) {
 std::string Clipboard::readText() {
     @autoreleasepool {
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-        NSString *string = [pasteboard stringForType:NSPasteboardTypeString];
+        NSString *string         = [pasteboard stringForType:NSPasteboardTypeString];
         if (string) {
             return std::string([string UTF8String]);
         }
