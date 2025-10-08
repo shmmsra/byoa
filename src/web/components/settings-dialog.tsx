@@ -3,6 +3,7 @@ import { Button, Input, Select, Switch, Tabs, message } from 'antd';
 import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
 import { Action, LLMConfig } from '../app';
 import { events } from '../utils/events';
+import { VaultUtils } from '../utils/vault';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -36,8 +37,17 @@ export function SettingsDialog({
   }, []);
 
   // Wrapper for theme change to emit events
-  const handleThemeChange = (newTheme: 'auto' | 'light' | 'dark') => {
+  const handleThemeChange = async (newTheme: 'auto' | 'light' | 'dark') => {
     onThemeChange(newTheme);
+    
+    // Save theme to vault
+    try {
+      await VaultUtils.saveTheme(newTheme);
+    } catch (error) {
+      console.error('Failed to save theme to vault:', error);
+    }
+    
+    // Emit event to notify other components
     events.triggerToOtherWebview('settings:theme-changed', { theme: newTheme });
   };
 

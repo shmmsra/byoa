@@ -76,8 +76,25 @@ function AppContent() {
       }
     };
 
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await VaultUtils.loadTheme();
+        setThemeMode(savedTheme);
+        
+        const hasVaultTheme = await VaultUtils.hasTheme();
+        if (hasVaultTheme) {
+          console.log('Loaded theme from vault:', savedTheme);
+        } else {
+          console.log('Using default theme (vault is empty)');
+        }
+      } catch (error) {
+        console.error('Failed to load theme:', error);
+      }
+    };
+
     loadConfigs();
     loadActions();
+    loadTheme();
   }, []);
 
   useEffect(() => {
@@ -100,9 +117,16 @@ function AppContent() {
     };
 
     // Listen for settings changes from other webviews
-    const unsubscribeTheme = events.on('settings:theme-changed', (data) => {
+    const unsubscribeTheme = events.on('settings:theme-changed', async (data) => {
       console.log('Theme changed, updating:', data.theme);
       setThemeMode(data.theme);
+      
+      // Save theme to vault
+      try {
+        await VaultUtils.saveTheme(data.theme);
+      } catch (error) {
+        console.error('Failed to save theme to vault:', error);
+      }
     });
 
     const unsubscribeLLMConfigs = events.on('settings:llm-configs-changed', async (data) => {

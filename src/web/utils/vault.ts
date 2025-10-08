@@ -4,6 +4,7 @@ import { LLMConfig, Action } from '../app';
 export class VaultUtils {
   private static readonly LLM_CONFIGS_KEY = 'llm_configs';
   private static readonly ACTIONS_KEY = 'actions';
+  private static readonly THEME_KEY = 'theme';
 
   /**
    * Load LLM configurations from the vault
@@ -231,5 +232,72 @@ export class VaultUtils {
       { id: 'convert-to-code', label: 'Convert to Code', prompt: 'Convert the following to code:\n\n{{data}}', enabled: true },
       { id: 'explain-code', label: 'Explain Code', prompt: 'Explain what this code does:\n\n{{data}}', enabled: true },
     ];
+  }
+
+  /**
+   * Load theme from the vault
+   */
+  static async loadTheme(): Promise<'auto' | 'light' | 'dark'> {
+    try {
+      if (!window.saucer?.exposed?.vault_getData) {
+        console.warn('Vault API not available, using default theme');
+        return 'auto';
+      }
+
+      const data = await window.saucer.exposed.vault_getData(this.THEME_KEY);
+      
+      if (!data) {
+        console.log('No theme found in vault, using default');
+        return 'auto';
+      }
+
+      const theme = JSON.parse(data) as 'auto' | 'light' | 'dark';
+      console.log('Loaded theme from vault:', theme);
+      return theme;
+    } catch (error) {
+      console.error('Failed to load theme from vault:', error);
+      return 'auto';
+    }
+  }
+
+  /**
+   * Save theme to the vault
+   */
+  static async saveTheme(theme: 'auto' | 'light' | 'dark'): Promise<boolean> {
+    try {
+      if (!window.saucer?.exposed?.vault_setData) {
+        console.warn('Vault API not available, cannot save theme');
+        return false;
+      }
+
+      const data = JSON.stringify(theme);
+      const success = await window.saucer.exposed.vault_setData(this.THEME_KEY, data);
+      
+      if (success) {
+        console.log('Successfully saved theme to vault:', theme);
+      } else {
+        console.error('Failed to save theme to vault');
+      }
+      
+      return success;
+    } catch (error) {
+      console.error('Failed to save theme to vault:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if theme exists in vault
+   */
+  static async hasTheme(): Promise<boolean> {
+    try {
+      if (!window.saucer?.exposed?.vault_hasData) {
+        return false;
+      }
+      return await window.saucer.exposed.vault_hasData(this.THEME_KEY);
+    } catch (error) {
+      console.error('Failed to check if theme exists in vault:', error);
+      return false;
+    }
   }
 }
