@@ -1,8 +1,7 @@
 {
-  "name": "byoa-assistant",
+  "name": "byoa",
   "version": "1.0.0",
-  "description": "A native macOS desktop assistant application with AI-powered features built with React and Saucer",
-  "main": "build/Resources/index.html",
+  "description": "A native desktop assistant with AI-powered features built with React and Saucer",
   "homepage": "https://github.com/shmmsra/byoa",
   "repository": {
     "type": "git",

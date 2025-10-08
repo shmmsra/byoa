@@ -37,7 +37,7 @@ export function SettingsDialog({
 
     // Wrapper for theme change to emit events
     const handleThemeChange = async (newTheme: ThemeMode) => {
-        onThemeChange(newTheme);
+        _onThemeChange(newTheme);
 
         // Save theme to vault
         try {
@@ -52,13 +52,13 @@ export function SettingsDialog({
 
     // Wrapper for LLM configs change to emit events
     const handleLLMConfigsChange = (newConfigs: LLMConfig[]) => {
-        onLLMConfigsChange(newConfigs);
+        _onLLMConfigsChange(newConfigs);
         events.triggerToOtherWebview('settings:llm-configs-changed', { configs: newConfigs });
     };
 
     // Wrapper for actions change to emit events
     const handleActionsChange = (newActions: Action[]) => {
-        onActionsChange(newActions);
+        _onActionsChange(newActions);
         events.triggerToOtherWebview('settings:actions-changed', { actions: newActions });
     };
 
