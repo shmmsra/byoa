@@ -7,22 +7,22 @@ import * as levenshtein from 'fast-levenshtein';
  * @returns Object containing similarity score (0-1) and whether strings are similar (>0.7)
  */
 export const calculateStringSimilarity = (
-  str1: string,
-  str2: string,
+    str1: string,
+    str2: string
 ): {
     similarity: number;
     isSimilar: boolean;
     distance: number;
 } => {
-  const distance = levenshtein.get(str1, str2);
-  const maxLen = Math.max(str1.length, str2.length);
-  const similarity = maxLen === 0 ? 1 : (maxLen - distance) / maxLen;
+    const distance = levenshtein.get(str1, str2);
+    const maxLen = Math.max(str1.length, str2.length);
+    const similarity = maxLen === 0 ? 1 : (maxLen - distance) / maxLen;
 
-  return {
-    similarity,
-    isSimilar: similarity > 0.7,
-    distance,
-  };
+    return {
+        similarity,
+        isSimilar: similarity > 0.7,
+        distance,
+    };
 };
 
 /**
@@ -33,6 +33,6 @@ export const calculateStringSimilarity = (
  * @returns Whether to show diff view
  */
 export const shouldShowDiff = (original: string, result: string, threshold = 0.7): boolean => {
-  const { similarity } = calculateStringSimilarity(original, result);
-  return similarity >= threshold;
+    const { similarity } = calculateStringSimilarity(original, result);
+    return similarity >= threshold;
 };

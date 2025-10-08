@@ -4,19 +4,19 @@ import './index.css';
 
 // Wait for DOM to be ready before rendering React
 function initApp() {
-  const rootElement = document.getElementById('root');
-  if (!rootElement) {
-    console.error('Root element not found!');
-    return;
-  }
+    const rootElement = document.getElementById('root');
+    if (!rootElement) {
+        console.error('Root element not found!');
+        return;
+    }
 
-  createRoot(rootElement).render(<App />);
+    createRoot(rootElement).render(<App />);
 }
 
 // Check if DOM is already loaded
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
+    document.addEventListener('DOMContentLoaded', initApp);
 } else {
-  // DOM is already ready
-  initApp();
+    // DOM is already ready
+    initApp();
 }
