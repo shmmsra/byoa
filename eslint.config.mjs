@@ -46,7 +46,7 @@ export default defineConfig(
       // Stylistic rules
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
-      'indent': ['error', 4],
+      'indent': 'off', // Let Prettier handle indentation
       'comma-dangle': ['error', 'always-multiline'],
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],

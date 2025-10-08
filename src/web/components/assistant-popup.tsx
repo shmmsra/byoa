@@ -108,7 +108,7 @@ export function AssistantPopup({
             throw new Error(
                 `Error in ${config.name}: ${
                     error instanceof Error ? error.message : 'Unknown error'
-                }`
+                }`,
             );
         }
     };
@@ -159,7 +159,7 @@ export function AssistantPopup({
                     const firstResult = results[0];
                     const similarity = calculateStringSimilarity(
                         clipboardContent,
-                        firstResult.result
+                        firstResult.result,
                     );
                     setShowDiffViewer(similarity.isSimilar);
                 }

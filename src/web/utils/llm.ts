@@ -4,7 +4,7 @@ export async function InvokeLLM(
     baseURL: string,
     modelName: string,
     apiKey: string,
-    prompt: string
+    prompt: string,
 ) {
     console.info(`Invoking LLM with baseURL: ${baseURL}, modelName: ${modelName}`);
 
@@ -38,7 +38,7 @@ export async function InvokeLLM(
             console.info('Using native network_fetch');
             const responseJson = await window.saucer.exposed.network_fetch(
                 llmURL,
-                JSON.stringify(options)
+                JSON.stringify(options),
             );
             const response: NetworkFetchResponse = JSON.parse(responseJson);
 

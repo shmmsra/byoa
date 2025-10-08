@@ -178,7 +178,7 @@ function AppContent() {
             'theme-skyblue',
             'theme-lightgreen',
             'theme-high-contrast-light',
-            'theme-high-contrast-dark'
+            'theme-high-contrast-dark',
         );
 
         if (themeMode === 'auto') {

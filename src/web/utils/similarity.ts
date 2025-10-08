@@ -8,7 +8,7 @@ import * as levenshtein from 'fast-levenshtein';
  */
 export const calculateStringSimilarity = (
     str1: string,
-    str2: string
+    str2: string,
 ): {
     similarity: number;
     isSimilar: boolean;

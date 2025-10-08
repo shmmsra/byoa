@@ -120,7 +120,7 @@ export function SettingsDialog({
 
     const handleToggleEnabled = (id: string) => {
         const updatedConfigs = llmConfigs.map(c =>
-            c.id === id ? { ...c, enabled: !c.enabled } : c
+            c.id === id ? { ...c, enabled: !c.enabled } : c,
         );
         handleLLMConfigsChange(updatedConfigs);
 
@@ -399,7 +399,7 @@ export function SettingsDialog({
                                                                 {action.prompt.length > 60
                                                                     ? action.prompt.substring(
                                                                           0,
-                                                                          60
+                                                                          60,
                                                                       ) + '...'
                                                                     : action.prompt}
                                                             </div>

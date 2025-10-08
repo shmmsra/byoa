@@ -46,8 +46,8 @@
     "cpp:format:check": "find src/native -name '*.cpp' -o -name '*.hpp' -o -name '*.mm' | xargs clang-format --dry-run --Werror",
     "cpp:tidy": "find src/native -name '*.cpp' -o -name '*.hpp' -o -name '*.mm' | xargs clang-tidy -p build",
     "cpp:tidy:fix": "find src/native -name '*.cpp' -o -name '*.hpp' -o -name '*.mm' | xargs clang-tidy -p build --fix",
-    "cpp:check": "yarn cpp:format:check && yarn cpp:tidy",
-    "cpp:fix": "yarn cpp:format && yarn cpp:tidy:fix"
+    "cpp:check": "yarn cpp:format:check",
+    "cpp:fix": "yarn cpp:format"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.2",

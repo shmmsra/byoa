@@ -138,7 +138,7 @@ class Events {
         console.log(
             `[Events] Emitting event: ${eventName} to ${
                 this.listeners.get(eventName)?.size || 0
-            } listeners`
+            } listeners`,
         );
         const eventListeners = this.listeners.get(eventName);
         if (eventListeners) {
@@ -147,7 +147,7 @@ class Events {
                 try {
                     listenerIndex++;
                     console.log(
-                        `[Events] Calling listener ${listenerIndex}/${eventListeners.size} for ${eventName}`
+                        `[Events] Calling listener ${listenerIndex}/${eventListeners.size} for ${eventName}`,
                     );
                     listener(data);
                 } catch (error) {
@@ -227,7 +227,7 @@ class Events {
                 console.warn('[Events] event_trigger API not available');
                 console.log(
                     '[Events] Available saucer APIs:',
-                    Object.keys(window.saucer?.exposed || {})
+                    Object.keys(window.saucer?.exposed || {}),
                 );
             }
         } catch (error) {
