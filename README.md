@@ -44,7 +44,7 @@ This application consists of two main components:
   - Assistant popup for AI interactions
   - Settings dialog for LLM and action configuration
   - Clipboard data processing
-  - Real-time communication with native backend via Saucer bridge
+  - Menubar entry for quick access
 
 ## Getting Started
 
@@ -52,7 +52,7 @@ This application consists of two main components:
 
 - **macOS** 13.3 (Ventura) or later
 - **Node.js** >= 16.0.0
-- **npm** or **yarn**
+- **yarn**
 - **CMake** >= 3.16
 - **Xcode Command Line Tools** (includes C++23 compiler)
   ```bash
@@ -70,24 +70,17 @@ This application consists of two main components:
 2. **Install JavaScript dependencies**
    ```bash
    yarn install
-   # or
-   npm install
    ```
 
 3. **Build the web frontend**
    ```bash
    yarn build
-   # or
-   npm run build
    ```
 
 4. **Configure and build the native application**
    ```bash
    yarn cmake:configure
    yarn cmake:build
-   # or
-   npm run cmake:configure
-   npm run cmake:build
    ```
 
 5. **Run the application**
@@ -123,8 +116,6 @@ This application consists of two main components:
 Start the Vite development server with hot reloading:
 ```bash
 yarn dev
-# or
-npm run dev
 ```
 
 This will start a development server at `http://localhost:3000` where you can preview the web UI independently.
@@ -171,15 +162,6 @@ yarn format
 ├── src/
 │   ├── native/              # C++ native backend
 │   │   ├── include/         # Header files
-│   │   │   ├── app-controller.hpp
-│   │   │   ├── menubar-controller.hpp
-│   │   │   ├── window-wrapper.hpp
-│   │   │   ├── webview-wrapper.hpp
-│   │   │   ├── clipboard.hpp
-│   │   │   ├── shortcut.hpp
-│   │   │   ├── vault.hpp
-│   │   │   ├── network.hpp
-│   │   │   └── logger.hpp
 │   │   ├── source/          # Implementation files
 │   │   │   ├── xplat/       # Cross-platform code
 │   │   │   ├── mac/         # macOS-specific code (.mm)
@@ -188,16 +170,9 @@ yarn format
 │   │       └── mac/         # macOS resources (icons, plist)
 │   └── web/                 # React web frontend
 │       ├── components/      # React components
-│       │   ├── assistant-popup.tsx
-│       │   └── settings-dialog.tsx
 │       ├── stores/          # State management
 │       ├── utils/           # Utility functions
-│       │   ├── vault.ts     # Vault integration
-│       │   ├── llm.ts       # LLM API calls
-│       │   └── utility.ts   # Helper functions
 │       ├── styles/          # CSS stylesheets
-│       ├── App.tsx          # Main application component
-│       └── main.tsx         # Application entry point
 ├── build/                   # Build output directory
 │   ├── Resources/           # Built web assets
 │   └── Debug/               # Debug build
@@ -205,7 +180,6 @@ yarn format
 ├── CMakeLists.txt          # CMake configuration
 ├── vite.config.ts          # Vite build configuration
 ├── package.json            # Node.js dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
 └── README.md               # This file
 ```
 
@@ -303,7 +277,7 @@ Contributions are welcome! Here's how to get started:
 
 - Follow the existing code style (use `.clang-format` for C++ code)
 - Write clear commit messages
-- Test on macOS before submitting
+- Test on macOS and WindowsOS before submitting
 - Update documentation as needed
 - For C++ code, ensure C++23 compatibility
 
@@ -334,14 +308,10 @@ Contributions are welcome! Here's how to get started:
 
 Potential future features:
 
-- [ ] Support for Windows and Linux
+- [ ] Support for Linux
 - [ ] Image processing capabilities
-- [ ] Voice input support
-- [ ] Custom keyboard shortcuts per action
-- [ ] Action history and favorites
-- [ ] Streaming responses for better UX
-- [ ] Plugin system for extensibility
-- [ ] Support for local LLM models (Ollama, LM Studio)
+- [ ] Custom keyboard shortcut
+- [ ] Action local history
 
 ## License
 
