@@ -44,4 +44,3 @@ class ResourceLoader {
 #endif // _WIN32
 
 #endif // RESOURCE_LOADER_HPP
-

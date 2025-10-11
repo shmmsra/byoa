@@ -235,19 +235,19 @@ std::string WindowWrapper::_getViewURL(const std::string &workflow) {
     }
 
     std::string indexPath = *resourcePath + "\\index.html";
-    std::string hostUrl = "file:///" + indexPath;
-    
+    std::string hostUrl   = "file:///" + indexPath;
+
     // Replace backslashes with forward slashes for file:// URLs
-    for (auto& c : hostUrl) {
+    for (auto &c : hostUrl) {
         if (c == '\\') {
             c = '/';
         }
     }
-    
+
     if (!workflow.empty()) {
         hostUrl.append("?workflow=").append(workflow);
     }
-    
+
     Logger::getInstance().info("WindowWrapper::_getViewURL: Loading from embedded resources: {}", hostUrl);
     return hostUrl;
 #endif

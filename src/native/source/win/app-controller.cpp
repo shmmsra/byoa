@@ -121,10 +121,10 @@ int AppController::start() {
 
 int AppController::stop() {
     Logger::getInstance().info("AppController::stop: start");
-    
+
     // Clean up embedded resources
     ResourceLoader::cleanup();
-    
+
     DestroyWindow(HiddenWindow);
     HiddenWindow     = nullptr;
     _assistantWindow = nullptr;

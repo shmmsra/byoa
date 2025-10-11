@@ -1,12 +1,12 @@
 #ifdef _WIN32
 
 #include "resource-loader.hpp"
-#include "resource-ids.h"
 #include "logger.hpp"
-#include <windows.h>
+#include "resource-ids.h"
 #include <filesystem>
 #include <fstream>
 #include <shlobj.h>
+#include <windows.h>
 
 namespace fs = std::filesystem;
 
@@ -16,7 +16,7 @@ bool ResourceLoader::_extracted = false;
 std::optional<std::vector<unsigned char>> ResourceLoader::loadResource(int resourceId) {
     HMODULE hModule = GetModuleHandle(nullptr);
     HRSRC hResource = FindResource(hModule, MAKEINTRESOURCE(resourceId), RT_RCDATA);
-    
+
     if (!hResource) {
         Logger::getInstance().error("ResourceLoader: Failed to find resource {}", resourceId);
         return std::nullopt;
@@ -29,8 +29,8 @@ std::optional<std::vector<unsigned char>> ResourceLoader::loadResource(int resou
     }
 
     LPVOID pResourceData = LockResource(hLoadedResource);
-    DWORD resourceSize = SizeofResource(hModule, hResource);
-    
+    DWORD resourceSize   = SizeofResource(hModule, hResource);
+
     if (!pResourceData || resourceSize == 0) {
         Logger::getInstance().error("ResourceLoader: Invalid resource data for {}", resourceId);
         return std::nullopt;
@@ -38,7 +38,7 @@ std::optional<std::vector<unsigned char>> ResourceLoader::loadResource(int resou
 
     std::vector<unsigned char> data(resourceSize);
     memcpy(data.data(), pResourceData, resourceSize);
-    
+
     return data;
 }
 
@@ -57,7 +57,7 @@ std::string ResourceLoader::getTempResourcePath() {
 
     // Create a unique subdirectory for our resources
     fs::path resourceDir = fs::path(tempPath) / "ai_assistant_resources";
-    
+
     try {
         if (fs::exists(resourceDir)) {
             // Clean up old resources
@@ -67,7 +67,7 @@ std::string ResourceLoader::getTempResourcePath() {
         _tempPath = resourceDir.string();
         Logger::getInstance().info("ResourceLoader: Using temp path: {}", _tempPath);
         return _tempPath;
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         Logger::getInstance().error("ResourceLoader: Failed to create temp directory: {}", e.what());
         return "";
     }
@@ -97,19 +97,19 @@ std::optional<std::string> ResourceLoader::extractWebResources() {
             Logger::getInstance().error("ResourceLoader: Failed to create index.html");
             return std::nullopt;
         }
-        indexFile.write(reinterpret_cast<const char*>(indexData->data()), indexData->size());
+        indexFile.write(reinterpret_cast<const char *>(indexData->data()), indexData->size());
         indexFile.close();
         Logger::getInstance().info("ResourceLoader: Extracted index.html");
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         Logger::getInstance().error("ResourceLoader: Failed to write index.html: {}", e.what());
         return std::nullopt;
     }
 
     // Extract all other resources using the generated resource map
-    const auto& resourceMap = getResourceMap();
-    int extractedCount = 0;
+    const auto &resourceMap = getResourceMap();
+    int extractedCount      = 0;
 
-    for (const auto& [resourceId, filename] : resourceMap) {
+    for (const auto &[resourceId, filename] : resourceMap) {
         // Skip index.html as we already extracted it
         if (resourceId == IDR_WEB_INDEX_HTML) {
             continue;
@@ -123,12 +123,12 @@ std::optional<std::string> ResourceLoader::extractWebResources() {
 
         // Create subdirectories if needed
         fs::path resourcePath = fs::path(tempDir) / filename;
-        fs::path parentDir = resourcePath.parent_path();
-        
+        fs::path parentDir    = resourcePath.parent_path();
+
         if (!parentDir.empty() && !fs::exists(parentDir)) {
             try {
                 fs::create_directories(parentDir);
-            } catch (const std::exception& e) {
+            } catch (const std::exception &e) {
                 Logger::getInstance().error("ResourceLoader: Failed to create directory {}: {}", parentDir.string(), e.what());
                 continue;
             }
@@ -141,18 +141,18 @@ std::optional<std::string> ResourceLoader::extractWebResources() {
                 Logger::getInstance().error("ResourceLoader: Failed to create file {}", filename);
                 continue;
             }
-            outFile.write(reinterpret_cast<const char*>(resourceData->data()), resourceData->size());
+            outFile.write(reinterpret_cast<const char *>(resourceData->data()), resourceData->size());
             outFile.close();
             extractedCount++;
             Logger::getInstance().info("ResourceLoader: Extracted {}", filename);
-        } catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             Logger::getInstance().error("ResourceLoader: Failed to write {}: {}", filename, e.what());
             continue;
         }
     }
 
     Logger::getInstance().info("ResourceLoader: Successfully extracted {} resources", extractedCount);
-    
+
     _extracted = true;
     return tempDir;
 }
@@ -167,7 +167,7 @@ void ResourceLoader::cleanup() {
             fs::remove_all(_tempPath);
             Logger::getInstance().info("ResourceLoader: Cleaned up temp resources");
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         Logger::getInstance().warn("ResourceLoader: Failed to clean up temp resources: {}", e.what());
     }
 
@@ -176,4 +176,3 @@ void ResourceLoader::cleanup() {
 }
 
 #endif // _WIN32
-
