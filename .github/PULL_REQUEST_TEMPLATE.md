@@ -6,6 +6,6 @@ Explain the motivation and context of this change.
 - [ ] Screenshots if UI changed
 
 ### Checklist
-- [ ] I’ve run `yarn check:all`
+- [ ] I’ve run `yarn lint:all:check`
 - [ ] I’ve tested builds on macOS/Windows
 - [ ] I’ve updated documentation if needed

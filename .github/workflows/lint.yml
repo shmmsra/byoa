@@ -15,7 +15,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Install dependencies
-        run: yarn install
+        run: |
+          npm install -g yarn
+          yarn install
+
       - name: Run lint checks
-        run: yarn check:all
+        run: |
+          yarn lint:all:check
