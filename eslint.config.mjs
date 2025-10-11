@@ -27,31 +27,56 @@ export default defineConfig(
       'no-console': 'off', // Allow console statements for debugging
       'prefer-const': 'error',
       'no-var': 'error',
-      
+
       // React specific rules
       'react/jsx-uses-react': 'off',
       'react/react-in-jsx-scope': 'off',
-      
+
       // TypeScript specific rules
-      '@typescript-eslint/no-unused-vars': ['error', { 
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-        'caughtErrorsIgnorePattern': '^_'
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/no-extraneous-class': 'off',
-      
+
       // Stylistic rules
-      'quotes': ['error', 'single'],
-      'semi': ['error', 'always'],
-      'indent': 'off', // Let Prettier handle indentation
+      quotes: ['error', 'single'],
+      semi: ['error', 'always'],
+      indent: 'off', // Let Prettier handle indentation
       'comma-dangle': ['error', 'always-multiline'],
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
+    },
+  },
+  // Special configuration for Node.js scripts (CommonJS)
+  {
+    files: ['scripts/**/*.{js,mjs}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'commonjs',
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-undef': 'off', // Turned off since we define globals above
+      quotes: ['error', 'single', { avoidEscape: true }], // Allow double quotes to avoid escaping
     },
   },
 );

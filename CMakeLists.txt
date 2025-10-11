@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ai_assistant LANGUAGES CXX OBJCXX)
+project(BYOAssistant LANGUAGES CXX OBJCXX)
 
 # Set project version
 set(PROJECT_VERSION_MAJOR 1)
@@ -148,7 +148,7 @@ endif()
 
 # Create executable with appropriate bundle type
 if(APPLE)
-    add_executable(ai_assistant MACOSX_BUNDLE 
+    add_executable(BYOAssistant MACOSX_BUNDLE 
         src/native/source/xplat/main.cpp
         src/native/source/xplat/logger.cpp
         src/native/source/xplat/vault.cpp
@@ -157,7 +157,7 @@ if(APPLE)
         ${PLATFORM_SOURCES}
     )
 else()
-    add_executable(ai_assistant WIN32
+    add_executable(BYOAssistant WIN32
         src/native/source/xplat/main.cpp
         src/native/source/xplat/logger.cpp
         src/native/source/xplat/vault.cpp
@@ -167,10 +167,10 @@ else()
     )
 endif()
 
-set_property(TARGET ai_assistant PROPERTY CXX_STANDARD 23)
+set_property(TARGET BYOAssistant PROPERTY CXX_STANDARD 23)
 
 # Set debug macro for debug builds
-target_compile_definitions(ai_assistant PRIVATE 
+target_compile_definitions(BYOAssistant PRIVATE 
     $<$<CONFIG:Debug>:DEBUG=1>
     $<$<CONFIG:RelWithDebInfo>:DEBUG=1>
 )
@@ -178,7 +178,7 @@ target_compile_definitions(ai_assistant PRIVATE
 # Windows-specific configuration
 if(WIN32)
     # Define Windows version and features
-    target_compile_definitions(ai_assistant PRIVATE 
+    target_compile_definitions(BYOAssistant PRIVATE 
         WIN32_LEAN_AND_MEAN
         NOMINMAX
         _WIN32_WINNT=0x0A00  # Windows 10
@@ -187,7 +187,7 @@ if(WIN32)
     )
     
     # Link Windows libraries
-    target_link_libraries(ai_assistant PRIVATE 
+    target_link_libraries(BYOAssistant PRIVATE 
         shell32
         user32
         gdi32
@@ -203,7 +203,7 @@ if(WIN32)
 endif()
 
 # Add include directories
-target_include_directories(ai_assistant PRIVATE 
+target_include_directories(BYOAssistant PRIVATE 
     src/native/include
     src/native/resource/win
     ${keychain_SOURCE_DIR}/include
@@ -219,10 +219,10 @@ if(APPLE)
     find_library(SECURITY_FRAMEWORK Security)
     find_library(SYSTEMCONFIGURATION_FRAMEWORK SystemConfiguration)
     find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
-    target_link_libraries(ai_assistant PRIVATE ${COCOA_FRAMEWORK} ${CARBON_FRAMEWORK} ${APPKIT_FRAMEWORK} ${QUARTZCORE_FRAMEWORK} ${WEBKIT_FRAMEWORK} ${SECURITY_FRAMEWORK} ${SYSTEMCONFIGURATION_FRAMEWORK} ${COREFOUNDATION_FRAMEWORK})
+    target_link_libraries(BYOAssistant PRIVATE ${COCOA_FRAMEWORK} ${CARBON_FRAMEWORK} ${APPKIT_FRAMEWORK} ${QUARTZCORE_FRAMEWORK} ${WEBKIT_FRAMEWORK} ${SECURITY_FRAMEWORK} ${SYSTEMCONFIGURATION_FRAMEWORK} ${COREFOUNDATION_FRAMEWORK})
     
     # Configure Info.plist variables
-    set(EXECUTABLE_NAME "ai_assistant")
+    set(EXECUTABLE_NAME "BYOAssistant")
     set(VERSION_FULL "${PROJECT_VERSION}")
     set(COPYRIGHT_2025 "Copyright © 2025 BYOA. All rights reserved.")
     
@@ -239,10 +239,10 @@ if(APPLE)
     )
     
     # Set bundle properties
-    set_target_properties(ai_assistant PROPERTIES
+    set_target_properties(BYOAssistant PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_BINARY_DIR}/Info.plist"
-        MACOSX_BUNDLE_BUNDLE_NAME "AI Assistant"
+        MACOSX_BUNDLE_BUNDLE_NAME "BYO Assistant"
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.byoa.assistant"
         MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
@@ -251,25 +251,25 @@ if(APPLE)
     
     # Add app icon if it exists (optional)
     if(EXISTS "${CMAKE_SOURCE_DIR}/src/native/resource/mac/app-icon.icns")
-        set_target_properties(ai_assistant PROPERTIES
+        set_target_properties(BYOAssistant PROPERTIES
             MACOSX_BUNDLE_ICON_FILE "app-icon.icns"
         )
         # Copy icon to bundle resources
-        add_custom_command(TARGET ai_assistant POST_BUILD
+        add_custom_command(TARGET BYOAssistant POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy
             "${CMAKE_SOURCE_DIR}/src/native/resource/mac/app-icon.icns"
-            "$<TARGET_BUNDLE_DIR:ai_assistant>/Contents/Resources/"
+            "$<TARGET_BUNDLE_DIR:BYOAssistant>/Contents/Resources/"
         )
     endif()
     
     # Copy web resources to bundle (if they exist)
-    add_custom_command(TARGET ai_assistant POST_BUILD
+    add_custom_command(TARGET BYOAssistant POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
         "${CMAKE_SOURCE_DIR}/build/Resources"
-        "$<TARGET_BUNDLE_DIR:ai_assistant>/Contents/Resources/"
+        "$<TARGET_BUNDLE_DIR:BYOAssistant>/Contents/Resources/"
         COMMENT "Copying web resources to app bundle"
     )
 endif()
 
 # Link libraries
-target_link_libraries(ai_assistant PRIVATE saucer::saucer spdlog::spdlog keychain cpr::cpr nlohmann_json::nlohmann_json)
+target_link_libraries(BYOAssistant PRIVATE saucer::saucer spdlog::spdlog keychain cpr::cpr nlohmann_json::nlohmann_json)

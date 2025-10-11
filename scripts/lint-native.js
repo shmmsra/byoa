@@ -12,8 +12,8 @@ const patterns = ['src/native/**/*.cpp', 'src/native/**/*.hpp', 'src/native/**/*
 const files = patterns.flatMap(pattern => globSync(pattern, { windowsPathsNoEscape: true }));
 
 if (files.length === 0) {
-  console.log('No C++ files found to lint');
-  process.exit(0);
+    console.log('No C++ files found to lint');
+    process.exit(0);
 }
 
 console.log(`Found ${files.length} files to check`);
@@ -22,16 +22,15 @@ console.log(`Found ${files.length} files to check`);
 const clangFormatArgs = fix ? ['-i'] : ['--dry-run', '--Werror'];
 
 try {
-  for (const file of files) {
-    const normalizedPath = path.normalize(file);
-    console.log(`Checking ${normalizedPath}...`);
-    execSync(`clang-format ${clangFormatArgs.join(' ')} "${normalizedPath}"`, {
-      stdio: 'inherit'
-    });
-  }
-  console.log('✓ All files passed clang-format check');
-} catch (error) {
-  console.error('✗ clang-format check failed');
-  process.exit(1);
+    for (const file of files) {
+        const normalizedPath = path.normalize(file);
+        console.log(`Checking ${normalizedPath}...`);
+        execSync(`clang-format ${clangFormatArgs.join(' ')} "${normalizedPath}"`, {
+            stdio: 'inherit',
+        });
+    }
+    console.log('✓ All files passed clang-format check');
+} catch (_error) {
+    console.error('✗ clang-format check failed');
+    process.exit(1);
 }
-

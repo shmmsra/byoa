@@ -23,8 +23,8 @@
   "author": "Shivam Mishra",
   "license": "MIT",
   "scripts": {
-    "lint:js:check": "eslint src/web --ext .js,.jsx,.ts,.tsx",
-    "lint:js:fix": "eslint src/web --ext .js,.jsx,.ts,.tsx --fix",
+    "lint:js:check": "eslint scripts src/web --ext .js,.jsx,.ts,.tsx",
+    "lint:js:fix": "eslint scripts src/web --ext .js,.jsx,.ts,.tsx --fix",
     "lint:css:check": "stylelint \"src/web/**/*.{css,scss}\"",
     "lint:css:fix": "stylelint \"src/web/**/*.{css,scss}\" --fix",
     "lint:web:check": "yarn lint:js:check && yarn lint:css:check",
@@ -42,7 +42,7 @@
     "lint:all:fix": "yarn lint:web:fix && yarn lint:native:fix",
     "build:all": "yarn build:web:release && yarn configure:native && yarn build:native:release",
     "clean:all": "yarn clean:web && yarn clean:native",
-    "bundle": "echo \"This is a placeholder for the bundle script\""
+    "bundle": "node scripts/bundle.js"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.2",
