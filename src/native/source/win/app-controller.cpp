@@ -5,6 +5,7 @@
 #include "clipboard.hpp"
 #include "logger.hpp"
 #include "menubar-controller.hpp"
+#include "resource-loader.hpp"
 #include "shortcut.hpp"
 #include "window-wrapper.hpp"
 
@@ -120,6 +121,10 @@ int AppController::start() {
 
 int AppController::stop() {
     Logger::getInstance().info("AppController::stop: start");
+    
+    // Clean up embedded resources
+    ResourceLoader::cleanup();
+    
     DestroyWindow(HiddenWindow);
     HiddenWindow     = nullptr;
     _assistantWindow = nullptr;

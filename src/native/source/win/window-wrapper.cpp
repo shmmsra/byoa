@@ -2,6 +2,7 @@
 #include "app-controller.hpp"
 #include "logger.hpp"
 #include "menubar-controller.hpp"
+#include "resource-loader.hpp"
 #include "shortcut.hpp"
 #include <saucer/window.hpp>
 #include <unordered_map>
@@ -226,10 +227,29 @@ std::string WindowWrapper::_getViewURL(const std::string &workflow) {
     Logger::getInstance().info("WindowWrapper::_getViewURL: Debug mode - trying dev server: {}", hostUrl);
     return hostUrl;
 #else
-    // Release mode: Load from bundled Resources folder
-    // TODO: Implement Windows-specific resource loading
-    Logger::getInstance().warn("WindowWrapper::_getViewURL: Release mode not yet implemented for Windows");
-    return "";
+    // Release mode: Load from embedded resources
+    auto resourcePath = ResourceLoader::extractWebResources();
+    if (!resourcePath) {
+        Logger::getInstance().error("WindowWrapper::_getViewURL: Failed to extract web resources");
+        return "";
+    }
+
+    std::string indexPath = *resourcePath + "\\index.html";
+    std::string hostUrl = "file:///" + indexPath;
+    
+    // Replace backslashes with forward slashes for file:// URLs
+    for (auto& c : hostUrl) {
+        if (c == '\\') {
+            c = '/';
+        }
+    }
+    
+    if (!workflow.empty()) {
+        hostUrl.append("?workflow=").append(workflow);
+    }
+    
+    Logger::getInstance().info("WindowWrapper::_getViewURL: Loading from embedded resources: {}", hostUrl);
+    return hostUrl;
 #endif
 }
 

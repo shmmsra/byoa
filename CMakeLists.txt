@@ -99,7 +99,51 @@ elseif(WIN32)
         src/native/source/win/app-controller.cpp
         src/native/source/win/menubar-controller.cpp
         src/native/source/win/window-wrapper.cpp
+        src/native/source/win/resource-loader.cpp
     )
+    
+    # Generate Windows resource file for embedded web resources
+    set(WEB_RESOURCES_DIR "${CMAKE_BINARY_DIR}/Resources")
+    set(GENERATED_RC_FILE "${CMAKE_BINARY_DIR}/web-resources.rc")
+    set(GENERATED_HEADER_FILE "${CMAKE_SOURCE_DIR}/src/native/resource/win/resource-ids.h")
+    
+    # Ensure the Resources directory exists (even if empty) to avoid build errors
+    file(MAKE_DIRECTORY "${WEB_RESOURCES_DIR}")
+    
+    # Generate initial resource files at configure time
+    # This ensures they exist even if web resources haven't been built yet
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+            -DWEB_RESOURCES_DIR="${WEB_RESOURCES_DIR}"
+            -DOUTPUT_RC="${GENERATED_RC_FILE}"
+            -DOUTPUT_HEADER="${GENERATED_HEADER_FILE}"
+            -P "${CMAKE_SOURCE_DIR}/cmake/GenerateResourceFile.cmake"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        RESULT_VARIABLE GEN_RESULT
+        OUTPUT_VARIABLE GEN_OUTPUT
+        ERROR_VARIABLE GEN_ERROR
+    )
+    
+    if(NOT GEN_RESULT EQUAL 0)
+        message(WARNING "Failed to generate resource files: ${GEN_ERROR}")
+    else()
+        message(STATUS "Generated resource files at configure time")
+    endif()
+    
+    # Create a custom target to regenerate resources when needed
+    # This is simpler than using add_custom_command with dependencies
+    add_custom_target(generate_web_resources
+        COMMAND ${CMAKE_COMMAND}
+            -DWEB_RESOURCES_DIR="${WEB_RESOURCES_DIR}"
+            -DOUTPUT_RC="${GENERATED_RC_FILE}"
+            -DOUTPUT_HEADER="${GENERATED_HEADER_FILE}"
+            -P "${CMAKE_SOURCE_DIR}/cmake/GenerateResourceFile.cmake"
+        COMMENT "Regenerating web resources"
+        VERBATIM
+    )
+    
+    # Add the generated resource file to sources
+    list(APPEND PLATFORM_SOURCES "${GENERATED_RC_FILE}")
 endif()
 
 # Create executable with appropriate bundle type
@@ -161,6 +205,7 @@ endif()
 # Add include directories
 target_include_directories(ai_assistant PRIVATE 
     src/native/include
+    src/native/resource/win
     ${keychain_SOURCE_DIR}/include
 )
 

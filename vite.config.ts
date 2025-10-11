@@ -35,9 +35,11 @@ export default defineConfig(({ command }) => {
       minify: false, // Disable minification to help with debugging
       rollupOptions: {
         output: {
-          assetFileNames: '[name].[hash].[ext]',
-          chunkFileNames: '[name].[hash].js',
-          entryFileNames: '[name].[hash].js',
+          // Use stable filenames for Windows resource embedding
+          // Hash changes would require CMake reconfiguration on every build
+          assetFileNames: '[name].[ext]',
+          chunkFileNames: '[name].js',
+          entryFileNames: '[name].js',
           format: 'iife', // Use IIFE format instead of ES modules
           manualChunks: undefined // Disable code splitting to avoid module loading issues
         }
