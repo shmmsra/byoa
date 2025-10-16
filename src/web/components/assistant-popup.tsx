@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button, Input, Select, Spin, message, Switch } from 'antd';
-import { Copy, CheckCircle2, RotateCcw, Send } from 'lucide-react';
+import { Copy, CheckCircle2, RotateCcw, Send, X } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
 import { LLMConfig, Action } from '../app';
 import { InvokeLLM } from '../utils/llm';
@@ -246,6 +246,14 @@ export function AssistantPopup({
         }
     };
 
+    const handleReset = () => {
+        setState('idle');
+        setResults([]);
+        setCopied(false);
+        setCustomPrompt('');
+        setLastProcessedContent('');
+    };
+
     return (
         <div
             className='assistant-popup'
@@ -275,6 +283,14 @@ export function AssistantPopup({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {state === 'completed' && results.length > 0 && (
                         <>
+                            <Button
+                                size='small'
+                                icon={<X size={14} />}
+                                onClick={handleReset}
+                                title='Reset to clipboard content'
+                            >
+                                Reset
+                            </Button>
                             <span className='diff-toggle-label'>Diff</span>
                             <Switch
                                 size='small'
