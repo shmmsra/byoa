@@ -4,16 +4,38 @@ export async function InvokeLLM(
     baseURL: string,
     modelName: string,
     apiKey: string,
-    prompt: string,
+    systemContent: string,
+    userContent: string,
 ) {
     console.info(`Invoking LLM with baseURL: ${baseURL}, modelName: ${modelName}`);
+
+    // Base instruction that applies to all requests
+    const baseInstruction =
+        'CRITICAL INSTRUCTION: You are a direct output generator. Your ONLY job is to produce RAW OUTPUT with ZERO conversational elements. ' +
+        '\n\n' +
+        'ABSOLUTELY FORBIDDEN - Never start your response with ANY of these phrases or similar ones:\n' +
+        '- "Here\'s..." / "Here is..." / "Here are..."\n' +
+        '- "I understand..." / "I see..." / "I\'ve..." / "I can..."\n' +
+        '- "The improved..." / "The corrected..." / "The result..."\n' +
+        '- "Your answer..." / "Your result..."\n' +
+        '- "Based on..." / "According to..."\n' +
+        '- "Let me..." / "I will..."\n' +
+        '- "Sure,..." \n' +
+        '- Any explanatory prefix whatsoever\n' +
+        '\n' +
+        'YOUR FIRST WORD/CHARACTER MUST BE THE ACTUAL ANSWER ITSELF. ' +
+        'DO NOT acknowledge the request. DO NOT introduce the answer. DO NOT add quotes around the answer unless they are part of the actual content. ' +
+        'START IMMEDIATELY WITH THE ANSWER.\n\n';
+
+    // Combine base instruction with the action-specific system content
+    const fullSystemContent = baseInstruction + systemContent;
 
     // Prepare the request body
     const requestBody = {
         model: modelName,
         messages: [
-            { role: 'system', content: 'You are a helpful assistant.' },
-            { role: 'user', content: prompt },
+            { role: 'system', content: fullSystemContent },
+            { role: 'user', content: userContent },
         ],
     };
 

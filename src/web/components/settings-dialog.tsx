@@ -484,19 +484,9 @@ export function SettingsDialog({
                                                         prompt: e.target.value,
                                                     })
                                                 }
-                                                placeholder='e.g., Fix the grammar in: {{data}}'
+                                                placeholder='e.g., Fix the grammar'
                                                 rows={6}
                                             />
-                                            <p
-                                                style={{
-                                                    fontSize: '0.75rem',
-                                                    color: '#8c8c8c',
-                                                    marginTop: '4px',
-                                                }}
-                                            >
-                                                Use <code>{'{{data}}'}</code> to insert the
-                                                clipboard content
-                                            </p>
                                         </div>
 
                                         <div className='form-actions'>

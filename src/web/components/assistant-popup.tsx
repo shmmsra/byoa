@@ -99,9 +99,19 @@ export function AssistantPopup({
     }, [clipboardContent, lastProcessedContent, state, results.length]);
 
     // Helper function to invoke LLM using the configured baseURL
-    const invokeLLM = async (config: LLMConfig, prompt: string): Promise<string> => {
+    const invokeLLM = async (
+        config: LLMConfig,
+        systemContent: string,
+        userContent: string,
+    ): Promise<string> => {
         try {
-            const result = await InvokeLLM(config.baseURL, config.modelName, config.apiKey, prompt);
+            const result = await InvokeLLM(
+                config.baseURL,
+                config.modelName,
+                config.apiKey,
+                systemContent,
+                userContent,
+            );
             return result || '';
         } catch (error) {
             console.error(`Error invoking ${config.name}:`, error);
@@ -113,28 +123,22 @@ export function AssistantPopup({
         }
     };
 
-    // Helper function to replace {{data}} placeholder
-    const replacePlaceholder = (prompt: string): string => {
-        return prompt.replace(/\{\{data\}\}/g, clipboardContent);
-    };
-
     // Process with selected LLM(s)
-    const processWithLLM = async (prompt: string) => {
+    const processWithLLM = async (actionPrompt: string) => {
         setState('processing');
         setResults([]);
         setCopied(false);
 
-        // Replace {{data}} placeholder if present, otherwise use old format
-        const input = prompt.includes('{{data}}')
-            ? replacePlaceholder(prompt)
-            : `${prompt}\n\n${clipboardContent}`;
+        // Action prompt goes to system, clipboard content goes to user
+        const systemContent = actionPrompt;
+        const userContent = clipboardContent;
 
         try {
             if (selectedLLM === 'all') {
                 // Process with all enabled LLMs
                 const promises = enabledLLMs.map(async config => {
                     try {
-                        const result = await invokeLLM(config, input);
+                        const result = await invokeLLM(config, systemContent, userContent);
                         return {
                             llmId: config.id,
                             llmName: config.name,
@@ -181,7 +185,7 @@ export function AssistantPopup({
                     throw new Error(`API key not configured for ${targetConfig.name}`);
                 }
 
-                const result = await invokeLLM(targetConfig, input);
+                const result = await invokeLLM(targetConfig, systemContent, userContent);
                 const singleResult = {
                     llmId: targetConfig.id,
                     llmName: targetConfig.name,

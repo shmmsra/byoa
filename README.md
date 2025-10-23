@@ -207,14 +207,14 @@ yarn format
 
 ### Creating Custom Actions
 
-Custom actions support the `{{data}}` placeholder:
+Custom actions:
 
 ```
 Example Action: "Translate to Spanish"
-Prompt: "Translate the following text to Spanish:\n\n{{data}}"
+Prompt: "Translate the following text to Spanish:"
 ```
 
-The `{{data}}` will be replaced with your clipboard content.
+The prompt will be used as a system prompt, and the clipboard content will be passed as the user content.
 
 ### Using Multiple LLMs
 
