@@ -9,7 +9,7 @@
 #include "webview-wrapper.hpp"
 #include "window-wrapper.hpp"
 
-#ifndef DEBUG
+#ifdef DEBUG
 #define MAIN_WINDOW_WIDTH       1500
 #define MAIN_WINDOW_HEIGHT      900
 #define ASSISTANT_WINDOW_WIDTH  1000
