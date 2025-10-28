@@ -31,31 +31,12 @@ void MenubarController::init() {
 
     Logger::getInstance().info("MenubarController::init: status item created successfully");
 
-    // Load icon from xcassets with proper resolution handling
-    NSImage *icon = nil;
-
-    // Try to load from xcassets using the proper method
-    NSBundle *mainBundle = [NSBundle mainBundle];
-
-    // First try: Load the specific image from the imageset
-    icon = [mainBundle imageForResource:@"icon"];
+    // Load icon from app-icons.xcassets
+    // The asset catalog will be compiled into app-icons.car in the bundle
+    NSImage *icon = [NSImage imageNamed:@"MenuBarIcon"];
 
     if (!icon) {
-        // Second try: Load from the xcassets bundle directly
-        NSString *xcassetsPath = [mainBundle pathForResource:@"MenuBar" ofType:@"xcassets"];
-        if (xcassetsPath) {
-            NSBundle *xcassetsBundle = [NSBundle bundleWithPath:xcassetsPath];
-            icon                     = [xcassetsBundle imageForResource:@"icon"];
-        }
-    }
-
-    if (!icon) {
-        // Third try: Use imageNamed which should work with xcassets
-        icon = [NSImage imageNamed:@"icon"];
-    }
-
-    if (!icon) {
-        Logger::getInstance().info("MenubarController::init: creating fallback icon");
+        Logger::getInstance().warn("MenubarController::init: failed to load MenuBarIcon from app-icons.xcassets, creating fallback");
         // Create a simple icon as fallback
         icon = [[NSImage alloc] initWithSize:NSMakeSize(18, 18)];
         [icon lockFocus];
@@ -68,7 +49,7 @@ void MenubarController::init() {
 
         [icon unlockFocus];
     } else {
-        Logger::getInstance().info("MenubarController::init: loaded icon from xcassets successfully");
+        Logger::getInstance().info("MenubarController::init: loaded MenuBarIcon from app-icons.xcassets successfully");
     }
 
     // Configure the icon for menubar display

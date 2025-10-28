@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>@EXECUTABLE_NAME@</string>
 	<key>CFBundleIconFile</key>
-	<string>app-icon.icns</string>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.byoa.assistant</string>
 	<key>CFBundleInfoDictionaryVersion</key>

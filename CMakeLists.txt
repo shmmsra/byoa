@@ -247,27 +247,32 @@ if(APPLE)
         MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
         MACOSX_BUNDLE_COPYRIGHT "${COPYRIGHT_2025}"
+        MACOSX_BUNDLE_ICON_FILE "AppIcon"
     )
     
-    # Add app icon if it exists (optional)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/src/native/resource/mac/app-icon.icns")
-        set_target_properties(BYOAssistant PROPERTIES
-            MACOSX_BUNDLE_ICON_FILE "app-icon.icns"
-        )
-        # Copy icon to bundle resources
-        add_custom_command(TARGET BYOAssistant POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-            "${CMAKE_SOURCE_DIR}/src/native/resource/mac/app-icon.icns"
-            "$<TARGET_BUNDLE_DIR:BYOAssistant>/Contents/Resources/"
-        )
-    endif()
+    # Compile and copy asset catalog
+    set(XCASSETS_PATH "${CMAKE_SOURCE_DIR}/src/native/resource/mac/app-icons.xcassets")
+    add_custom_command(TARGET BYOAssistant POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_BUNDLE_DIR:BYOAssistant>/Contents/Resources"
+        COMMAND xcrun actool 
+            --compile "$<TARGET_BUNDLE_DIR:BYOAssistant>/Contents/Resources"
+            --platform macosx
+            --minimum-deployment-target ${CMAKE_OSX_DEPLOYMENT_TARGET}
+            --app-icon AppIcon
+            --output-partial-info-plist "${CMAKE_BINARY_DIR}/AssetCatalog-Info.plist"
+            "${XCASSETS_PATH}"
+        COMMENT "Compiling asset catalog"
+        VERBATIM
+    )
     
     # Copy web resources to bundle (if they exist)
+    set(WEB_RESOURCES_SOURCE "${CMAKE_BINARY_DIR}/Resources")
     add_custom_command(TARGET BYOAssistant POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Checking for web resources..."
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        "${CMAKE_SOURCE_DIR}/build/Resources"
-        "$<TARGET_BUNDLE_DIR:BYOAssistant>/Contents/Resources/"
-        COMMENT "Copying web resources to app bundle"
+            "${WEB_RESOURCES_SOURCE}"
+            "$<TARGET_BUNDLE_DIR:BYOAssistant>/Contents/Resources/" || ${CMAKE_COMMAND} -E true
+        COMMENT "Copying web resources to app bundle (if available)"
     )
 endif()
 
