@@ -10,7 +10,7 @@ const isMacOS = platform === 'darwin';
 
 // Paths
 const projectRoot = path.resolve(__dirname, '..');
-const buildDir = path.join(projectRoot, 'build', 'Release');
+const buildDir = path.join(projectRoot, 'build');
 const distDir = path.join(projectRoot, 'dist');
 
 console.log(`🔧 Platform detected: ${platform}`);
