@@ -1,6 +1,6 @@
 [![Build (macOS & Windows)](https://github.com/shmmsra/byoa/actions/workflows/build.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/build.yml)
 [![Lint](https://github.com/shmmsra/byoa/actions/workflows/lint.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/lint.yml)
-[![Release](https://github.com/shmmsra/byoa/actions/workflows/release.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/bundle-and-release.yml)
+[![Release](https://github.com/shmmsra/byoa/actions/workflows/bundle-and-release.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/bundle-and-release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Contributors](https://img.shields.io/github/contributors/shmmsra/byoa)](https://github.com/shmmsra/byoa/graphs/contributors)
 [![Stars](https://img.shields.io/github/stars/shmmsra/byoa?style=social)](https://github.com/shmmsra/byoa)
@@ -14,11 +14,11 @@ A native cross-platform desktop assistant application that enables you to use yo
 - **Multi-LLM Support**: Configure and use multiple AI models simultaneously (OpenAI, Claude, local models, etc.)
 - **Smart Text Processing**: Process clipboard content with AI-powered actions (grammar correction, translation, summarization, etc.)
 - **Custom Actions**: Create and configure your own quick actions with custom prompts
-- **Clipboard Integration**: Seamless integration with macOS clipboard for instant text processing
+- **Clipboard Integration**: Seamless cross-platform clipboard integration for instant text processing
 - **Native Performance**: C++23 backend with Saucer webview for optimal performance
 - **Modern Web UI**: React 18 with TypeScript, Ant Design, and Vite
-- **Secure Credential Storage**: Uses macOS Keychain for secure API key storage
-- **System Menubar Integration**: Quick access from the macOS menu bar
+- **Secure Credential Storage**: Uses system credential storage (macOS Keychain/Windows Credential Manager) for secure API key storage
+- **System Tray Integration**: Quick access from the macOS menu bar or Windows system tray
 - **Theme Support**: Light, dark, and auto themes
 
 ## Architecture
@@ -27,7 +27,7 @@ This application consists of two main components:
 
 ### Native Backend (`src/native`)
 - **Language**: C++23
-- **Platform**: macOS (13.3+)
+- **Platforms**: macOS (13.3+) and Windows (10+)
 - **Build System**: CMake 3.16+
 - **Key Libraries**:
   - [Saucer](https://github.com/saucer/saucer) - Modern C++ webview wrapper
@@ -57,14 +57,21 @@ This application consists of two main components:
 
 ### Prerequisites
 
-- **macOS** 13.3 (Ventura) or later
+#### Common Requirements (All Platforms)
 - **Node.js** >= 16.0.0
 - **yarn**
 - **CMake** >= 3.16
+
+#### macOS-Specific
+- **macOS** 13.3 (Ventura) or later
 - **Xcode Command Line Tools** (includes C++23 compiler)
   ```bash
   xcode-select --install
   ```
+
+#### Windows-Specific
+- **Windows** 10 or later
+- **Visual Studio 2022** or later with C++ development tools (includes MSVC with C++23 support)
 
 ### Installation
 
@@ -92,7 +99,7 @@ This application consists of two main components:
 
 5. **Run the application**
    
-   The built application will be located at:
+   **macOS**: The built application will be located at:
    ```
    build/Debug/ai_assistant.app
    ```
@@ -101,17 +108,22 @@ This application consists of two main components:
    ```bash
    open build/Debug/ai_assistant.app
    ```
+   
+   **Windows**: The built executable will be located at:
+   ```
+   build\Debug\BYOAssistant.exe
+   ```
 
 ### First-Time Setup
 
-1. **Launch the application** - A menubar icon will appear
-2. **Configure LLM Settings** - Click the menubar icon and select "Settings"
+1. **Launch the application** - A menubar/system tray icon will appear
+2. **Configure LLM Settings** - Click the menubar/tray icon and select "Settings"
 3. **Add AI Model Configuration**:
    - Click "Add LLM Config"
    - Enter a name (e.g., "OpenAI GPT-4")
    - Enter the model name (e.g., "gpt-4")
    - Enter the base URL (e.g., "https://api.openai.com/v1")
-   - Enter your API key (stored securely in macOS Keychain)
+   - Enter your API key (stored securely in system credential storage)
    - Enable the configuration
 4. **Configure Quick Actions** - Customize or add actions in the Actions tab
 5. **Set Keyboard Shortcut** - Configure global shortcut to trigger the assistant
@@ -183,7 +195,7 @@ yarn format
 ├── build/                   # Build output directory
 │   ├── Resources/           # Built web assets
 │   └── Debug/               # Debug build
-│       └── ai_assistant.app # macOS application bundle
+│       └── BYOAssistant.app # macOS application bundle
 ├── CMakeLists.txt          # CMake configuration
 ├── vite.config.ts          # Vite build configuration
 ├── package.json            # Node.js dependencies and scripts
@@ -194,8 +206,8 @@ yarn format
 
 ### Triggering the Assistant
 
-1. **Keyboard Shortcut**: Use your configured global shortcut (default can be set in Settings)
-2. **Menubar**: Click the menubar icon and select "Show Assistant"
+1. **Keyboard Shortcut**: Use your configured global shortcut (can be set in Settings)
+2. **System Tray/Menubar**: Click the tray/menubar icon and select "Show Assistant"
 
 ### Working with Clipboard Content
 
@@ -248,26 +260,27 @@ cmake --build build --config Release
 ```
 
 The production application will be at:
-```
-build/Release/ai_assistant.app
-```
+- **macOS**: `build/Release/ai_assistant.app`
+- **Windows**: `build/Release/BYOAssistant.exe`
 
-### Code Signing (for Distribution)
+### Code Signing and Distribution
 
-To distribute the app outside the App Store, you'll need to sign it:
+**macOS**: To distribute the app outside the App Store, you'll need to sign it:
 
 ```bash
 codesign --force --deep --sign "Developer ID Application: Your Name" \
   build/Release/ai_assistant.app
 ```
 
-### Creating a DMG
+**macOS**: Creating a DMG for distribution:
 
 ```bash
 # Create a disk image for distribution
 hdiutil create -volname "BYOA Assistant" -srcfolder build/Release/ai_assistant.app \
   -ov -format UDZO BYOA-Assistant.dmg
 ```
+
+**Windows**: For distribution, consider creating an installer using tools like NSIS or Inno Setup.
 
 ## Contributing
 
@@ -284,7 +297,7 @@ Contributions are welcome! Here's how to get started:
 
 - Follow the existing code style (use `.clang-format` for C++ code)
 - Write clear commit messages
-- Test on macOS and WindowsOS before submitting
+- Test on both macOS and Windows before submitting
 - Update documentation as needed
 - For C++ code, ensure C++23 compatibility
 
@@ -293,9 +306,9 @@ Contributions are welcome! Here's how to get started:
 ### Common Issues
 
 **Application won't launch**
-- Ensure you have macOS 13.3 or later
-- Check that Xcode Command Line Tools are installed
-- Try rebuilding: `rm -rf build && yarn cmake:configure && yarn cmake:build`
+- **macOS**: Ensure you have macOS 13.3 or later and Xcode Command Line Tools are installed
+- **Windows**: Ensure you have Windows 10 or later and Visual Studio C++ tools are installed
+- Try rebuilding: `rm -rf build && yarn cmake:configure && yarn cmake:build` (use `rmdir /s build` on Windows)
 
 **API Key not working**
 - Verify the API key is correct in Settings
@@ -303,7 +316,8 @@ Contributions are welcome! Here's how to get started:
 - Ensure the model name matches your provider's requirements
 
 **Clipboard content not detected**
-- Grant clipboard permissions to the application in System Settings → Privacy & Security
+- **macOS**: Grant clipboard permissions to the application in System Settings → Privacy & Security
+- **Windows**: Ensure the application has necessary permissions
 - Try copying text again after the assistant window opens
 
 **Build errors**
@@ -317,8 +331,8 @@ Potential future features:
 
 - [ ] Support for Linux
 - [ ] Image processing capabilities
-- [ ] Custom keyboard shortcut
 - [ ] Action local history
+- [ ] Conversation context and multi-turn dialogues
 
 ## License
 
