@@ -246,6 +246,117 @@ export function SettingsDialog({
                                                     />
                                                 </div>
                                             </div>
+
+                                            {/* Edit Form - shown in-place when editing this config */}
+                                            <div
+                                                className={`edit-form-expandable ${editingConfig && editingConfig.id === config.id ? 'expanded' : ''}`}
+                                            >
+                                                {editingConfig && editingConfig.id === config.id && (
+                                                    <div className='edit-form-content'>
+                                                        <h3 className='edit-form-title'>
+                                                            Edit LLM Configuration
+                                                        </h3>
+
+                                                        {/* Row 1: Name and Model Name */}
+                                                        <div style={{ display: 'flex', gap: '12px' }}>
+                                                            <div className='form-field' style={{ flex: 1 }}>
+                                                                <label>Name</label>
+                                                                <Input
+                                                                    value={editingConfig.name}
+                                                                    onChange={e =>
+                                                                        setEditingConfig({
+                                                                            ...editingConfig,
+                                                                            name: e.target.value,
+                                                                        })
+                                                                    }
+                                                                    placeholder='e.g., My GPT-4'
+                                                                />
+                                                            </div>
+
+                                                            <div className='form-field' style={{ flex: 1 }}>
+                                                                <label>Model Name</label>
+                                                                <Input
+                                                                    value={editingConfig.modelName}
+                                                                    onChange={e =>
+                                                                        setEditingConfig({
+                                                                            ...editingConfig,
+                                                                            modelName: e.target.value,
+                                                                        })
+                                                                    }
+                                                                    placeholder='e.g., gpt-4-turbo'
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Row 2: Base URL */}
+                                                        <div className='form-field'>
+                                                            <label>Base URL</label>
+                                                            <Input
+                                                                value={editingConfig.baseURL}
+                                                                onChange={e =>
+                                                                    setEditingConfig({
+                                                                        ...editingConfig,
+                                                                        baseURL: e.target.value,
+                                                                    })
+                                                                }
+                                                                placeholder='e.g., https://api.openai.com/v1/chat/completions'
+                                                            />
+                                                        </div>
+
+                                                        {/* Row 3: API Key */}
+                                                        <div className='form-field'>
+                                                            <label>API Key</label>
+                                                            <div className='api-key-input'>
+                                                                <Input
+                                                                    type={
+                                                                        showApiKey[editingConfig.id]
+                                                                            ? 'text'
+                                                                            : 'password'
+                                                                    }
+                                                                    value={editingConfig.apiKey}
+                                                                    onChange={e =>
+                                                                        setEditingConfig({
+                                                                            ...editingConfig,
+                                                                            apiKey: e.target.value,
+                                                                        })
+                                                                    }
+                                                                    placeholder='sk-...'
+                                                                    style={{ paddingRight: '40px' }}
+                                                                />
+                                                                <button
+                                                                    type='button'
+                                                                    onClick={() =>
+                                                                        toggleShowApiKey(editingConfig.id)
+                                                                    }
+                                                                    className='api-key-toggle'
+                                                                >
+                                                                    {showApiKey[editingConfig.id] ? (
+                                                                        <EyeOff size={16} />
+                                                                    ) : (
+                                                                        <Eye size={16} />
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className='form-actions'>
+                                                            <Button
+                                                                onClick={handleSave}
+                                                                type='primary'
+                                                                style={{ flex: 1 }}
+                                                            >
+                                                                Save
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => setEditingConfig(null)}
+                                                                style={{ flex: 1 }}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -259,14 +370,11 @@ export function SettingsDialog({
                                     Add New LLM
                                 </Button>
 
-                                {/* Edit Form */}
-                                {editingConfig && (
+                                {/* Edit Form for New Config - shown at bottom when adding new */}
+                                {editingConfig && !llmConfigs.find(c => c.id === editingConfig.id) && (
                                     <div className='edit-form'>
                                         <h3 className='edit-form-title'>
-                                            {llmConfigs.find(c => c.id === editingConfig.id)
-                                                ? 'Edit'
-                                                : 'Add'}{' '}
-                                            LLM Configuration
+                                            Add LLM Configuration
                                         </h3>
 
                                         {/* Row 1: Name and Model Name */}
@@ -422,6 +530,66 @@ export function SettingsDialog({
                                                         />
                                                     </div>
                                                 </div>
+
+                                                {/* Edit Form - shown in-place when editing this action */}
+                                                <div
+                                                    className={`edit-form-expandable ${editingAction && editingAction.id === action.id ? 'expanded' : ''}`}
+                                                >
+                                                    {editingAction && editingAction.id === action.id && (
+                                                        <div className='edit-form-content'>
+                                                            <h3 className='edit-form-title'>
+                                                                Edit Action
+                                                            </h3>
+
+                                                            {/* Label */}
+                                                            <div className='form-field'>
+                                                                <label>Label</label>
+                                                                <Input
+                                                                    value={editingAction.label}
+                                                                    onChange={e =>
+                                                                        setEditingAction({
+                                                                            ...editingAction,
+                                                                            label: e.target.value,
+                                                                        })
+                                                                    }
+                                                                    placeholder='e.g., Fix Grammar'
+                                                                />
+                                                            </div>
+
+                                                            {/* Prompt */}
+                                                            <div className='form-field'>
+                                                                <label>Prompt</label>
+                                                                <Input.TextArea
+                                                                    value={editingAction.prompt}
+                                                                    onChange={e =>
+                                                                        setEditingAction({
+                                                                            ...editingAction,
+                                                                            prompt: e.target.value,
+                                                                        })
+                                                                    }
+                                                                    placeholder='e.g., Fix the grammar'
+                                                                    rows={6}
+                                                                />
+                                                            </div>
+
+                                                            <div className='form-actions'>
+                                                                <Button
+                                                                    onClick={handleSaveAction}
+                                                                    type='primary'
+                                                                    style={{ flex: 1 }}
+                                                                >
+                                                                    Save
+                                                                </Button>
+                                                                <Button
+                                                                    onClick={() => setEditingAction(null)}
+                                                                    style={{ flex: 1 }}
+                                                                >
+                                                                    Cancel
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))
                                     ) : (
@@ -448,14 +616,11 @@ export function SettingsDialog({
                                     Add New Action
                                 </Button>
 
-                                {/* Edit Form */}
-                                {editingAction && (
+                                {/* Edit Form for New Action - shown at bottom when adding new */}
+                                {editingAction && (!actions || !actions.find(a => a.id === editingAction.id)) && (
                                     <div className='edit-form'>
                                         <h3 className='edit-form-title'>
-                                            {actions && actions.find(a => a.id === editingAction.id)
-                                                ? 'Edit'
-                                                : 'Add'}{' '}
-                                            Action
+                                            Add Action
                                         </h3>
 
                                         {/* Label */}
