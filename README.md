@@ -1,6 +1,6 @@
 [![Build (macOS & Windows)](https://github.com/shmmsra/byoa/actions/workflows/build.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/build.yml)
 [![Lint](https://github.com/shmmsra/byoa/actions/workflows/lint.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/lint.yml)
-[![Release](https://github.com/shmmsra/byoa/actions/workflows/release.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/release.yml)
+[![Release](https://github.com/shmmsra/byoa/actions/workflows/release.yml/badge.svg)](https://github.com/shmmsra/byoa/actions/workflows/bundle-and-release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Contributors](https://img.shields.io/github/contributors/shmmsra/byoa)](https://github.com/shmmsra/byoa/graphs/contributors)
 [![Stars](https://img.shields.io/github/stars/shmmsra/byoa?style=social)](https://github.com/shmmsra/byoa)
