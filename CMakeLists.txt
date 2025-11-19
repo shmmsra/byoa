@@ -142,11 +142,11 @@ elseif(WIN32)
     # This ensures they exist even if web resources haven't been built yet
     execute_process(
         COMMAND ${CMAKE_COMMAND}
-            -DWEB_RESOURCES_DIR="${WEB_RESOURCES_DIR}"
-            -DOUTPUT_RC="${GENERATED_RC_FILE}"
-            -DOUTPUT_HEADER="${GENERATED_HEADER_FILE}"
-            -P "${CMAKE_SOURCE_DIR}/cmake/GenerateResourceFile.cmake"
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            -DWEB_RESOURCES_DIR=${WEB_RESOURCES_DIR}
+            -DOUTPUT_RC=${GENERATED_RC_FILE}
+            -DOUTPUT_HEADER=${GENERATED_HEADER_FILE}
+            -P ${CMAKE_SOURCE_DIR}/cmake/GenerateResourceFile.cmake
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULT_VARIABLE GEN_RESULT
         OUTPUT_VARIABLE GEN_OUTPUT
         ERROR_VARIABLE GEN_ERROR
@@ -162,10 +162,10 @@ elseif(WIN32)
     # This is simpler than using add_custom_command with dependencies
     add_custom_target(generate_web_resources
         COMMAND ${CMAKE_COMMAND}
-            -DWEB_RESOURCES_DIR="${WEB_RESOURCES_DIR}"
-            -DOUTPUT_RC="${GENERATED_RC_FILE}"
-            -DOUTPUT_HEADER="${GENERATED_HEADER_FILE}"
-            -P "${CMAKE_SOURCE_DIR}/cmake/GenerateResourceFile.cmake"
+            -DWEB_RESOURCES_DIR=${WEB_RESOURCES_DIR}
+            -DOUTPUT_RC=${GENERATED_RC_FILE}
+            -DOUTPUT_HEADER=${GENERATED_HEADER_FILE}
+            -P ${CMAKE_SOURCE_DIR}/cmake/GenerateResourceFile.cmake
         COMMENT "Regenerating web resources"
         VERBATIM
     )

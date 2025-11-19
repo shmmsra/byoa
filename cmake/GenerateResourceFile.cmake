@@ -13,6 +13,11 @@ if(NOT DEFINED OUTPUT_HEADER)
     message(FATAL_ERROR "OUTPUT_HEADER must be defined")
 endif()
 
+# Normalize paths to avoid Windows path issues
+get_filename_component(WEB_RESOURCES_DIR "${WEB_RESOURCES_DIR}" ABSOLUTE)
+get_filename_component(OUTPUT_RC "${OUTPUT_RC}" ABSOLUTE)
+get_filename_component(OUTPUT_HEADER "${OUTPUT_HEADER}" ABSOLUTE)
+
 # Check if web resources directory exists
 if(NOT EXISTS "${WEB_RESOURCES_DIR}")
     message(WARNING "Web resources directory does not exist: ${WEB_RESOURCES_DIR}")
