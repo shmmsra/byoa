@@ -101,12 +101,12 @@ This application consists of two main components:
    
    **macOS**: The built application will be located at:
    ```
-   build/Debug/ai_assistant.app
+   build/Debug/BYOAssistant.app
    ```
    
    You can open it from Finder or via command line:
    ```bash
-   open build/Debug/ai_assistant.app
+   open build/Debug/BYOAssistant.app
    ```
    
    **Windows**: The built executable will be located at:
@@ -260,7 +260,7 @@ cmake --build build --config Release
 ```
 
 The production application will be at:
-- **macOS**: `build/Release/ai_assistant.app`
+- **macOS**: `build/Release/BYOAssistant.app`
 - **Windows**: `build/Release/BYOAssistant.exe`
 
 ### Code Signing and Distribution
@@ -269,14 +269,14 @@ The production application will be at:
 
 ```bash
 codesign --force --deep --sign "Developer ID Application: Your Name" \
-  build/Release/ai_assistant.app
+  build/Release/BYOAssistant.app
 ```
 
 **macOS**: Creating a DMG for distribution:
 
 ```bash
 # Create a disk image for distribution
-hdiutil create -volname "BYOA Assistant" -srcfolder build/Release/ai_assistant.app \
+hdiutil create -volname "BYOA Assistant" -srcfolder build/Release/BYOAssistant.app \
   -ov -format UDZO BYOA-Assistant.dmg
 ```
 

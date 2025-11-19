@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BYOA - Build Your Own Assistant</title>
     <meta name="description" content="A native cross-platform desktop assistant application that enables you to use your own/public AI models for intelligent text/image processing.">
-    <meta name="keywords" content="desktop, assistant, ai, macos, native, react, saucer, cpp">
+    <meta name="keywords" content="desktop, assistant, ai, macos, windows, cross-platform, native, react, saucer, cpp">
     <meta name="author" content="Shivam Mishra">
     
     <!-- Open Graph / Facebook -->
@@ -643,8 +643,8 @@
                         <img src="https://github.com/shmmsra/byoa/actions/workflows/lint.yml/badge.svg" alt="Lint Status" style="height: 20px; margin-right: 8px;">
                         Lint Status
                     </a>
-                    <a href="https://github.com/shmmsra/byoa/actions/workflows/release.yml" class="badge">
-                        <img src="https://github.com/shmmsra/byoa/actions/workflows/release.yml/badge.svg" alt="Release Status" style="height: 20px; margin-right: 8px;">
+                    <a href="https://github.com/shmmsra/byoa/actions/workflows/bundle-and-release.yml" class="badge">
+                        <img src="https://github.com/shmmsra/byoa/actions/workflows/bundle-and-release.yml/badge.svg" alt="Release Status" style="height: 20px; margin-right: 8px;">
                         Release Status
                     </a>
                     <a href="LICENSE" class="badge">
@@ -695,7 +695,7 @@
                 <div class="feature-card fade-in">
                     <span class="feature-icon">📋</span>
                     <h3 class="feature-title">Clipboard Integration</h3>
-                    <p class="feature-description">Seamless integration with macOS clipboard for instant text processing</p>
+                    <p class="feature-description">Seamless cross-platform clipboard integration for instant text processing</p>
                 </div>
                 
                 <div class="feature-card fade-in">
@@ -707,7 +707,7 @@
                 <div class="feature-card fade-in">
                     <span class="feature-icon">🔒</span>
                     <h3 class="feature-title">Secure Storage</h3>
-                    <p class="feature-description">Uses macOS Keychain for secure API key storage</p>
+                    <p class="feature-description">Uses system credential storage (macOS Keychain/Windows Credential Manager) for secure API key storage</p>
                 </div>
             </div>
         </div>
@@ -724,7 +724,7 @@
                     <h3 class="arch-title">Native Backend</h3>
                     <ul class="arch-list">
                         <li>C++23</li>
-                        <li>macOS 13.3+</li>
+                        <li>macOS 13.3+ / Windows 10+</li>
                         <li>CMake Build</li>
                         <li>Saucer Webview</li>
                         <li>Secure Vault</li>
@@ -787,7 +787,7 @@
                     <div class="step-content">
                         <h3>Prerequisites</h3>
                         <p>Make sure you have the required tools installed:</p>
-                        <div class="code-block">macOS 13.3+ • Node.js ≥16.0.0 • yarn • CMake ≥3.16 • Xcode Command Line Tools</div>
+                        <div class="code-block">macOS 13.3+ / Windows 10+ • Node.js ≥16.0.0 • yarn • CMake ≥3.16 • Xcode CLI (macOS) / Visual Studio 2022 (Windows)</div>
                     </div>
                 </div>
                 
@@ -818,7 +818,11 @@ yarn cmake:build</div>
                     <div class="step-content">
                         <h3>Run BYOA</h3>
                         <p>Launch the application:</p>
-                        <div class="code-block">open build/Debug/ai_assistant.app</div>
+                        <div class="code-block"># macOS
+open build/Debug/BYOAssistant.app
+
+# Windows
+.\build\Debug\BYOAssistant.exe</div>
                     </div>
                 </div>
             </div>
