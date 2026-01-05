@@ -108,6 +108,8 @@ set(RC_CONTENT "${RC_CONTENT}\n// Resource data\n")
 # Add index.html resource data to .rc file
 if(HAS_INDEX_HTML)
     file(TO_NATIVE_PATH "${WEB_RESOURCES_DIR}/index.html" NATIVE_PATH)
+    # Escape backslashes for RC file
+    string(REPLACE "\\" "\\\\" NATIVE_PATH "${NATIVE_PATH}")
     set(RC_CONTENT "${RC_CONTENT}IDR_WEB_INDEX_HTML RCDATA \"${NATIVE_PATH}\"\n")
 endif()
 
@@ -122,6 +124,8 @@ foreach(FILE ${FILTERED_FILES})
     # Add to .rc file with proper Windows path
     string(REPLACE "/" "\\\\" WIN_PATH "${FILE}")
     file(TO_NATIVE_PATH "${WEB_RESOURCES_DIR}/${WIN_PATH}" NATIVE_PATH)
+    # Escape backslashes for RC file
+    string(REPLACE "\\" "\\\\" NATIVE_PATH "${NATIVE_PATH}")
     set(RC_CONTENT "${RC_CONTENT}${RESOURCE_NAME} RCDATA \"${NATIVE_PATH}\"\n")
 endforeach()
 
@@ -154,4 +158,3 @@ file(WRITE "${OUTPUT_RC}" "${RC_CONTENT}")
 
 message(STATUS "Generated resource file with ${RESOURCE_ID} resources: ${OUTPUT_RC}")
 message(STATUS "Generated resource header: ${OUTPUT_HEADER}")
-
