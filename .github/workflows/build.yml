@@ -27,10 +27,6 @@ jobs:
           npm install -g yarn
           yarn install
 
-      - name: Build Web
-        run: yarn build:web:release
-
-      - name: Build Native
+      - name: Build Web and Native for ${{ matrix.os }}
         run: |
-          yarn configure:native
-          yarn build:native:release
+          yarn build:all
