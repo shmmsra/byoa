@@ -1,4 +1,4 @@
-name: Build and Release Installers
+name: Build and Release Apps
 
 on:
   push:
@@ -41,12 +41,25 @@ jobs:
         run: |
           yarn bundle
 
+      - name: Compress Artifacts (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd dist
+          zip -r byoa-${{ matrix.os }}-app.zip BYOAssistant.app
+
+      - name: Compress Artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          cd dist
+          7z a byoa-${{ matrix.os }}-app.zip *
+
       # ---- Upload Artifacts ----
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-installer
-          path: dist/*
+          name: byoa-${{ matrix.os }}-app
+          path: dist/byoa-${{ matrix.os }}-app.zip
 
   release:
     name: Create GitHub Release
