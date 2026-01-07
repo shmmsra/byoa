@@ -7,7 +7,8 @@
 // Resource IDs for embedded web resources
 // AUTO-GENERATED - DO NOT EDIT
 
-#define IDI_APP_ICON 101
+#define IDI_APP_ICON  101
+#define IDI_TRAY_ICON 102
 
 #define IDR_WEB_INDEX_HTML 100
 

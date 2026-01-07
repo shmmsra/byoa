@@ -1,6 +1,7 @@
 #include "menubar-controller.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
+#include "resource-ids.h"
 // clang-format off
 #include <windows.h>
 #include <shellapi.h>
@@ -67,7 +68,7 @@ void MenubarController::createTrayIcon() {
     HICON hIcon = nullptr;
 
     // Try to load icon from executable resources (if embedded)
-    hIcon = LoadIconW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(101));
+    hIcon = LoadIconW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(IDI_TRAY_ICON));
 
     if (!hIcon) {
         // Create a simple fallback icon
