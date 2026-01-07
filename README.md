@@ -55,6 +55,18 @@ This application consists of two main components:
 
 ## Getting Started
 
+### Quick Download and Install for the current user (macOS)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shmmsra/byoa/main/scripts/install.sh | bash
+```
+
+### Quick Download and Install for the current user (Windows)
+
+```powershell
+irm https://raw.githubusercontent.com/shmmsra/byoa/main/scripts/install.ps1 | iex
+```
+
 ### Prerequisites
 
 #### Common Requirements (All Platforms)
