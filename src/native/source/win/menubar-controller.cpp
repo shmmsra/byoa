@@ -1,7 +1,9 @@
 #include "menubar-controller.hpp"
 #include "app-controller.hpp"
 #include "logger.hpp"
+#include "native-resources.h"
 #include "resource-ids.h"
+
 // clang-format off
 #include <windows.h>
 #include <shellapi.h>
