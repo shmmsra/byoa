@@ -98,9 +98,18 @@ set(CPR_BUILD_DOCS OFF CACHE BOOL "Don't build CPR documentation" FORCE)
 set(CPR_USE_SYSTEM_LIB_PSL OFF CACHE BOOL "Use system libpsl" FORCE)
 set(CPR_CURL_USE_LIBPSL OFF CACHE BOOL "Use libpsl in curl" FORCE)
 
-# Configure curl options to disable libpsl
+# Configure curl options to disable libpsl and prevent dynamic linking to homebrew
 set(CURL_DISABLE_LIBPSL ON CACHE BOOL "Disable libpsl in curl" FORCE)
 set(CURL_USE_LIBPSL OFF CACHE BOOL "Don't use libpsl" FORCE)
+
+# Prevent libcurl from linking against homebrew libraries so the app is portable
+set(CURL_USE_LIBSSH2 OFF CACHE BOOL "Disable libssh2 in curl" FORCE)
+set(CURL_USE_LIBSSH OFF CACHE BOOL "Disable libssh in curl" FORCE)
+set(CURL_BROTLI OFF CACHE BOOL "Disable brotli in curl" FORCE)
+set(CURL_ZSTD OFF CACHE BOOL "Disable zstd in curl" FORCE)
+set(USE_NGHTTP2 OFF CACHE BOOL "Disable nghttp2 in curl" FORCE)
+set(USE_LIBIDN2 OFF CACHE BOOL "Disable libidn2 in curl" FORCE)
+set(CURL_USE_LIBIDN2 OFF CACHE BOOL "Disable libidn2 in curl (alt name)" FORCE)
 
 message(STATUS "Fetching CPR...")
 
