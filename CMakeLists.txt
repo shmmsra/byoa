@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
+
+# Set minimum macOS version if not already set (Must be BEFORE project())
+if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum OS X deployment version")
+endif()
+
 project(BYOAssistant VERSION 1.0.0 LANGUAGES CXX OBJCXX)
 
 # Set C++ standard
@@ -304,11 +310,6 @@ if(APPLE)
     set(EXECUTABLE_NAME "BYOAssistant")
     set(VERSION_FULL "${PROJECT_VERSION}")
     set(COPYRIGHT_2025 "Copyright © 2025 BYOA. All rights reserved.")
-    
-    # Set minimum macOS version if not already set
-    if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3")
-    endif()
     
     # Configure the plist file with variable substitution
     configure_file(
