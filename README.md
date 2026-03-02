@@ -55,7 +55,7 @@ This application consists of two main components:
 
 ## Getting Started
 
-### Quick Download and Install for the current user (macOS)
+### Quick Download and Install for the current user (macOS, minimum supported version is 14.0 / Sonoma)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shmmsra/byoa/main/scripts/install.sh | bash
