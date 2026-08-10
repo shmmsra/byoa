@@ -22,12 +22,14 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.cursor/rules/
 
 # misc
 /.npmrc
 /.sass-cache
 npm-debug.log
 yarn-error.log
+mcp-server.log
 
 # System Files
 .DS_Store
