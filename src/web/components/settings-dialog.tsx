@@ -4,6 +4,7 @@ import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
 import { Action, LLMConfig, ThemeMode } from '../app';
 import { events } from '../utils/events';
 import { VaultUtils } from '../utils/vault';
+import { HistoryTab } from './history-tab';
 
 interface SettingsDialogProps {
     open: boolean;
@@ -706,6 +707,11 @@ export function SettingsDialog({
                             </div>
                         </div>
                     ),
+                },
+                {
+                    key: 'history',
+                    label: 'History',
+                    children: <HistoryTab />,
                 },
                 {
                     key: 'appearance',

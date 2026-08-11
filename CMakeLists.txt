@@ -83,6 +83,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
+# Fetch SQLiteCpp for local history storage (vendors the public-domain SQLite amalgamation)
+message(STATUS "Fetching SQLiteCpp...")
+set(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "Disable cpplint for SQLiteCpp" FORCE)
+set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "Disable cppcheck for SQLiteCpp" FORCE)
+set(SQLITECPP_INTERNAL_SQLITE ON CACHE BOOL "Use SQLiteCpp's bundled SQLite amalgamation" FORCE)
+set(SQLITE_ENABLE_COLUMN_METADATA OFF CACHE BOOL "Disable SQLite column metadata" FORCE)
+set(SQLITECPP_BUILD_EXAMPLES OFF CACHE BOOL "Don't build SQLiteCpp examples" FORCE)
+set(SQLITECPP_BUILD_TESTS OFF CACHE BOOL "Don't build SQLiteCpp tests" FORCE)
+FetchContent_Declare(
+  sqlitecpp
+  GIT_REPOSITORY "https://github.com/SRombauts/SQLiteCpp"
+  GIT_TAG 3.3.2
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(sqlitecpp)
+
 # Fetch CPR for HTTP requests
 # Configure CPR options before fetching to avoid unnecessary dependencies
 message(STATUS "Configuring CPR options...")
@@ -214,6 +230,7 @@ set(XPLAT_SOURCES
     src/native/source/xplat/logger.cpp
     src/native/source/xplat/vault.cpp
     src/native/source/xplat/network.cpp
+    src/native/source/xplat/history.cpp
     src/native/source/xplat/webview-wrapper.cpp
 )
 
@@ -373,12 +390,13 @@ if(APPLE)
 endif()
 
 # Link libraries
-target_link_libraries(BYOAssistant PRIVATE 
-    saucer::saucer 
-    spdlog::spdlog 
-    keychain 
-    cpr::cpr 
+target_link_libraries(BYOAssistant PRIVATE
+    saucer::saucer
+    spdlog::spdlog
+    keychain
+    cpr::cpr
     nlohmann_json::nlohmann_json
+    SQLiteCpp
 )
 
 # Installation rules (optional)

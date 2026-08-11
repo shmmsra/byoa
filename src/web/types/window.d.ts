@@ -26,6 +26,10 @@ declare global {
                 vault_setData(_key: string, _value: string): Promise<boolean>;
                 vault_deleteData(_key: string): Promise<boolean>;
                 vault_hasData(_key: string): Promise<boolean>;
+                history_saveEntry(_entryJson: string): Promise<boolean>;
+                history_queryEntries(_filterJson: string): Promise<string>;
+                history_deleteEntry(_id: string): Promise<boolean>;
+                history_clearAll(): Promise<boolean>;
                 network_fetch(_url: string, _options: string): Promise<string>;
                 event_trigger(_eventName: string, _data: string): Promise<void>;
             };

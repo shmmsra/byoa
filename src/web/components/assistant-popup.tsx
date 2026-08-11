@@ -4,6 +4,7 @@ import { Copy, CheckCircle2, RotateCcw, Send, X } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
 import { LLMConfig, Action } from '../app';
 import { InvokeLLM } from '../utils/llm';
+import { HistoryUtils } from '../utils/history';
 import { ClipboardUtils } from '../utils/clipboard';
 import { DiffViewer } from './diff-viewer';
 import { calculateStringSimilarity } from '../utils/similarity';
@@ -24,6 +25,11 @@ interface LLMResult {
     llmId: string;
     llmName: string;
     result: string;
+}
+
+interface ActionMeta {
+    id: string;
+    label: string;
 }
 
 export function AssistantPopup({
@@ -103,7 +109,9 @@ export function AssistantPopup({
         config: LLMConfig,
         systemContent: string,
         userContent: string,
+        actionMeta?: ActionMeta,
     ): Promise<string> => {
+        const startedAt = Date.now();
         try {
             const result = await InvokeLLM(
                 config.baseURL,
@@ -112,19 +120,43 @@ export function AssistantPopup({
                 systemContent,
                 userContent,
             );
+            // Fire-and-forget: a history write failure must never affect the LLM flow.
+            void HistoryUtils.saveEntry({
+                request: userContent,
+                systemContent,
+                response: result || '',
+                model: config.modelName,
+                llmConfigName: config.name,
+                actionId: actionMeta?.id ?? '',
+                actionName: actionMeta?.label ?? '',
+                status: 'success',
+                errorMessage: '',
+                responseTimeMs: Date.now() - startedAt,
+                requestedAt: new Date(startedAt).toISOString(),
+            });
             return result || '';
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            void HistoryUtils.saveEntry({
+                request: userContent,
+                systemContent,
+                response: null,
+                model: config.modelName,
+                llmConfigName: config.name,
+                actionId: actionMeta?.id ?? '',
+                actionName: actionMeta?.label ?? '',
+                status: 'error',
+                errorMessage,
+                responseTimeMs: Date.now() - startedAt,
+                requestedAt: new Date(startedAt).toISOString(),
+            });
             console.error(`Error invoking ${config.name}:`, error);
-            throw new Error(
-                `Error in ${config.name}: ${
-                    error instanceof Error ? error.message : 'Unknown error'
-                }`,
-            );
+            throw new Error(`Error in ${config.name}: ${errorMessage}`);
         }
     };
 
     // Process with selected LLM(s)
-    const processWithLLM = async (actionPrompt: string) => {
+    const processWithLLM = async (actionPrompt: string, actionMeta?: ActionMeta) => {
         setState('processing');
         setResults([]);
         setCopied(false);
@@ -138,7 +170,12 @@ export function AssistantPopup({
                 // Process with all enabled LLMs
                 const promises = enabledLLMs.map(async config => {
                     try {
-                        const result = await invokeLLM(config, systemContent, userContent);
+                        const result = await invokeLLM(
+                            config,
+                            systemContent,
+                            userContent,
+                            actionMeta,
+                        );
                         return {
                             llmId: config.id,
                             llmName: config.name,
@@ -185,7 +222,12 @@ export function AssistantPopup({
                     throw new Error(`API key not configured for ${targetConfig.name}`);
                 }
 
-                const result = await invokeLLM(targetConfig, systemContent, userContent);
+                const result = await invokeLLM(
+                    targetConfig,
+                    systemContent,
+                    userContent,
+                    actionMeta,
+                );
                 const singleResult = {
                     llmId: targetConfig.id,
                     llmName: targetConfig.name,
@@ -209,7 +251,7 @@ export function AssistantPopup({
     };
 
     const handleQuickAction = (action: Action) => {
-        processWithLLM(action.prompt);
+        processWithLLM(action.prompt, { id: action.id, label: action.label });
     };
 
     const handleCustomPrompt = () => {

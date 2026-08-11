@@ -3,6 +3,7 @@
 
 #include "app-controller.hpp"
 #include "clipboard.hpp"
+#include "history.hpp"
 #include "logger.hpp"
 #include "network.hpp"
 #include "vault.hpp"
@@ -35,6 +36,10 @@ bool WebviewWrapper::init(const string &viewURL) {
         return false;
     }
 
+    if (!History::init()) {
+        Logger::getInstance().error("WebviewWrapper::init: Failed to initialize history database");
+    }
+
     // Expose clipboard functions
     _webview->expose("clipboard_readText", []() -> coco::task<string> { co_return Clipboard::readText(); });
 
@@ -65,6 +70,31 @@ bool WebviewWrapper::init(const string &viewURL) {
 
     _webview->expose("vault_hasData", [](const string &key) -> coco::task<bool> {
         bool success = Vault::hasData(key);
+        co_return success;
+    });
+
+    _webview->expose("history_saveEntry", [](const string &entryJson) -> coco::task<bool> {
+        bool success = History::insertEntry(entryJson);
+        co_return success;
+    });
+
+    _webview->expose("history_queryEntries", [](const string &filterJson) -> coco::task<string> {
+        string result = History::queryEntries(filterJson);
+        co_return result;
+    });
+
+    _webview->expose("history_deleteEntry", [](const string &id) -> coco::task<bool> {
+        try {
+            bool success = History::deleteEntry(std::stoll(id));
+            co_return success;
+        } catch (const exception &e) {
+            Logger::getInstance().error("history_deleteEntry: Invalid id '{}': {}", id, e.what());
+            co_return false;
+        }
+    });
+
+    _webview->expose("history_clearAll", []() -> coco::task<bool> {
+        bool success = History::clearAll();
         co_return success;
     });
 

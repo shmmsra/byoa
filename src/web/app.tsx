@@ -33,6 +33,30 @@ export interface Action {
     enabled: boolean;
 }
 
+export interface HistoryEntry {
+    id: number;
+    request: string;
+    systemContent: string;
+    response: string | null;
+    model: string;
+    llmConfigName: string;
+    actionId: string;
+    actionName: string;
+    status: 'success' | 'error';
+    errorMessage: string;
+    responseTimeMs: number | null;
+    requestedAt: string;
+    schemaVersion: number;
+}
+
+export interface HistoryFilter {
+    keyword?: string;
+    model?: string;
+    status?: 'success' | 'error';
+    limit?: number;
+    offset?: number;
+}
+
 function AppContent() {
     const [searchParams] = useSearchParams();
     const [clipboardContent, setClipboardContent] = useState('');
