@@ -62,6 +62,7 @@ What becomes easier? What becomes harder? What new commitments does this create?
 | [0002](0002-local-history-storage.md) | Local query/response history via native SQLite | Accepted |
 | [0003](0003-auto-tag-release-on-version-bump.md) | Auto-create a release tag when `package.json` version bumps | Accepted |
 | [0004](0004-single-source-of-truth-versioning.md) | `package.json` as the single source of truth for app version | Accepted |
+| [0005](0005-focused-app-name-in-history.md) | Capture the focused app's name in history for context | Accepted |
 
 *Add new rows as ADRs accumulate.*
 

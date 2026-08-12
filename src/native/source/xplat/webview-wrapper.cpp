@@ -1,3 +1,4 @@
+#include <nlohmann/json.hpp>
 #include <saucer/smartview.hpp>
 #include <saucer/window.hpp>
 
@@ -8,6 +9,8 @@
 #include "network.hpp"
 #include "vault.hpp"
 #include "webview-wrapper.hpp"
+
+using json = nlohmann::json;
 
 using namespace std;
 using namespace byoa;
@@ -74,7 +77,18 @@ bool WebviewWrapper::init(const string &viewURL) {
     });
 
     _webview->expose("history_saveEntry", [](const string &entryJson) -> coco::task<bool> {
-        bool success = History::insertEntry(entryJson);
+        // The focused app at shortcut-trigger time is known only natively, so it is
+        // stamped onto the entry here rather than trusting a value from the webview.
+        string enrichedEntryJson = entryJson;
+        try {
+            json entry              = json::parse(entryJson);
+            entry["focusedAppName"] = AppController::getInstance().getFocusedAppName();
+            enrichedEntryJson       = entry.dump();
+        } catch (const exception &e) {
+            Logger::getInstance().error("history_saveEntry: Failed to parse entry JSON: {}", e.what());
+        }
+
+        bool success = History::insertEntry(enrichedEntryJson);
         co_return success;
     });
 

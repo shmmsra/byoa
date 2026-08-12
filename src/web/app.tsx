@@ -47,6 +47,10 @@ export interface HistoryEntry {
     responseTimeMs: number | null;
     requestedAt: string;
     schemaVersion: number;
+    // Name of the app that was in the foreground when the shortcut was triggered.
+    // Stamped in natively (see webview-wrapper.cpp), so it's optional here since
+    // rows written before this field existed won't have it populated.
+    focusedAppName?: string;
 }
 
 export interface HistoryFilter {

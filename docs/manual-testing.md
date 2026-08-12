@@ -165,6 +165,31 @@ make check
 
 ---
 
+## Focused app name in history
+
+**Test command(s)**:
+1. Launch the built app.
+2. Bring a specific, easily-identifiable app to the foreground (e.g. Notes on macOS, Notepad on Windows) and copy some text in it.
+3. Trigger the BYOA shortcut and run any Action or ad-hoc prompt.
+4. Repeat step 2-3 with a different foreground app (e.g. a browser).
+5. Open Settings → History.
+
+**Setup**: At least one enabled LLM config with a valid API key.
+
+**What to observe**:
+- The History tab's "App" column shows a name for each row: on macOS, the app's normal display name (e.g. "Notes"); on Windows, the executable's basename (e.g. "notepad").
+- The name matches the app that was actually in the foreground when the shortcut was pressed for that row, not the app open afterward or BYOA itself.
+- Rows written before this change (if any) show "—" (empty) in the "App" column rather than erroring.
+
+**Pass criteria**:
+- Every new history row has a non-empty, correct "App" value matching the foreground app at trigger time.
+- No UI freeze or crash introduced by the added lookup — the popup still appears immediately on shortcut trigger.
+
+**Fail indicators**:
+- "App" column is always empty for new rows.
+- "App" value is wrong (e.g. always shows "BYOA" or the previous row's app).
+- Triggering the shortcut has noticeably more latency than before this change.
+
 ---
 
 ## Auto-tag + release on `package.json` version bump

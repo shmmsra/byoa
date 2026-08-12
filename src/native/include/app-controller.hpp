@@ -31,6 +31,7 @@ class AppController {
     int stop();
     std::shared_ptr<WindowWrapper> getMainWindow();
     std::shared_ptr<WindowWrapper> getAssistantWindow();
+    std::string getFocusedAppName();
 #ifdef _WIN32
     HWND getHiddenWindowHandle();
 #endif
@@ -40,6 +41,7 @@ class AppController {
     ~AppController() = default;
 
     process_id_t _focusedAppPId = 0;
+    std::string _focusedAppName;
     saucer::application *_app;
     std::shared_ptr<WindowWrapper> _mainWindow;
     std::shared_ptr<WindowWrapper> _assistantWindow;
