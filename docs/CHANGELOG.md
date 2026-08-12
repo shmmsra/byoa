@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-08-12 — Version 1.1.0
+
+**What changed**: Bumped `package.json` version `1.0.1` → `1.1.0` for the focused-app-name history feature below. `CMakeLists.txt` picks this up automatically at configure time (ADR-004), no other file needed a change.
+
+**Why**: Minor bump (not patch) because the change adds a new, non-breaking capability (the "App" column in history) rather than fixing a defect.
+
+---
+
 ## 2026-08-12 — History: record the focused app's name for context
 
 **What changed**: Added a `focused_app_name` column to the `history` table, populated at shortcut-trigger time (the same moment each platform already captures the focused app's PID). macOS reads `NSWorkspace.frontmostApplication.localizedName`; Windows resolves the foreground window's owning process and takes its executable basename via `GetForegroundWindow`/`GetWindowThreadProcessId`/`QueryFullProcessImageNameW` (previously a `TODO` stub returning PID `0`). The name is stamped onto the entry server-side inside the `history_saveEntry` IPC handler (`webview-wrapper.cpp`), not passed from the frontend. Existing databases migrate in place via the same `PRAGMA table_info` + `ALTER TABLE ADD COLUMN` pattern used for `system_content`. The History tab now shows an "App" column. See ADR-005.

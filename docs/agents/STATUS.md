@@ -39,6 +39,7 @@ The next logical work, in priority order. Update at the end of every session.
 
 | Date | Ticket | Summary | Commit |
 |------|--------|---------|--------|
+| 2026-08-12 | — | Version 1.1.0 | pending |
 | 2026-08-12 | — | History: record the focused app's name (mac + Windows) for context | pending |
 | 2026-08-12 | — | Auto-tag + release on `package.json` version bump, with commit-log release notes | pending |
 | 2026-08-11 | — | Local query/response history (SQLite) + Settings History tab | pending |
