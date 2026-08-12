@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-08-12 — Auto-tag + release on `package.json` version bump
+
+**What changed**: Added `.github/workflows/tag-on-version-bump.yml`, which triggers on any push to `main` touching `package.json`, reads the `version` field, and — if tag `v<version>` doesn't already exist — creates/pushes it and dispatches `bundle-and-release.yml` via `gh workflow run --ref v<version>` (an explicit dispatch is required because tags pushed with the default `GITHUB_TOKEN` don't trigger other workflows). `bundle-and-release.yml`'s release job now also checks out full history and generates release notes: a `## Changes` list of `git log <prev-tag>..<current-tag>` commit subjects, plus a `**Commits included:** <start-sha>...<end-sha>` line, passed as the release body. See ADR-003.
+
+**Why**: The release trigger required a manual `git tag && git push`, which nobody was doing consistently — the last release (`v0.0.9`) was months old despite several merged improvements. Release bodies were also just a bare title with no record of what changed.
+
+**What was rejected**: A PAT secret to let the tag push itself re-trigger the release workflow (avoided the extra secret-management burden — `gh workflow run --ref` solves the same problem with the existing token); auto-bumping `package.json` version from commit history (out of scope — versioning intent stays a human decision); changelog/commit categorization tooling (only plain concatenation was asked for).
+
+**What's next**: End-to-end manual verification against a real version bump; reconcile `package.json`'s `1.0.0` with the existing `v0.0.x` tag sequence before the next release.
+
+---
+
 ## 2026-08-11 — History: record the actual prompt/instruction, not just clipboard content
 
 **What changed**: Added a `system_content` column to the `history` table, populated for both Action-triggered and ad-hoc requests with the actual instruction sent to the LLM (previously only the clipboard content was stored, so ad-hoc rows carried no record of what was asked). `HISTORY_SCHEMA_VERSION` bumped to `2`. Existing databases migrate in place via a `PRAGMA table_info` check + `ALTER TABLE ADD COLUMN` in `History::init()` — no data loss on upgrade. The History tab's expanded row now shows a "Prompt" section (the instruction) above "Clipboard content" (renamed from "Request"). See the amendment in ADR-002.
