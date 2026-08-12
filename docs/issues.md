@@ -89,4 +89,5 @@ This file does **not** duplicate ticket content (that lives on GitHub). Instead,
 
 | Date | Issue | Title | Commit |
 |------|-------|-------|--------|
+| 2026-08-11 | — | Local query/response history (SQLite) + History tab | pending |
 | 2026-05-23 | — | ai-sdlc-bootstrap scaffold | pending |

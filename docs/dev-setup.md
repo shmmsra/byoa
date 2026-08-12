@@ -56,6 +56,17 @@ Optional but recommended:
 
 ---
 
+## 3a. Native dependencies fetched automatically
+
+`yarn configure:native` (CMake) fetches these via `FetchContent` — no manual install needed, but they do require network access on first configure:
+
+| Dependency | Purpose |
+|------------|---------|
+| spdlog, saucer, keychain, nlohmann/json, cpr | Existing (logging, webview, credential storage, JSON, HTTP) |
+| **SQLiteCpp** | Local query/response history storage (`docs/decisions/0002-local-history-storage.md`). Vendors the SQLite amalgamation as a git submodule — `FetchContent` pulls submodules by default, no extra step needed. |
+
+---
+
 ## 4. Agent skills and MCP servers
 
 | Skill / MCP | Purpose | How to install |
@@ -144,5 +155,6 @@ To confirm your environment can drive the agent-SDLC contract end-to-end:
 | `yarn configure:native` fails | CMake or compiler not found | Install missing toolchain from §1 |
 | Pre-commit hook not running | `make setup-hooks` not run | Run `make setup-hooks` |
 | `clang-tidy` errors after a toolchain upgrade | `.clang-tidy` version mismatch | Check `.clang-tidy` config; update if needed |
+| `yarn configure:native` fails fetching SQLiteCpp / submodule errors | No network access, or git can't recurse submodules for a shallow clone | Re-run with network access; ensure `git` version supports shallow submodule fetch (2.13+) |
 
 *Add new rows as recurring setup gotchas are discovered.*

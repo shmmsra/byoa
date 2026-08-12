@@ -59,6 +59,7 @@ What becomes easier? What becomes harder? What new commitments does this create?
 | # | Title | Status |
 |---|-------|--------|
 | [0001](0001-adopt-ai-sdlc.md) | Adopt the ai-sdlc-bootstrap workflow | Accepted |
+| [0002](0002-local-history-storage.md) | Local query/response history via native SQLite | Accepted |
 
 *Add new rows as ADRs accumulate.*
 
