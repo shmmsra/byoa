@@ -165,4 +165,35 @@ make check
 
 ---
 
+---
+
+## Auto-tag + release on `package.json` version bump
+
+**Test command(s)**:
+1. On a branch, bump `"version"` in `package.json` (e.g. `1.0.0` → `1.0.1`), commit, and merge/push to `main`.
+2. Watch the Actions tab for the `Tag on Version Bump` workflow run.
+3. After it completes, confirm tag `v1.0.1` exists (`git fetch --tags && git tag -l v1.0.1`) and that it triggered a `Build and Release Apps` run.
+4. Once that run completes, open the repo's Releases page and inspect the `v1.0.1` release body.
+5. Push another commit that touches `package.json` without changing `version` (e.g. reformat), and confirm no new tag/release is created.
+
+**Setup**: None beyond normal repo write access; no secrets to configure (uses the default `GITHUB_TOKEN`).
+
+**What to observe**:
+- `Tag on Version Bump` creates and pushes tag `v1.0.1`, then dispatches `Build and Release Apps` for that tag.
+- The release body has a `## Changes` section listing `- <commit subject> (<short sha>)` for every commit since the previous tag, plus a `**Commits included:** <start-sha>...<end-sha>` line.
+- Build artifacts (macOS/Windows zips) are attached to the release, same as a manually-tagged release.
+- Step 5 (no version change) produces no new tag and no new workflow dispatch.
+
+**Pass criteria**:
+- Tag, workflow dispatch, and release all happen automatically from the version bump alone — no manual `git tag`/`git push` needed.
+- Release notes accurately list the commits merged since the prior release.
+- Re-touching `package.json` without a version change is a safe no-op.
+
+**Fail indicators**:
+- No tag/release appears after a version bump merges to `main`.
+- Release is created but the body is empty or missing the commit range.
+- A `package.json` touch with an unchanged version still creates a duplicate tag or a failed release run.
+
+---
+
 *Add new sections below this line as features land. Group by feature area (e.g. Clipboard, Actions, Settings, IPC, Platform-specific).*

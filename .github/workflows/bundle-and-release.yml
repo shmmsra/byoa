@@ -67,6 +67,35 @@ jobs:
     needs: build
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          CURRENT_TAG="${{ github.ref_name }}"
+          PREV_TAG=$(git tag --sort=-creatordate | grep -Fxv "$CURRENT_TAG" | head -n1 || true)
+          END_SHA=$(git rev-parse --short "$CURRENT_TAG")
+
+          {
+            echo "## Changes"
+            echo ""
+            if [ -n "$PREV_TAG" ]; then
+              git log "$PREV_TAG..$CURRENT_TAG" --pretty=format:'- %s (%h)'
+              START_SHA=$(git rev-parse --short "$PREV_TAG")
+            else
+              git log --pretty=format:'- %s (%h)'
+              START_SHA=$(git rev-list --max-parents=0 HEAD | tail -n1 | cut -c1-7)
+            fi
+            echo ""
+            echo ""
+            echo "**Commits included:** \`${START_SHA}...${END_SHA}\`"
+          } > RELEASE_NOTES.md
+
+          cat RELEASE_NOTES.md
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -80,6 +109,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: "BYOA ${{ github.ref_name }}"
+          body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false
           files: dist/**/*

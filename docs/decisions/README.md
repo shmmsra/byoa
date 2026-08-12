@@ -60,6 +60,7 @@ What becomes easier? What becomes harder? What new commitments does this create?
 |---|-------|--------|
 | [0001](0001-adopt-ai-sdlc.md) | Adopt the ai-sdlc-bootstrap workflow | Accepted |
 | [0002](0002-local-history-storage.md) | Local query/response history via native SQLite | Accepted |
+| [0003](0003-auto-tag-release-on-version-bump.md) | Auto-create a release tag when `package.json` version bumps | Accepted |
 
 *Add new rows as ADRs accumulate.*
 
