@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-08-12 — Version 1.0.1; `package.json` as single source of truth for versioning
+
+**What changed**: Bumped `package.json` version to `1.0.1`. `CMakeLists.txt` now reads that version at configure time (`file(READ ...)` + `string(JSON ... GET ... version)`) and passes it to `project(BYOAssistant VERSION ${BYOA_VERSION} ...)`, instead of hardcoding it in `project(VERSION 1.0.0 ...)` *and* separately re-deriving it via manual `PROJECT_VERSION_MAJOR/MINOR/PATCH` lines. `cmake_minimum_required` bumped `3.16` → `3.19` for `string(JSON ...)` support. See ADR-004.
+
+**Why**: A version bump previously meant editing two files (and two spots within `CMakeLists.txt`), risking the native bundle's version (`CFBundleShortVersionString`, templated from `PROJECT_VERSION`) drifting from `package.json` — which is what `tag-on-version-bump.yml` (ADR-003) actually reads to decide when to cut a release.
+
+**What was rejected**: Shell command substitution in the `configure:native` yarn script to inject the version — not portable across Windows/macOS/Linux; a generated header/config file from a Node prebuild step — unnecessary extra moving parts when CMake can read the JSON directly.
+
+---
+
 ## 2026-08-12 — Auto-tag + release on `package.json` version bump
 
 **What changed**: Added `.github/workflows/tag-on-version-bump.yml`, which triggers on any push to `main` touching `package.json`, reads the `version` field, and — if tag `v<version>` doesn't already exist — creates/pushes it and dispatches `bundle-and-release.yml` via `gh workflow run --ref v<version>` (an explicit dispatch is required because tags pushed with the default `GITHUB_TOKEN` don't trigger other workflows). `bundle-and-release.yml`'s release job now also checks out full history and generates release notes: a `## Changes` list of `git log <prev-tag>..<current-tag>` commit subjects, plus a `**Commits included:** <start-sha>...<end-sha>` line, passed as the release body. See ADR-003.

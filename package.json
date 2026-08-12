@@ -1,6 +1,6 @@
 {
   "name": "byoa",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A native desktop assistant with AI-powered features built with React and Saucer",
   "homepage": "https://github.com/shmmsra/byoa",
   "repository": {

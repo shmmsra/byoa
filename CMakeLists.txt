@@ -1,11 +1,15 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19) # 3.19+ needed for string(JSON ...) below
 
 # Set minimum macOS version if not already set (Must be BEFORE project())
 if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(BYOAssistant VERSION 1.0.0 LANGUAGES CXX OBJCXX)
+# package.json is the single source of truth for the app version.
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/package.json" BYOA_PACKAGE_JSON)
+string(JSON BYOA_VERSION GET "${BYOA_PACKAGE_JSON}" version)
+
+project(BYOAssistant VERSION ${BYOA_VERSION} LANGUAGES CXX OBJCXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 23)
@@ -19,11 +23,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     # Set the possible values of build type for cmake-gui
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
-# Set project version
-set(PROJECT_VERSION_MAJOR 1)
-set(PROJECT_VERSION_MINOR 0)
-set(PROJECT_VERSION_PATCH 0)
-set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 
 # Output directories for better organization (libraries only)
 # Note: We don't set CMAKE_RUNTIME_OUTPUT_DIRECTORY for macOS bundles
