@@ -187,10 +187,11 @@ int AppController::start() {
 
     Shortcut::getInstance().registerHandler([&]() {
         if (!_assistantWindow->isVisible()) {
-            // Get the frontmost application PID
+            // Get the frontmost application PID and display name
             NSWorkspace *workspace           = [NSWorkspace sharedWorkspace];
             NSRunningApplication *focusedApp = [workspace frontmostApplication];
             _focusedAppPId                   = focusedApp.processIdentifier;
+            _focusedAppName = focusedApp.localizedName ? std::string([focusedApp.localizedName UTF8String]) : std::string();
             _copyContent();
 
             bool hasString = Clipboard::getInstance().hasString();
@@ -226,6 +227,10 @@ std::shared_ptr<WindowWrapper> AppController::getMainWindow() {
 
 std::shared_ptr<WindowWrapper> AppController::getAssistantWindow() {
     return _assistantWindow;
+}
+
+std::string AppController::getFocusedAppName() {
+    return _focusedAppName;
 }
 
 void AppController::_copyContent() {

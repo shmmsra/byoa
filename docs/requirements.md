@@ -33,7 +33,9 @@
 
 - [x] Local query/response history stored in SQLite (native, via SQLiteCpp) — see ADR-002
 - [x] Settings → History tab: search/filter, view full request/response, per-row delete, clear all
+- [x] History rows record the focused app's name (mac + Windows) at shortcut-trigger time — see ADR-005
 - [ ] Verify native build with the new SQLiteCpp dependency on Windows and Linux
+- [ ] Verify focused-app-name capture on a real Windows build (currently only exercised on macOS)
 
 *Populate this section with the next chunk of product work as it's planned. Each item should be a concrete, testable deliverable.*
 

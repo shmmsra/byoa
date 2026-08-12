@@ -95,23 +95,30 @@ namespace byoa {
                     error_message TEXT,
                     response_time_ms INTEGER,
                     requested_at TEXT NOT NULL,
-                    schema_version INTEGER NOT NULL DEFAULT 1
+                    schema_version INTEGER NOT NULL DEFAULT 1,
+                    focused_app_name TEXT NOT NULL DEFAULT ''
                 )
             )SQL");
 
             g_db->exec("CREATE INDEX IF NOT EXISTS idx_history_requested_at ON history(requested_at)");
 
-            // Migrate databases created before system_content existed.
-            bool hasSystemContent = false;
+            // Migrate databases created before newer columns existed.
+            bool hasSystemContent  = false;
+            bool hasFocusedAppName = false;
             SQLite::Statement pragma(*g_db, "PRAGMA table_info(history)");
             while (pragma.executeStep()) {
-                if (pragma.getColumn(1).getString() == "system_content") {
+                std::string columnName = pragma.getColumn(1).getString();
+                if (columnName == "system_content") {
                     hasSystemContent = true;
-                    break;
+                } else if (columnName == "focused_app_name") {
+                    hasFocusedAppName = true;
                 }
             }
             if (!hasSystemContent) {
                 g_db->exec("ALTER TABLE history ADD COLUMN system_content TEXT NOT NULL DEFAULT ''");
+            }
+            if (!hasFocusedAppName) {
+                g_db->exec("ALTER TABLE history ADD COLUMN focused_app_name TEXT NOT NULL DEFAULT ''");
             }
 
             return true;
@@ -139,8 +146,8 @@ namespace byoa {
                 INSERT INTO history (
                     request_hash, request, system_content, response, model, llm_config_name,
                     action_id, action_name, status, error_message,
-                    response_time_ms, requested_at, schema_version
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    response_time_ms, requested_at, schema_version, focused_app_name
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             )SQL");
 
             stmt.bind(1, fingerprint(request));
@@ -168,6 +175,7 @@ namespace byoa {
 
             stmt.bind(12, getOptionalString(entry, "requestedAt"));
             stmt.bind(13, entry.value("schemaVersion", 1));
+            stmt.bind(14, getOptionalString(entry, "focusedAppName"));
 
             stmt.exec();
             return true;
@@ -216,7 +224,7 @@ namespace byoa {
             SQLite::Statement selectStmt(*g_db, R"SQL(
                 SELECT id, request_hash, request, system_content, response, model, llm_config_name,
                        action_id, action_name, status, error_message, response_time_ms,
-                       requested_at, schema_version
+                       requested_at, schema_version, focused_app_name
                 FROM history
             )SQL" + whereClause + "ORDER BY requested_at DESC LIMIT ?4 OFFSET ?5");
             selectStmt.bind(1, keyword);
@@ -241,6 +249,7 @@ namespace byoa {
                 item["responseTimeMs"] = selectStmt.getColumn(11).isNull() ? nullptr : json(selectStmt.getColumn(11).getInt64());
                 item["requestedAt"]    = selectStmt.getColumn(12).getString();
                 item["schemaVersion"]  = selectStmt.getColumn(13).getInt();
+                item["focusedAppName"] = selectStmt.getColumn(14).getString();
                 result["items"].push_back(item);
             }
         } catch (const std::exception &ex) {

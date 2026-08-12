@@ -178,6 +178,12 @@ export function HistoryTab() {
                             render: (value: string) => value || 'Ad-hoc',
                         },
                         {
+                            title: 'App',
+                            dataIndex: 'focusedAppName',
+                            key: 'focusedAppName',
+                            render: (value?: string) => value || '—',
+                        },
+                        {
                             title: 'Status',
                             dataIndex: 'status',
                             key: 'status',

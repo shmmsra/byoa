@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <saucer/window.hpp>
 #include <windows.h>
 
@@ -66,6 +67,35 @@ HWND CreateHiddenWindow() {
 
 HWND HiddenWindow = nullptr;
 
+// Resolves the process ID and executable basename (e.g. "notepad") of the
+// window currently in the foreground, before our own popup steals focus.
+void GetForegroundAppInfo(DWORD &pid, std::string &name) {
+    pid = 0;
+    name.clear();
+
+    HWND foregroundWindow = GetForegroundWindow();
+    if (!foregroundWindow) {
+        return;
+    }
+
+    GetWindowThreadProcessId(foregroundWindow, &pid);
+    if (pid == 0) {
+        return;
+    }
+
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!hProcess) {
+        return;
+    }
+
+    wchar_t path[MAX_PATH];
+    DWORD size = MAX_PATH;
+    if (QueryFullProcessImageNameW(hProcess, 0, path, &size)) {
+        name = std::filesystem::path(path).stem().string();
+    }
+    CloseHandle(hProcess);
+}
+
 AppController &AppController::getInstance() {
     static AppController instance;
     return instance;
@@ -90,8 +120,9 @@ int AppController::start() {
 
         Shortcut::getInstance().registerHandler([&]() {
             if (!_assistantWindow->isVisible()) {
-                // TODO: Get the focused window process ID on Windows
-                _focusedAppPId = 0;
+                DWORD pid = 0;
+                GetForegroundAppInfo(pid, _focusedAppName);
+                _focusedAppPId = pid;
                 _copyContent();
 
                 bool hasString = Clipboard::getInstance().hasString();
@@ -139,6 +170,10 @@ std::shared_ptr<WindowWrapper> AppController::getMainWindow() {
 
 std::shared_ptr<WindowWrapper> AppController::getAssistantWindow() {
     return _assistantWindow;
+}
+
+std::string AppController::getFocusedAppName() {
+    return _focusedAppName;
 }
 
 HWND AppController::getHiddenWindowHandle() {

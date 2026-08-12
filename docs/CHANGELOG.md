@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-08-12 — History: record the focused app's name for context
+
+**What changed**: Added a `focused_app_name` column to the `history` table, populated at shortcut-trigger time (the same moment each platform already captures the focused app's PID). macOS reads `NSWorkspace.frontmostApplication.localizedName`; Windows resolves the foreground window's owning process and takes its executable basename via `GetForegroundWindow`/`GetWindowThreadProcessId`/`QueryFullProcessImageNameW` (previously a `TODO` stub returning PID `0`). The name is stamped onto the entry server-side inside the `history_saveEntry` IPC handler (`webview-wrapper.cpp`), not passed from the frontend. Existing databases migrate in place via the same `PRAGMA table_info` + `ALTER TABLE ADD COLUMN` pattern used for `system_content`. The History tab now shows an "App" column. See ADR-005.
+
+**Why**: History rows showed what was asked and what came back, but not which app the user was in when they triggered BYOA — context that makes old rows much easier to interpret.
+
+**What was rejected**: Passing the app name from the frontend via a new IPC field — would need a new exposed query and risks a stale name if the user alt-tabs between trigger and save; resolving the Windows app's full product name via PE version resources — extra `VerQueryValue` code for a v1 feature where "some readable hint" (the exe basename) is enough, and many binaries lack version info anyway; bumping `HISTORY_SCHEMA_VERSION` — the frontend's outgoing payload shape didn't change, only the persisted DB schema did.
+
+**What's next**: No Linux native backend exists yet, so this field stays empty there until one is built (see ADR-005 consequences).
+
+---
+
 ## 2026-08-12 — Version 1.0.1; `package.json` as single source of truth for versioning
 
 **What changed**: Bumped `package.json` version to `1.0.1`. `CMakeLists.txt` now reads that version at configure time (`file(READ ...)` + `string(JSON ... GET ... version)`) and passes it to `project(BYOAssistant VERSION ${BYOA_VERSION} ...)`, instead of hardcoding it in `project(VERSION 1.0.0 ...)` *and* separately re-deriving it via manual `PROJECT_VERSION_MAJOR/MINOR/PATCH` lines. `cmake_minimum_required` bumped `3.16` → `3.19` for `string(JSON ...)` support. See ADR-004.
