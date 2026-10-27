@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-27 — Version 1.1.1
+
+**What changed**: Bumped `package.json` from `1.1.0` to `1.1.1` for the popup toast cleanup and selected-LLM persistence fixes. CMake reads the native version from this file automatically.
+
+**Why**: Merging the version bump into `main` lets the existing automation create `v1.1.1` and dispatch the release build; the existing `v1.1.0` tag would otherwise cause it to skip.
+
+**What's next**: Commit and publish the bump with PR #21. Release publication depends on successful macOS and Windows builds.
+
+---
+
 ## 2026-10-24 — Popup toast lifetime and persistent LLM selection
 
 **What changed**: macOS and Windows now send the existing focus-loss notification from the popup hide path, covering dismissal without a focus event. The frontend destroys transient messages on hide and suppresses late request, clipboard, and preference-save toasts from previous openings. LLM selection is stored under `selected_llm` using the existing vault API and restored together with configurations before popup interaction. Auto and All are preserved; missing, invalid, deleted, or disabled configuration selections fall back to Auto. Loading/saving indicators keep preference I/O visible, and save failures are reported. Added Vitest, jsdom, and React Testing Library with 33 regression tests.
