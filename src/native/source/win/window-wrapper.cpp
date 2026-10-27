@@ -68,10 +68,6 @@ WindowWrapper::WindowWrapper(saucer::application *app, WINDOW_TYPE windowType) :
                     return;
                 }
                 hide();
-                _isWindowVisible = false;
-                // Call native callback if registered
-                sendEventToWebview("on-focus-change", "false");
-                // Note: Don't hide here as this might fire too aggressively
             }
         });
     }
@@ -137,8 +133,12 @@ void WindowWrapper::show() {
 void WindowWrapper::hide() {
     Logger::getInstance().info("WindowWrapper::hide: start");
     if (_window) {
+        const bool wasVisible = _isWindowVisible;
+        _isWindowVisible      = false;
+        if (_windowType == WINDOW_TYPE::POPUP && wasVisible) {
+            sendEventToWebview("on-focus-change", "false");
+        }
         _window->hide();
-        _isWindowVisible = false;
 
 #ifdef _WIN32
         if (_windowType == WINDOW_TYPE::POPUP) {

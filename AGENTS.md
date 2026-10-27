@@ -20,6 +20,7 @@
 - **Plan before you code**: For any source code change, write out every file you will create/modify and why, state what you will NOT do, and wait for explicit human approval before writing any implementation code. Silence is not approval.
 - **`make check` must pass** before every commit (runs `yarn lint:all:check`).
 - **TDD is mandatory**: write tests before or alongside logic changes, in the same commit.
+- **No agent co-author attribution**: Do not add `Co-authored-by` trailers or AI/agent attribution signatures to commit messages. Preserve the human's configured Git author identity.
 - **Docs are part of done**: update `docs/agents/STATUS.md`, `docs/CHANGELOG.md`, `docs/issues.md`, `docs/requirements.md`, and `docs/dev-setup.md` (if dependencies/tools changed) in the same commit.
 - **Merge policy**: direct merge after local review. Use `git merge --ff-only` or `git rebase`. Never `git merge --no-ff`. Never `git push` — that's the human's call.
 

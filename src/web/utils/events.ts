@@ -28,6 +28,7 @@ export interface EventMap {
     'settings:action-enabled-changed': { actionId: string; enabled: boolean };
     'assistant:request-refresh': { reason: string };
     'assistant:clipboard-changed': { content: string };
+    'assistant:visibility-changed': { visible: boolean };
 }
 
 export type EventName = keyof EventMap;

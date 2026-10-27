@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button, Input, Select, Spin, message, Switch } from 'antd';
 import { Copy, CheckCircle2, RotateCcw, Send, X } from 'lucide-react';
 import AppIcon from '../assets/app-icon.svg?react';
@@ -17,6 +17,7 @@ interface AssistantPopupProps {
     onLLMChange: (_llm: 'auto' | 'all' | string) => void;
     llmConfigs: LLMConfig[];
     actions: Action[];
+    selectionSaving?: boolean;
 }
 
 type ProcessingState = 'idle' | 'processing' | 'completed';
@@ -39,6 +40,7 @@ export function AssistantPopup({
     onLLMChange,
     llmConfigs,
     actions,
+    selectionSaving = false,
 }: AssistantPopupProps) {
     const [customPrompt, setCustomPrompt] = useState('');
     const [state, setState] = useState<ProcessingState>('idle');
@@ -46,6 +48,27 @@ export function AssistantPopup({
     const [copied, setCopied] = useState(false);
     const [lastProcessedContent, setLastProcessedContent] = useState<string>('');
     const [showDiffViewer, setShowDiffViewer] = useState(true);
+    const popupSession = useRef({ visible: true, generation: 0 });
+
+    useEffect(() => {
+        popupSession.current.visible = true;
+        const unsubscribe = events.on('assistant:visibility-changed', data => {
+            popupSession.current.visible = data.visible === true;
+            if (!popupSession.current.visible) {
+                popupSession.current.generation++;
+                message.destroy();
+            }
+        });
+        return () => {
+            unsubscribe();
+            popupSession.current.visible = false;
+            popupSession.current.generation++;
+            message.destroy();
+        };
+    }, []);
+
+    const isCurrentOpening = (generation: number) =>
+        popupSession.current.visible && popupSession.current.generation === generation;
 
     const showAllResults = selectedLLM === 'all';
     const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
@@ -157,6 +180,7 @@ export function AssistantPopup({
 
     // Process with selected LLM(s)
     const processWithLLM = async (actionPrompt: string, actionMeta?: ActionMeta) => {
+        const generation = popupSession.current.generation;
         setState('processing');
         setResults([]);
         setCopied(false);
@@ -245,7 +269,12 @@ export function AssistantPopup({
             setLastProcessedContent(clipboardContent);
         } catch (error) {
             console.error('Error processing with LLM:', error);
-            message.error(error instanceof Error ? error.message : 'Failed to process request', 8);
+            if (isCurrentOpening(generation)) {
+                message.error(
+                    error instanceof Error ? error.message : 'Failed to process request',
+                    8,
+                );
+            }
             setState('idle');
         }
     };
@@ -263,19 +292,21 @@ export function AssistantPopup({
     };
 
     const handleCopy = async (text: string) => {
+        const generation = popupSession.current.generation;
         try {
             const success = await ClipboardUtils.writeText(text);
+            if (!isCurrentOpening(generation)) return;
             if (success) {
                 setCopied(true);
                 message.success('Copied to clipboard');
                 setTimeout(() => {
-                    onClose();
+                    if (isCurrentOpening(generation)) onClose();
                 }, 500);
             } else {
                 message.error('Failed to copy to clipboard');
             }
         } catch (error) {
-            message.error('Failed to copy to clipboard');
+            if (isCurrentOpening(generation)) message.error('Failed to copy to clipboard');
             console.error('Copy failed:', error);
         }
     };
@@ -348,11 +379,13 @@ export function AssistantPopup({
                     <Select
                         value={selectedLLM}
                         onChange={onLLMChange}
+                        loading={selectionSaving}
+                        disabled={selectionSaving}
                         style={{ width: 140 }}
                         size='small'
                     >
                         <Select.Option value='auto'>Auto</Select.Option>
-                        {enabledLLMs.length > 1 && (
+                        {(enabledLLMs.length > 1 || selectedLLM === 'all') && (
                             <Select.Option value='all'>All LLMs</Select.Option>
                         )}
                         {enabledLLMs.map(llm => (

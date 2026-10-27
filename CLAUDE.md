@@ -68,6 +68,7 @@ This project uses **direct merge after local review**. Code is reviewed locally 
 
 **Universal rules**:
 
+- **No agent co-author attribution**: Do not add `Co-authored-by` trailers or AI/agent attribution signatures to commit messages. Preserve the human's configured Git author identity.
 - **No credentials in code**: API keys go in `.env` only (git-ignored).
 - **All decisions get an ADR**: If you're about to change something another agent might wonder about, write an ADR. Template in `docs/decisions/README.md`.
 - **Ask before approval-gated operations**: production releases, CI/CD workflow changes, native C++ IPC surface changes, credential/vault code. See `docs/agents/CONVENTIONS.md §4`.
