@@ -230,6 +230,7 @@ set(XPLAT_SOURCES
     src/native/source/xplat/vault.cpp
     src/native/source/xplat/network.cpp
     src/native/source/xplat/history.cpp
+    src/native/source/xplat/app-info.cpp
     src/native/source/xplat/webview-wrapper.cpp
 )
 

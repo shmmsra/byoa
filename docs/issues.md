@@ -79,6 +79,7 @@ This file does **not** duplicate ticket content (that lives on GitHub). Instead,
 
 | Issue | Title | Priority | Status |
 |-------|-------|----------|--------|
+| — | Settings → About: show app identity and executable path | — | IN PROGRESS — implemented; macOS verified, Windows pending |
 | — | Clear popup toasts on hide, including late completions | — | IN PROGRESS — implemented; manual verification pending |
 | — | Persist selected LLM across process relaunches | — | IN PROGRESS — implemented; manual verification pending |
 

@@ -3,6 +3,7 @@
 #include <saucer/window.hpp>
 
 #include "app-controller.hpp"
+#include "app-info.hpp"
 #include "clipboard.hpp"
 #include "history.hpp"
 #include "logger.hpp"
@@ -111,6 +112,8 @@ bool WebviewWrapper::init(const string &viewURL) {
         bool success = History::clearAll();
         co_return success;
     });
+
+    _webview->expose("app_getExecutablePath", []() -> coco::task<string> { co_return AppInfo::getExecutablePath(); });
 
     _webview->expose("network_fetch", [](const string &url, const string &options) -> coco::task<string> {
         // co_await the future directly - the function returns a temporary (rvalue) that can be awaited

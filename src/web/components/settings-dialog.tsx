@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Button, Input, Select, Switch, Tabs, message } from 'antd';
+import { Button, Input, Select, Spin, Switch, Tabs, message } from 'antd';
 import { Trash2, Plus, Eye, EyeOff } from 'lucide-react';
+import packageJson from '../../../package.json';
+import AppIcon from '../assets/app-icon.svg?react';
 import { Action, LLMConfig, ThemeMode } from '../app';
 import { events } from '../utils/events';
 import { VaultUtils } from '../utils/vault';
+import { AppInfoUtils } from '../utils/app-info';
 import { HistoryTab } from './history-tab';
 
 interface SettingsDialogProps {
@@ -30,10 +33,32 @@ export function SettingsDialog({
     const [editingConfig, setEditingConfig] = useState<LLMConfig | null>(null);
     const [editingAction, setEditingAction] = useState<Action | null>(null);
     const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
+    const [executablePath, setExecutablePath] = useState<string | null>(null);
+    const [executablePathLoading, setExecutablePathLoading] = useState(true);
+    const [executablePathError, setExecutablePathError] = useState(false);
 
     // Initialize events system
     useEffect(() => {
         events.initialize();
+    }, []);
+
+    useEffect(() => {
+        let isMounted = true;
+        AppInfoUtils.getExecutablePath()
+            .then(path => {
+                if (isMounted) setExecutablePath(path);
+            })
+            .catch(error => {
+                console.error('Failed to load application executable path:', error);
+                if (isMounted) setExecutablePathError(true);
+            })
+            .finally(() => {
+                if (isMounted) setExecutablePathLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     // Wrapper for theme change to emit events
@@ -747,6 +772,52 @@ export function SettingsDialog({
                                 >
                                     Choose how the assistant should appear
                                 </p>
+                            </div>
+                        </div>
+                    ),
+                },
+                {
+                    key: 'about',
+                    label: 'About',
+                    children: (
+                        <div style={{ padding: '24px', height: '100%', overflowY: 'auto' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    marginBottom: '24px',
+                                }}
+                            >
+                                <AppIcon
+                                    role='img'
+                                    aria-label='BYOA app icon'
+                                    style={{ width: '48px', height: '48px', flexShrink: 0 }}
+                                />
+                                <div>
+                                    <h2 style={{ margin: 0, fontSize: '1.125rem' }}>
+                                        BYOA (Build Your Own Assistant)
+                                    </h2>
+                                    <div style={{ color: '#8c8c8c', fontSize: '0.875rem' }}>
+                                        Version {packageJson.version}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='form-field'>
+                                <label>Application path</label>
+                                {executablePathLoading ? (
+                                    <Spin size='small' />
+                                ) : executablePathError ? (
+                                    <div role='alert'>Unable to load application path.</div>
+                                ) : (
+                                    <code style={{ display: 'block', overflowWrap: 'anywhere' }}>
+                                        {executablePath}
+                                    </code>
+                                )}
+                            </div>
+                            <div className='form-field'>
+                                <label>License</label>
+                                <div>{packageJson.license}</div>
                             </div>
                         </div>
                     ),

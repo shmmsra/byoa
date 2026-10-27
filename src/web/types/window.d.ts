@@ -30,6 +30,7 @@ declare global {
                 history_queryEntries(_filterJson: string): Promise<string>;
                 history_deleteEntry(_id: string): Promise<boolean>;
                 history_clearAll(): Promise<boolean>;
+                app_getExecutablePath(): Promise<string>;
                 network_fetch(_url: string, _options: string): Promise<string>;
                 event_trigger(_eventName: string, _data: string): Promise<void>;
             };
