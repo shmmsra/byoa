@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-27 — Node.js 24 tooling and CI migration
+
+**What changed**: Upgraded checkout and setup-node to `@v5` in all four workflows, selected Node.js 24 for build/lint/bundling, and explicitly set up Node.js 24 in the version-tagging job. Raised the package Node.js minimum to 24 and aligned onboarding instructions.
+
+**Why**: GitHub deprecated the Node.js 20 action runtime and forces older actions onto Node.js 24. Both actions now declare Node.js 24 directly, and project commands no longer target the EOL Node.js 20 toolchain.
+
+**What was rejected**: Suppressing the warning with environment overrides; upgrading unrelated actions or application dependencies. Node type declarations remain unchanged because no application API usage changed.
+
+**What's next**: Confirm normal build/lint CI and verify release workflows at the next approved release. No release is triggered by this migration locally.
+
+---
+
 ## 2026-10-27 — Version 1.1.2
 
 **What changed**: Bumped `package.json` from `1.1.1` to `1.1.2` for the Settings About tab. The About tab and native build both read their version from this file.

@@ -24,6 +24,10 @@
 
 The next logical work, in priority order. Update at the end of every session.
 
+Confirm the Node.js 24 migration in the next normal build/lint CI run; verify the
+release workflows at the next approved release, without triggering a release just
+for this migration.
+
 0. Manually verify popup toast cleanup and selected-LLM persistence across quit/relaunch and machine restart (see `docs/manual-testing.md`). Implementation is ready, but the local native build is blocked by Saucer/fill's ambiguous `std::views::join_with` with the installed Xcode toolchain; an isolated object build also encountered a stale PCH. Existing TypeScript errors also prevent a clean standalone `tsc` run. Windows verification remains pending; Linux has no native window backend.
 1. Manually verify Settings → About displays the correct executable path on Windows (see `docs/manual-testing.md`); macOS verified on 2026-10-27.
 2. Manually verify the focused-app-name capture on both macOS and Windows (see `docs/manual-testing.md`) — not yet exercised on a real Windows build.
@@ -49,6 +53,7 @@ The next logical work, in priority order. Update at the end of every session.
 
 | Date | Ticket | Summary | Commit |
 |------|--------|---------|--------|
+| 2026-10-27 | — | CI checkout/setup-node upgraded to v5; build tooling requires Node.js 24+ | pending |
 | 2026-08-12 | — | Version 1.1.0 | pending |
 | 2026-08-12 | — | History: record the focused app's name (mac + Windows) for context | pending |
 | 2026-08-12 | — | Auto-tag + release on `package.json` version bump, with commit-log release notes | pending |

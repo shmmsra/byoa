@@ -10,7 +10,7 @@
 
 | Language | Required version | How to install |
 |----------|------------------|----------------|
-| Node.js | 18+ | `brew install node` / [nodejs.org](https://nodejs.org) |
+| Node.js | 24+ (24 LTS recommended to match CI) | `brew install node@24` / [nodejs.org](https://nodejs.org) |
 | Yarn | 1.x (classic) | `npm install -g yarn` |
 | C++23 compiler | clang 15+ / MSVC 2022+ / GCC 13+ | macOS: Xcode CLI tools (`xcode-select --install`); Windows: Visual Studio 2022 with C++ workload; Linux: `apt install clang-15` |
 | CMake | 3.16+ | `brew install cmake` / `apt install cmake` / [cmake.org](https://cmake.org/download) |
@@ -20,6 +20,11 @@ Platform-specific minimum OS:
 - macOS: 14.0 (Sonoma) or later
 - Windows: 10 or later
 - Linux: any modern distro with glibc 2.17+
+
+All CI jobs that execute project Node.js commands explicitly select Node.js 24.
+The checkout and setup-node actions use `@v5`, which also run internally on Node.js 24.
+These action versions require runner v2.327.1 or later; the configured GitHub-hosted
+`*-latest` runners meet this requirement.
 
 ---
 
