@@ -16,6 +16,8 @@
 - [x] `docs/manual-testing.md` runbook initialised
 - [x] `docs/dev-setup.md` onboarding guide written
 - [x] `.editorconfig` added for C++/TypeScript/JSON consistency
+- [x] CI checkout/setup-node actions declare Node.js 24; project Node.js commands target 24 and package minimum is 24+
+- [ ] Confirm Node.js 24 build/lint CI and release workflows on their next normal/approved runs
 
 ---
 
