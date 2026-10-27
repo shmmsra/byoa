@@ -88,6 +88,53 @@ make check
 
 ---
 
+## Popup toast cleanup and remembered LLM selection
+
+**Test command(s)**:
+```bash
+yarn build:all
+# macOS (Release build):
+open build/Release/BYOAssistant.app
+# Windows: launch the freshly built BYOAssistant.exe from the build output.
+```
+
+**Setup**: Use a fresh native build, not an older installed application. Configure
+two enabled LLMs. The current local Xcode/Saucer build incompatibility must be
+resolved before native verification; do not treat the successful web build as
+native verification.
+
+**UI sequence and pass criteria**:
+1. Copy text, open the popup, and trigger a toast (copy a result, or invoke an
+   intentionally failing configuration). Dismiss immediately with Escape, reopen,
+   and confirm the old toast is gone. Repeat using click-away, the popup shortcut
+   toggle, and window close where available. Existing shortcut behavior must remain
+   unchanged.
+2. Start a request to a deliberately slow failing endpoint, hide the popup, and let
+   it finish while hidden. Reopen and confirm no old error toast appears. Repeat
+   with reopening before the failure completes. New errors from requests started
+   in the current opening must still appear. Prompts and existing results must not
+   be cleared merely by hiding.
+3. Select a specific LLM; wait until its saving spinner disappears. Quit BYOA
+   completely via its tray/menubar menu, relaunch, and confirm that same LLM remains
+   selected. Repeat with Auto and All LLMs. Restart the machine and confirm the last
+   selection survives.
+4. With a specific LLM selected, disable or remove it in Settings. Confirm the popup
+   falls back to Auto, including after relaunch. On a fresh profile with no saved
+   selection, confirm Auto is selected.
+5. While preferences load, confirm the popup shows a loading indicator and cannot
+   run a request with a transient Auto selection. While saving, confirm the picker
+   shows a spinner and temporarily disables further changes without freezing the
+   popup. Opening Settings must not overwrite the assistant's saved selection.
+
+**Fail indicators**: old toasts reappear; a selected enabled LLM resets to Auto;
+startup writes Auto over a saved preference; missing configuration remains selected;
+keyboard dismissal changes; preference I/O freezes the UI or silently fails.
+
+**Status**: Awaiting human confirmation on macOS and Windows. Linux has no native
+window backend yet.
+
+---
+
 ## Keyboard shortcut
 
 **Test command(s)**: After launch, trigger the global shortcut (check Settings for the configured key).

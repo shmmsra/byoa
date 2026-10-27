@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, useSearchParams } from 'react-router-dom';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, Spin, message, theme } from 'antd';
 import { AssistantPopup } from './components/assistant-popup';
 import { SettingsDialog } from './components/settings-dialog';
 import { ClipboardUtils } from './utils/clipboard';
@@ -61,6 +61,14 @@ export interface HistoryFilter {
     offset?: number;
 }
 
+function resolveSelectedLLM(selection: string, configs: LLMConfig[]): string {
+    return selection === 'auto' ||
+        selection === 'all' ||
+        configs.some(config => config.id === selection && config.enabled)
+        ? selection
+        : 'auto';
+}
+
 function AppContent() {
     const [searchParams] = useSearchParams();
     const [clipboardContent, setClipboardContent] = useState('');
@@ -68,6 +76,10 @@ function AppContent() {
     const [selectedLLM, setSelectedLLM] = useState<'auto' | 'all' | string>('auto');
     const [llmConfigs, setLLMConfigs] = useState<LLMConfig[]>([]);
     const [actions, setActions] = useState<Action[]>([]);
+    const [preferencesLoaded, setPreferencesLoaded] = useState(false);
+    const [selectionSaving, setSelectionSaving] = useState(false);
+    const popupSession = useRef({ visible: true, generation: 0 });
+    const selectionSave = useRef(Promise.resolve());
 
     const workflow = searchParams.get('workflow');
 
@@ -75,8 +87,13 @@ function AppContent() {
     useEffect(() => {
         const loadConfigs = async () => {
             try {
-                const configs = await VaultUtils.loadLLMConfigs();
+                const [configs, selection] = await Promise.all([
+                    VaultUtils.loadLLMConfigs(),
+                    workflow === 'assistant' ? VaultUtils.loadSelectedLLM() : 'auto',
+                ]);
                 setLLMConfigs(configs);
+                setSelectedLLM(resolveSelectedLLM(selection, configs));
+                setPreferencesLoaded(true);
 
                 // Log the source of configurations for debugging
                 const hasVaultConfigs = await VaultUtils.hasLLMConfigs();
@@ -87,6 +104,7 @@ function AppContent() {
                 }
             } catch (error) {
                 console.error('Failed to load LLM configs:', error);
+                setPreferencesLoaded(true);
             }
         };
 
@@ -133,14 +151,24 @@ function AppContent() {
         loadConfigs();
         loadActions();
         loadTheme();
-    }, []);
+    }, [workflow]);
 
     useEffect(() => {
         // Initialize events system
         events.initialize();
+        popupSession.current.visible = true;
 
         // Set up native callback for clipboard changes and events
-        window.__nativeCallback = (eventName: string, data: string) => {
+        const nativeCallback = (eventName: string, data: string) => {
+            if (eventName === 'on-focus-change') {
+                const visible = data === 'true';
+                popupSession.current.visible = visible;
+                if (!visible) {
+                    popupSession.current.generation++;
+                    message.destroy();
+                }
+                events.emit('assistant:visibility-changed', { visible });
+            }
             // Handle clipboard focus changes
             if (eventName === 'on-focus-change' && data === 'true') {
                 ClipboardUtils.readData().then(data => {
@@ -153,6 +181,7 @@ function AppContent() {
             // Handle events from other webviews
             events.handleNativeEvent(eventName, data);
         };
+        window.__nativeCallback = nativeCallback;
 
         // Listen for settings changes from other webviews
         const unsubscribeTheme = events.on('settings:theme-changed', async data => {
@@ -172,6 +201,7 @@ function AppContent() {
             try {
                 const configs = await VaultUtils.loadLLMConfigs();
                 setLLMConfigs(configs);
+                setSelectedLLM(selection => resolveSelectedLLM(selection, configs));
             } catch (error) {
                 console.error('Failed to refresh LLM configs:', error);
             }
@@ -189,6 +219,11 @@ function AppContent() {
 
         // Cleanup listeners on unmount
         return () => {
+            if (window.__nativeCallback === nativeCallback) {
+                delete window.__nativeCallback;
+            }
+            popupSession.current.visible = false;
+            popupSession.current.generation++;
             unsubscribeTheme();
             unsubscribeLLMConfigs();
             unsubscribeActions();
@@ -247,6 +282,29 @@ function AppContent() {
         }
     };
 
+    const handleLLMChange = (selection: string) => {
+        setSelectedLLM(selection);
+        setSelectionSaving(true);
+        const generation = popupSession.current.generation;
+        const save = selectionSave.current.then(async () => {
+            try {
+                await VaultUtils.saveSelectedLLM(selection);
+            } catch (error) {
+                console.error('Failed to save selected LLM:', error);
+                if (
+                    popupSession.current.visible &&
+                    popupSession.current.generation === generation
+                ) {
+                    message.error('Could not save LLM selection. It may reset after restart.');
+                }
+            }
+        });
+        selectionSave.current = save;
+        void save.finally(() => {
+            if (selectionSave.current === save) setSelectionSaving(false);
+        });
+    };
+
     const enabledLLMs = llmConfigs.filter(llm => llm.enabled);
 
     const isDark =
@@ -270,16 +328,23 @@ function AppContent() {
         >
             <div className={`app-container ${getThemeClass()}`}>
                 {workflow === 'assistant' ? (
-                    <AssistantPopup
-                        clipboardContent={clipboardContent}
-                        onClose={() => {
-                            // Close handler - could be implemented if needed
-                        }}
-                        selectedLLM={selectedLLM}
-                        onLLMChange={setSelectedLLM}
-                        llmConfigs={enabledLLMs}
-                        actions={actions}
-                    />
+                    !preferencesLoaded ? (
+                        <Spin tip='Loading preferences...'>
+                            <div style={{ minHeight: 160 }} />
+                        </Spin>
+                    ) : (
+                        <AssistantPopup
+                            clipboardContent={clipboardContent}
+                            onClose={() => {
+                                // Close handler - could be implemented if needed
+                            }}
+                            selectedLLM={selectedLLM}
+                            onLLMChange={handleLLMChange}
+                            selectionSaving={selectionSaving}
+                            llmConfigs={enabledLLMs}
+                            actions={actions}
+                        />
+                    )
                 ) : (
                     <SettingsDialog
                         open={true}

@@ -21,16 +21,19 @@
 
 ## Phase 1 — Testing infrastructure
 
-- [ ] Add Vitest to `package.json` devDependencies and configure for web frontend
+- [x] Add Vitest to `package.json` devDependencies and configure for web frontend
 - [ ] Add GoogleTest via CMake FetchContent and wire up `ctest` for native backend
 - [ ] Extend `make check` to run `yarn vitest run` + `ctest` once tests exist
-- [ ] Write first real test for the smallest meaningful unit (web side)
+- [x] Write first real test for the smallest meaningful unit (web side)
 - [ ] Write first real test for the smallest meaningful unit (native side)
 
 ---
 
 ## Phase 2 — Ongoing feature work
 
+- [x] Clear popup toasts on hide and suppress stale toasts from late async completions
+- [x] Persist and restore selected LLM (including Auto/All) using existing vault storage; fall back to Auto for unavailable configurations
+- [ ] Manually verify toast dismissal paths and LLM persistence across process/machine restarts on supported native platforms
 - [x] Local query/response history stored in SQLite (native, via SQLiteCpp) — see ADR-002
 - [x] Settings → History tab: search/filter, view full request/response, per-row delete, clear all
 - [x] History rows record the focused app's name (mac + Windows) at shortcut-trigger time — see ADR-005

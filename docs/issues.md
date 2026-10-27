@@ -79,11 +79,14 @@ This file does **not** duplicate ticket content (that lives on GitHub). Instead,
 
 | Issue | Title | Priority | Status |
 |-------|-------|----------|--------|
-| — | *(none yet — file issues on GitHub as work is planned)* | — | — |
+| — | Clear popup toasts on hide, including late completions | — | IN PROGRESS — implemented; manual verification pending |
+| — | Persist selected LLM across process relaunches | — | IN PROGRESS — implemented; manual verification pending |
 
 ### Blocked
 
-*(none)*
+- Local native verification: installed Xcode and existing Saucer/fill dependency both define `std::views::join_with`, causing an ambiguity before the application compiles. An isolated object build also hits an old-format cached PCH.
+- Existing standalone TypeScript errors: `@types/diff` stub, missing SVG declarations, event payload typing, and clipboard cache typing. These are outside the two enhancement requests.
+- Windows runtime verification is pending; no Linux native window backend exists.
 
 ### Recently closed
 

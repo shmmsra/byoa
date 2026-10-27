@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — Popup toast lifetime and persistent LLM selection
+
+**What changed**: macOS and Windows now send the existing focus-loss notification from the popup hide path, covering dismissal without a focus event. The frontend destroys transient messages on hide and suppresses late request, clipboard, and preference-save toasts from previous openings. LLM selection is stored under `selected_llm` using the existing vault API and restored together with configurations before popup interaction. Auto and All are preserved; missing, invalid, deleted, or disabled configuration selections fall back to Auto. Loading/saving indicators keep preference I/O visible, and save failures are reported. Added Vitest, jsdom, and React Testing Library with 33 regression tests.
+
+**Why**: Hidden webviews retain React state and transient messages; selection previously lived only in memory and reset after every process restart.
+
+**What was rejected**: Browser storage (native bundled webview origins can differ across platforms), new IPC methods, and changes to native credential storage. Existing generic vault access and focus notifications already provide the needed capabilities.
+
+**What's next**: Human manual verification, including machine restart and Windows behavior. Local native compilation is blocked by an existing Saucer/fill `std::views::join_with` ambiguity with the installed Xcode toolchain; standalone TypeScript checking also has existing errors. Linux native window support remains absent. No release, commit, or push performed.
+
+---
+
 ## 2026-08-12 — Version 1.1.0
 
 **What changed**: Bumped `package.json` version `1.0.1` → `1.1.0` for the focused-app-name history feature below. `CMakeLists.txt` picks this up automatically at configure time (ADR-004), no other file needed a change.

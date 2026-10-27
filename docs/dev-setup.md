@@ -32,9 +32,22 @@ cd byoa
 # Install web dependencies
 yarn install --frozen-lockfile
 
+# Run web regression tests (Vitest + jsdom + React Testing Library)
+yarn test:web
+
 # Configure the native build
 yarn configure:native   # runs: cmake -B build -S .
 ```
+
+Web tests live in `src/web/__tests__/`; `vitest.config.ts` configures jsdom and the
+same React/SVG transforms used by the frontend. The test dependencies are installed
+by Yarn; no separate test CLI installation is required. `make check` remains the
+existing lint gate; run `yarn test:web` separately.
+
+**Known local validation blockers (2026-10-24)**: the installed Xcode toolchain
+conflicts with Saucer/fill's `std::views::join_with` polyfill during native builds.
+Standalone `yarn tsc --noEmit` also encounters existing diff/SVG/event/clipboard
+type errors. The web production build and regression suite can run independently.
 
 ---
 

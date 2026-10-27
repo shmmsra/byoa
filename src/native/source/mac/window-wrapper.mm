@@ -58,10 +58,6 @@ WindowWrapper::WindowWrapper(saucer::application *app, WINDOW_TYPE windowType) :
                     return;
                 }
                 hide();
-                _isWindowVisible = false;
-                // Call native callback if registered
-                sendEventToWebview("on-focus-change", "false");
-                // Note: Don't hide here as this might fire too aggressively
             }
         });
 
@@ -112,6 +108,9 @@ void WindowWrapper::hide() {
 
     Logger::getInstance().info("WindowWrapper::hide: start");
     _isWindowVisible = false;
+    if (_windowType == WINDOW_TYPE::POPUP) {
+        sendEventToWebview("on-focus-change", "false");
+    }
     _window->hide();
 
     // If the main window is not visible, hide the application to bring the next App into focus

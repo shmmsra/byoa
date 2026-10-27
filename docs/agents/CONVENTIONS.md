@@ -86,6 +86,7 @@ Full detail in `CONTRIBUTING.md §6`.
 
 This repo uses **convention-only** commit tracking. No automated hooks enforce attribution, but the convention is:
 
+- **No agent co-author attribution**: Do not add `Co-authored-by` trailers or AI/agent attribution signatures to commit messages. Preserve the human's configured Git author identity.
 - Agent-authored commits: use `[agent]` prefix in the commit subject if desired, e.g. `[agent] feat(ipc): add retry on disconnect`.
 - Human-authored commits: no special prefix.
 

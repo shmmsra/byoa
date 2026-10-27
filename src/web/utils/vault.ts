@@ -5,6 +5,39 @@ export class VaultUtils {
     private static readonly LLM_CONFIGS_KEY = 'llm_configs';
     private static readonly ACTIONS_KEY = 'actions';
     private static readonly THEME_KEY = 'theme';
+    private static readonly SELECTED_LLM_KEY = 'selected_llm';
+
+    static async loadSelectedLLM(): Promise<string> {
+        try {
+            if (!window.saucer?.exposed?.vault_getData) {
+                console.warn('Vault API not available, using Auto LLM selection');
+                return 'auto';
+            }
+
+            const data = await window.saucer.exposed.vault_getData(this.SELECTED_LLM_KEY);
+            if (!data) return 'auto';
+
+            const selection: unknown = JSON.parse(data);
+            if (typeof selection !== 'string' || selection.trim() === '') {
+                throw new Error('Invalid saved LLM selection');
+            }
+            return selection;
+        } catch (error) {
+            console.error('Failed to load selected LLM from vault:', error);
+            return 'auto';
+        }
+    }
+
+    static async saveSelectedLLM(selection: string): Promise<void> {
+        if (!window.saucer?.exposed?.vault_setData) {
+            throw new Error('Vault API not available, cannot save LLM selection');
+        }
+        const success = await window.saucer.exposed.vault_setData(
+            this.SELECTED_LLM_KEY,
+            JSON.stringify(selection),
+        );
+        if (!success) throw new Error('Failed to save LLM selection to vault');
+    }
 
     /**
      * Load LLM configurations from the vault
