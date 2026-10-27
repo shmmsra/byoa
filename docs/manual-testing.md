@@ -88,6 +88,33 @@ make check
 
 ---
 
+## Settings About section
+
+**Test command(s)**:
+1. Build and launch the app (`yarn build:all`, then launch the platform build).
+2. Open Settings → About.
+
+**Setup**: Use a fresh native build on macOS or Windows.
+
+**What to observe**:
+- The About tab shows the app icon, the version matching `package.json`, and the MIT license.
+- The application path resolves to the running executable's full path. On macOS, this is expected to be inside the app bundle; on Windows, it is the full path to `BYOAssistant.exe`.
+- The path shows a loading indicator while the native lookup is in flight; an unavailable path is reported visibly instead of appearing as an empty value.
+
+**Pass criteria**:
+- Version and license match repository package metadata.
+- The displayed path identifies the running executable, not the current working directory or application data directory.
+- Settings remains responsive while the path is loading.
+
+**Fail indicators**:
+- The version or license differs from `package.json`.
+- The path is empty, points to the app data directory, or points to another process.
+- The About panel appears frozen or silently hides a path lookup failure.
+
+**Status**: macOS verified on 2026-10-27; Windows verification pending.
+
+---
+
 ## Popup toast cleanup and remembered LLM selection
 
 **Test command(s)**:

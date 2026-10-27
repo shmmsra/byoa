@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-27 — Settings About section
+
+**What changed**: Added a Settings → About tab with the existing app icon, package build version, MIT license, and the running executable path. The path is provided by a read-only native API on macOS and Windows, with loading and error states. Added a focused web UI test and manual verification steps.
+
+**Why**: Users need a reliable place in the app to identify the installed build and its location.
+
+**What was rejected**: Showing the app data directory instead of the executable path; the About section is intended to identify the installed application.
+
+**What's next**: macOS manual verification passed; Windows verification remains pending. No commit or push performed.
+
+---
+
 ## 2026-10-27 — Version 1.1.1
 
 **What changed**: Bumped `package.json` from `1.1.0` to `1.1.1` for the popup toast cleanup and selected-LLM persistence fixes. CMake reads the native version from this file automatically.
