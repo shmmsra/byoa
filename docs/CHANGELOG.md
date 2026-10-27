@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-27 — Version 1.1.2
+
+**What changed**: Bumped `package.json` from `1.1.1` to `1.1.2` for the Settings About tab. The About tab and native build both read their version from this file.
+
+**Why**: Give the About section change its own patch release version.
+
+**What was rejected**: A minor version bump; a patch bump was selected.
+
+**What's next**: Human publication of the version-bump branch. Merging and publishing it to `main` lets the existing automation create `v1.1.2` and dispatch the release build.
+
+---
+
 ## 2026-10-27 — Settings About section
 
 **What changed**: Added a Settings → About tab with the existing app icon, package build version, MIT license, and the running executable path. The path is provided by a read-only native API on macOS and Windows, with loading and error states. Added a focused web UI test and manual verification steps.
